@@ -29,12 +29,27 @@
  */
 package net.nro.stats;
 
+import net.nro.stats.component.ExtendedNroStats;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.Scheduled;
 
 @SpringBootApplication
 public class Application {
+
+    @Autowired
+    ExtendedNroStats extendedNroStats;
+
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
+    }
+
+    /**
+     * The default job to trigger the scheduler
+     */
+    @Scheduled(cron = "${nro.stats.extended.scheduler.cron}")
+    public void generateDelegateStats() {
+        extendedNroStats.generate();
     }
 }
