@@ -1,8 +1,9 @@
 package net.nro.stats.parser;
 
+import net.ripe.commons.ip.AbstractRange;
 import org.apache.commons.csv.CSVRecord;
 
-public class Record implements Line {
+public abstract class Record implements Line {
     private final String registry;
     private final String countryCode;
     private final String type;
@@ -81,11 +82,14 @@ public class Record implements Line {
     }
 
     public static boolean fits(CSVRecord line) {
-        String type = line.get(2);
-        return line.size() > 7 && ("asn".equals(type) || "ipv4".equals(type) || "ipv6".equals(type)) ;
+        return IPv4Record.fits(line) || IPv6Record.fits(line) || ASNRecord.fits(line);
     }
 
     public  boolean hasExtensions() {
         return extensions.length > 0;
     }
+
+    abstract AbstractRange getRange();
 }
+
+

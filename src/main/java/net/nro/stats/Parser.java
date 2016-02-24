@@ -1,9 +1,6 @@
 package net.nro.stats;
 
-import net.nro.stats.parser.Header;
-import net.nro.stats.parser.Line;
-import net.nro.stats.parser.Record;
-import net.nro.stats.parser.Summary;
+import net.nro.stats.parser.*;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 
@@ -30,8 +27,8 @@ public class Parser {
         parse("stats/delegated-apnic-extended-latest.txt");
     }
 
-    private void parse(String fileName) {
-        List<Line> fileContent = new ArrayList<Line>();
+    private List<Line> parse(String fileName) {
+        List<Line> fileContent = new ArrayList<>();
 
         try {
             Reader in = new FileReader(fileName);
@@ -47,8 +44,18 @@ public class Parser {
                     fileContent.add(new Header(line));
                 } else if (Summary.fits(line)) {
                     fileContent.add(new Summary(line));
-                } else if (Record.fits(line)) {
-                    fileContent.add(new Record(line));
+                } else if (IPv4Record.fits(line)) {
+                    IPv4Record record = new IPv4Record(line);
+                    fileContent.add(record);
+                    System.out.println("range: " + record.getRange());
+                } else if (IPv6Record.fits(line)) {
+                    IPv6Record record = new IPv6Record(line);
+                    fileContent.add(record);
+                    System.out.println("range: " + record.getRange());
+                } else if (ASNRecord.fits(line)) {
+                    ASNRecord record = new ASNRecord(line);
+                    fileContent.add(record);
+                    System.out.println("range: " + record.getRange());
                 } else {
                     throw new RuntimeException("Malformed line number " + line.getRecordNumber());
                 }
@@ -59,6 +66,7 @@ public class Parser {
             e.printStackTrace();
         }
         System.out.println("Found records: " + fileContent.size());
+        return fileContent;
     }
 
 }
