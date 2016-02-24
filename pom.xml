@@ -41,7 +41,7 @@
         <version>1.3.2.RELEASE</version>
     </parent>
 
-    <groupId>net.nro</groupId>
+    <groupId>net.nro.stats</groupId>
     <artifactId>nro-stats</artifactId>
     <version>1.0-SNAPSHOT</version>
     <name>${project.groupId}:${project.artifactId}</name>
