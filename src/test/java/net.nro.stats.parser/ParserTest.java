@@ -19,23 +19,23 @@ public class ParserTest {
 
     @Test
     public void testParseFileWithComments() {
-        testFileAndAssertLineCount("file_with_comments.txt", 0, "Does not parse file with comments correctly");
+        testFileAndAssertLineCount("parser/file_with_comments.txt", 0, "Does not parse file with comments correctly");
     }
 
 
     @Test
     public void testParseFileWithContent() {
-        testFileAndAssertLineCount("file_with_content.txt", 10, "Does not parse file with Header, Summary lines and IPv4/6 and ASN records correctly");
+        testFileAndAssertLineCount("parser/file_with_content.txt", 10, "Does not parse file with Header, Summary lines and IPv4/6 and ASN records correctly");
     }
 
     @Test
     public void testParseFileWithRecordExtensions() {
-        testFileAndAssertLineCount("file_with_extensions.txt", 10, "Does not parse file with extensions correctly");
+        testFileAndAssertLineCount("parser/file_with_extensions.txt", 10, "Does not parse file with extensions correctly");
     }
 
     @Test
     public void testParseFileComplete() {
-        testFileAndAssertLineCount("file_complete.txt", 10, "Does not parse file with everything mixed correctly");
+        testFileAndAssertLineCount("parser/file_complete.txt", 10, "Does not parse file with everything mixed correctly");
     }
 
     private void testFileAndAssertLineCount(String filePath, int expectedRows, String message) {

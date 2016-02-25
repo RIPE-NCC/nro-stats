@@ -10,7 +10,7 @@ public class HeaderTest extends LineTestBase {
 
     @Before
     public void setUp() throws Exception {
-        createRawLines("header.txt");
+        createRawLines("parser/header.txt");
     }
 
     @Test

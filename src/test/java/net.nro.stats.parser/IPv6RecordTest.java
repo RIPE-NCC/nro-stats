@@ -13,7 +13,7 @@ public class IPv6RecordTest extends LineTestBase {
 
     @Before
     public void setUp() throws Exception {
-        createRawLines("ipv6.txt");
+        createRawLines("parser/ipv6.txt");
     }
 
     @Test

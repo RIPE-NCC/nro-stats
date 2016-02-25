@@ -4,6 +4,7 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -11,6 +12,7 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 
+@Service
 public class Parser {
     Logger logger = LoggerFactory.getLogger(this.getClass());
     
@@ -33,17 +35,11 @@ public class Parser {
                 } else if (Summary.fits(line)) {
                     fileContent.add(new Summary(line));
                 } else if (IPv4Record.fits(line)) {
-                    IPv4Record record = new IPv4Record(line);
-                    fileContent.add(record);
-                    logger.debug("range: " + record.getRange());
+                    fileContent.add(new IPv4Record(line));
                 } else if (IPv6Record.fits(line)) {
-                    IPv6Record record = new IPv6Record(line);
-                    fileContent.add(record);
-                    logger.debug("range: " + record.getRange());
+                    fileContent.add(new IPv6Record(line));
                 } else if (ASNRecord.fits(line)) {
-                    ASNRecord record = new ASNRecord(line);
-                    fileContent.add(record);
-                    logger.debug("range: " + record.getRange());
+                    fileContent.add(new ASNRecord(line));
                 } else {
                     throw new RuntimeException("Malformed line number " + line.getRecordNumber());
                 }

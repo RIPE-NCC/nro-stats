@@ -13,7 +13,7 @@ public class ASNRecordTest extends LineTestBase {
 
     @Before
     public void setUp() throws Exception {
-        createRawLines("asn.txt");
+        createRawLines("parser/asn.txt");
     }
 
     @Test

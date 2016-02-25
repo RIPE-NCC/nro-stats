@@ -38,7 +38,7 @@ public enum ResourceHolder {
     RIPENCC("ripe-ncc"),
     LACNIC("lacnic"),
     IANA("iana"),
-    IETF("ieft");
+    IETF("ietf");
 
     private String identifier;
 

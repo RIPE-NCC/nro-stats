@@ -10,7 +10,7 @@ public class SummaryTest extends LineTestBase {
 
     @Before
     public void setUp() throws Exception {
-        createRawLines("summary.txt");
+        createRawLines("parser/summary.txt");
     }
 
     @Test
