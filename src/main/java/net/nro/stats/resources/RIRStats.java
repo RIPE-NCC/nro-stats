@@ -27,29 +27,22 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package net.nro.stats;
+package net.nro.stats.resources;
 
-import net.nro.stats.services.NroStatsService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.scheduling.annotation.Scheduled;
+public class RIRStats {
+    private byte[] content;
+    private ResourceHolderConfig rir;
 
-@SpringBootApplication
-public class Application {
-
-    @Autowired
-    NroStatsService nroStatsService;
-
-    public static void main(String[] args) {
-        SpringApplication.run(Application.class, args);
+    public RIRStats(ResourceHolderConfig rir, byte[] content) {
+        this.rir = rir;
+        this.content = content;
     }
 
-    /**
-     * The default job to trigger the scheduler
-     */
-    @Scheduled(cron = "${nro.stats.extended.scheduler.cron}")
-    public void generateDelegateStats() {
-        nroStatsService.generate();
+    public byte[] getContent() {
+        return content;
+    }
+
+    public ResourceHolderConfig getRir() {
+        return rir;
     }
 }

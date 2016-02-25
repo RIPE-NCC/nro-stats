@@ -27,29 +27,27 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package net.nro.stats;
+package net.nro.stats.web;
 
 import net.nro.stats.services.NroStatsService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
-@SpringBootApplication
-public class Application {
+@RestController
+public class NroStatsController {
+
+    Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     NroStatsService nroStatsService;
 
-    public static void main(String[] args) {
-        SpringApplication.run(Application.class, args);
-    }
-
-    /**
-     * The default job to trigger the scheduler
-     */
-    @Scheduled(cron = "${nro.stats.extended.scheduler.cron}")
-    public void generateDelegateStats() {
+    @RequestMapping(path = "process", method = RequestMethod.GET)
+    public void process() {
+        logger.info("Extended NRO process started manually");
         nroStatsService.generate();
     }
 }

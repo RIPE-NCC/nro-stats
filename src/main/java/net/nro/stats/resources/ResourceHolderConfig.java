@@ -27,29 +27,30 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package net.nro.stats;
+package net.nro.stats.resources;
 
-import net.nro.stats.services.NroStatsService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.scheduling.annotation.Scheduled;
+public class ResourceHolderConfig {
+    private ResourceHolder resourceHolder;
+    private String url;
 
-@SpringBootApplication
-public class Application {
-
-    @Autowired
-    NroStatsService nroStatsService;
-
-    public static void main(String[] args) {
-        SpringApplication.run(Application.class, args);
+    public ResourceHolderConfig(ResourceHolder resourceHolder, String url) {
+        this.resourceHolder = resourceHolder;
+        this.url = url;
     }
 
-    /**
-     * The default job to trigger the scheduler
-     */
-    @Scheduled(cron = "${nro.stats.extended.scheduler.cron}")
-    public void generateDelegateStats() {
-        nroStatsService.generate();
+    public ResourceHolder getResourceHolder() {
+        return resourceHolder;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    @Override
+    public String toString() {
+        return "ResourceHolderConfig{" +
+                "resourceHolder=" + resourceHolder +
+                ", url='" + url + '\'' +
+                '}';
     }
 }

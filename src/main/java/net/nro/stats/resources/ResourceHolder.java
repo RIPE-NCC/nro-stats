@@ -27,29 +27,34 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package net.nro.stats;
+package net.nro.stats.resources;
 
-import net.nro.stats.services.NroStatsService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.scheduling.annotation.Scheduled;
+import java.util.EnumSet;
 
-@SpringBootApplication
-public class Application {
+public enum ResourceHolder {
+    AFRINIC("afrinic"),
+    APNIC("apnic"),
+    ARIN("arin"),
+    RIPENCC("ripe-ncc"),
+    LACNIC("lacnic"),
+    IANA("iana"),
+    IETF("ieft");
 
-    @Autowired
-    NroStatsService nroStatsService;
+    private String identifier;
 
-    public static void main(String[] args) {
-        SpringApplication.run(Application.class, args);
+    ResourceHolder(String name) {
+        identifier = name;
     }
 
-    /**
-     * The default job to trigger the scheduler
-     */
-    @Scheduled(cron = "${nro.stats.extended.scheduler.cron}")
-    public void generateDelegateStats() {
-        nroStatsService.generate();
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    public static EnumSet<ResourceHolder> getRIRs() {
+        return EnumSet.of(AFRINIC, APNIC, ARIN, RIPENCC, LACNIC);
+    }
+
+    public static boolean isRIR(ResourceHolder resourceHolder) {
+        return resourceHolder != null && getRIRs().contains(resourceHolder);
     }
 }

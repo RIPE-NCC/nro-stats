@@ -27,29 +27,34 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package net.nro.stats;
+package net.nro.stats.config;
 
-import net.nro.stats.services.NroStatsService;
+import net.nro.stats.resources.ResourceHolder;
+import net.nro.stats.resources.ResourceHolderConfig;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 
-@SpringBootApplication
-public class Application {
+import java.util.ArrayList;
+import java.util.List;
+
+@Configuration
+public class AppConfig {
 
     @Autowired
-    NroStatsService nroStatsService;
+    private Environment env;
 
-    public static void main(String[] args) {
-        SpringApplication.run(Application.class, args);
-    }
+    private static final String PRE_IDENTIFIER = "nro.stats.extended.";
+    private static final String URL_IDENTIFIER = ".url";
 
-    /**
-     * The default job to trigger the scheduler
-     */
-    @Scheduled(cron = "${nro.stats.extended.scheduler.cron}")
-    public void generateDelegateStats() {
-        nroStatsService.generate();
+    @Bean
+    public List<ResourceHolderConfig> resourceHolders() {
+        List<ResourceHolderConfig> resourceHolders = new ArrayList<>();
+        for (ResourceHolder rir : ResourceHolder.getRIRs()) {
+            String url = env.getProperty(PRE_IDENTIFIER + rir.name().toLowerCase() + URL_IDENTIFIER);
+            resourceHolders.add(new ResourceHolderConfig(rir, url));
+        }
+        return resourceHolders;
     }
 }

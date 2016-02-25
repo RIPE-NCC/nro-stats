@@ -27,29 +27,39 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package net.nro.stats;
+package net.nro.stats.services;
 
-import net.nro.stats.services.NroStatsService;
+import net.nro.stats.resources.RIRStats;
+import net.nro.stats.resources.ResourceHolderConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
 
-@SpringBootApplication
-public class Application {
+import javax.annotation.Resource;
+import java.util.List;
+
+@Service
+public class NroStatsService {
+
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    @Resource
+    List<ResourceHolderConfig> resourceHolders;
 
     @Autowired
-    NroStatsService nroStatsService;
+    RIRStatsRetrieverService rirStatsRetrieverService;
 
-    public static void main(String[] args) {
-        SpringApplication.run(Application.class, args);
-    }
-
-    /**
-     * The default job to trigger the scheduler
-     */
-    @Scheduled(cron = "${nro.stats.extended.scheduler.cron}")
-    public void generateDelegateStats() {
-        nroStatsService.generate();
+    public void generate() {
+        logger.info("Generating Extended NRO Stats");
+        try {
+            List<RIRStats> rirStats = rirStatsRetrieverService.fetchAll(resourceHolders);
+            for (RIRStats rirStat : rirStats) {
+                logger.info(rirStat.getRir().getResourceHolder() + " - " + rirStat.getContent().length);
+            }
+            logger.info("Finished Generating Extended NRO stats");
+        } catch (Exception e) {
+            logger.error("Failed while generating NRO Extended stats", e);
+        }
     }
 }
