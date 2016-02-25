@@ -1,20 +1,20 @@
 /**
  * The BSD License
- *
+ * <p>
  * Copyright (c) 2010-2016 RIPE NCC
  * All rights reserved.
- *
+ * <p>
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- *   - Redistributions of source code must retain the above copyright notice,
- *     this list of conditions and the following disclaimer.
- *   - Redistributions in binary form must reproduce the above copyright notice,
- *     this list of conditions and the following disclaimer in the documentation
- *     and/or other materials provided with the distribution.
- *   - Neither the name of the RIPE NCC nor the names of its contributors may be
- *     used to endorse or promote products derived from this software without
- *     specific prior written permission.
- *
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ * - Redistributions in binary form must reproduce the above copyright notice,
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
+ * - Neither the name of the RIPE NCC nor the names of its contributors may be
+ * used to endorse or promote products derived from this software without
+ * specific prior written permission.
+ * <p>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -55,24 +55,24 @@ public class RIRStatsRetrieverService {
                 .stream()
                 .filter(r -> !StringUtils.isEmpty(r.getUrl()))
                 .map(rir -> {
-            try (CloseableHttpClient httpClient = HttpClientBuilder.create().build();
-                 CloseableHttpResponse response = httpClient.execute(new HttpGet(rir.getUrl()))) {
+                    try (CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+                         CloseableHttpResponse response = httpClient.execute(new HttpGet(rir.getUrl()))) {
 
-                if (response.getStatusLine().getStatusCode() == 200) {
-                    try (InputStream is = response.getEntity().getContent()){
-                        byte[] content = IOUtils.toByteArray(is);
-                        return new RIRStats(rir, content);
-                    } catch (Exception e) {
-                        logger.error("Failed to get the content of the file. ", e);
-                        throw new RuntimeException("Failed to get the content of the file.");
+                        if (response.getStatusLine().getStatusCode() == 200) {
+                            try (InputStream is = response.getEntity().getContent()) {
+                                byte[] content = IOUtils.toByteArray(is);
+                                return new RIRStats(rir, content);
+                            } catch (Exception e) {
+                                logger.error("Failed to get the content of the file. ", e);
+                                throw new RuntimeException("Failed to get the content of the file.");
+                            }
+                        } else {
+                            logger.error("Invalid response from RIR {}, {}", rir, response.getStatusLine().getStatusCode());
+                            throw new RuntimeException(String.format("Invalid response from RIR %s ", rir));
+                        }
+                    } catch (IOException io) {
+                        throw new RuntimeException("Unable to fetch rir resource", io);
                     }
-                } else {
-                    logger.error("Invalid response from RIR {}, {}", rir, response.getStatusLine().getStatusCode());
-                    throw new RuntimeException(String.format("Invalid response from RIR %s ", rir));
-                }
-            } catch (IOException io) {
-                throw new RuntimeException("Unable to fetch rir resource", io);
-            }
-        }).collect(Collectors.toList());
+                }).collect(Collectors.toList());
     }
 }
