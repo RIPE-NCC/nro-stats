@@ -1,0 +1,2 @@
+afrinic|ZA|ipv6|2001:4200::|32|20051021|allocated|F36B9F4B|ext7
+afrinic|ZZ|ipv6|2001:4201::|32||reserved|

@@ -1,0 +1,2 @@
+apnic|AU|ipv4|1.0.0.0|256|20110811|assigned|A91872ED
+apnic|CN|ipv4|1.0.1.0|256|20110414|allocated|A92E1062|ext4|ext5|ext6

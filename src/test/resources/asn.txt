@@ -1,0 +1,2 @@
+afrinic|ZA|asn|1228|1|19910301|allocated|F36B9F4B|ext1|ext2
+afrinic|ZA|asn|1229|1|19910301|allocated|F36B9F4B

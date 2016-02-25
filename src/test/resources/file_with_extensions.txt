@@ -1,0 +1,10 @@
+2.3|apnic|20160225|74492||20160224|+1000
+apnic|*|asn|*|7346|summary
+apnic|*|ipv4|*|33638|summary
+apnic|*|ipv6|*|33508|summary
+afrinic|ZA|asn|1228|1|19910301|allocated|F36B9F4B|ext1|ext2
+afrinic|ZA|asn|1229|1|19910301|allocated|F36B9F4B|ext3
+apnic|AU|ipv4|1.0.0.0|256|20110811|assigned|A91872ED
+apnic|CN|ipv4|1.0.1.0|256|20110414|allocated|A92E1062|ext4|ext5|ext6
+afrinic|ZA|ipv6|2001:4200::|32|20051021|allocated|F36B9F4B|ext7
+afrinic|ZZ|ipv6|2001:4201::|32||reserved||ext8

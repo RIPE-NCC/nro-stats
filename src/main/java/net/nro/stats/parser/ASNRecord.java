@@ -44,8 +44,7 @@ public class ASNRecord extends Record {
     }
 
     public static boolean fits(CSVRecord line) {
-        String type = line.get(2);
-        return line.size() > 7 && "asn".equals(type);
+        return line.size() > 7 && "asn".equals(line.get(2));
     }
 
     @Override

@@ -31,8 +31,6 @@ package net.nro.stats.parser;
 
 import org.apache.commons.csv.CSVRecord;
 
-import java.util.TimeZone;
-
 public class Header implements Line {
     private final String version;
     private final String registry;
@@ -40,7 +38,7 @@ public class Header implements Line {
     private final String records;
     private final String startDate;
     private final String endDate;
-    private final TimeZone utcOffset;
+    private final String utcOffset;
 
     public Header(String version, String registry, String serial, String records, String startDate, String endDate, String utcOffset) {
         this.version = version;
@@ -49,7 +47,7 @@ public class Header implements Line {
         this.records = records;
         this.startDate = startDate;
         this.endDate = endDate;
-        this.utcOffset = TimeZone.getTimeZone("GMT" + utcOffset);
+        this.utcOffset = utcOffset;
     }
 
     public Header(CSVRecord line) {
@@ -61,7 +59,7 @@ public class Header implements Line {
         this.records = line.get(3);
         this.startDate = line.get(4);
         this.endDate = line.get(5);
-        this.utcOffset = TimeZone.getTimeZone("GMT" + line.get(6));
+        this.utcOffset = line.get(6);
     }
 
     public String getVersion() {
@@ -92,7 +90,7 @@ public class Header implements Line {
         return endDate;
     }
 
-    public TimeZone getUtcOffset() {
+    public String getUtcOffset() {
         return utcOffset;
     }
 }

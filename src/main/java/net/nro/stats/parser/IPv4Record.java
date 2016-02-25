@@ -44,8 +44,7 @@ public class IPv4Record extends Record {
     }
 
     public static boolean fits(CSVRecord line) {
-        String type = line.get(2);
-        return line.size() > 7 && "ipv4".equals(type);
+        return line.size() > 7 && "ipv4".equals(line.get(2));
     }
 
     @Override

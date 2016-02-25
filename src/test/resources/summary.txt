@@ -1,0 +1,3 @@
+apnic|*|asn|*|7346|summary
+apnic|*|ipv4|*|33638|summary
+apnic|*|ipv6|*|33508|summary

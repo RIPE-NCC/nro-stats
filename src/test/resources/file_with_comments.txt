@@ -1,0 +1,4 @@
+# only comments
+#maybe with trailing spaces
+#here some more
+#  should contain no row
