@@ -29,6 +29,12 @@
  */
 package net.nro.stats.services;
 
+import net.nro.stats.components.Merger;
+import net.nro.stats.components.RIRStatsRetriever;
+import net.nro.stats.components.StatsWriter;
+import net.nro.stats.components.Validator;
+import net.nro.stats.components.parser.Line;
+import net.nro.stats.components.parser.Parser;
 import net.nro.stats.resources.RIRStats;
 import net.nro.stats.resources.ResourceHolderConfig;
 import org.slf4j.Logger;
@@ -38,6 +44,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class NroStatsService {
@@ -48,15 +55,35 @@ public class NroStatsService {
     List<ResourceHolderConfig> resourceHolders;
 
     @Autowired
-    RIRStatsRetrieverService rirStatsRetrieverService;
+    Parser parser;
+
+    @Autowired
+    Merger merger;
+
+    @Autowired
+    Validator validator;
+
+    @Autowired
+    StatsWriter writer;
+
+    @Autowired
+    RIRStatsRetriever rirStatsRetriever;
 
     public void generate() {
         logger.info("Generating Extended NRO Stats");
         try {
-            List<RIRStats> rirStats = rirStatsRetrieverService.fetchAll(resourceHolders);
-            for (RIRStats rirStat : rirStats) {
-                logger.info(rirStat.getRir().getResourceHolder() + " - " + rirStat.getContent().length);
-            }
+            List<RIRStats> rirStats = rirStatsRetriever.fetchAll(resourceHolders);
+
+            List<List<Line>> sourceLinesPerRIR = rirStats.parallelStream().map(stat -> {
+                return parser.parse(stat.getContent());
+            }).collect(Collectors.toList());
+
+            List<List<Line>> validatedSourceLinesPerRIR = validator.validate(sourceLinesPerRIR);
+
+            List<Line> targetLines = merger.merge(validatedSourceLinesPerRIR);
+
+            writer.write(targetLines);
+
             logger.info("Finished Generating Extended NRO stats");
         } catch (Exception e) {
             logger.error("Failed while generating NRO Extended stats", e);

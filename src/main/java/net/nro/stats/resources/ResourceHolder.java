@@ -31,6 +31,8 @@ package net.nro.stats.resources;
 
 import java.util.EnumSet;
 
+
+// TODO [JT]:Do we really need this hardcoded enum? Properties file is more flexible (see application.properties)
 public enum ResourceHolder {
     AFRINIC("afrinic"),
     APNIC("apnic"),

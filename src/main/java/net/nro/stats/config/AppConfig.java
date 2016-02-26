@@ -51,9 +51,9 @@ public class AppConfig {
     @Bean
     public List<ResourceHolderConfig> resourceHolders() {
         List<ResourceHolderConfig> resourceHolders = new ArrayList<>();
-        for (ResourceHolder rir : ResourceHolder.getRIRs()) {
-            String url = env.getProperty(PRE_IDENTIFIER + rir.name().toLowerCase() + URL_IDENTIFIER);
-            resourceHolders.add(new ResourceHolderConfig(rir, url));
+        for (String rir : env.getProperty("nro.stats.extended.order").split(",")) {
+            String url = env.getProperty(PRE_IDENTIFIER + rir + URL_IDENTIFIER);
+            resourceHolders.add(new ResourceHolderConfig(ResourceHolder.valueOf(rir.toUpperCase()), url));
         }
         return resourceHolders;
     }
