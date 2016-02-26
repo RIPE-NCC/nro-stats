@@ -52,7 +52,7 @@ public class RIRStatsRetrieverService {
 
     public List<RIRStats> fetchAll(List<ResourceHolderConfig> rirConfig) {
         return rirConfig
-                .stream()
+                .parallelStream()
                 .filter(r -> !StringUtils.isEmpty(r.getUrl()))
                 .map(rir -> {
                     try (CloseableHttpClient httpClient = HttpClientBuilder.create().build();

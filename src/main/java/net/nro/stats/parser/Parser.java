@@ -6,21 +6,26 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Reader;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class Parser {
     Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    private static final String FILE_ENCODING = "US-ASCII";
     
-    public List<Line> parse(String fileName) {
+    public List<Line> parse(byte[] content) {
         List<Line> fileContent = new ArrayList<>();
 
         try {
-            Reader in = new FileReader(fileName);
+            Reader in = new InputStreamReader(new ByteArrayInputStream(content), Charset.forName(FILE_ENCODING));
             Iterable<CSVRecord> lines = CSVFormat
                     .DEFAULT
                     .withDelimiter('|')
