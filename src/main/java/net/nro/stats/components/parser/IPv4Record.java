@@ -27,11 +27,14 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package net.nro.stats.parser;
+package net.nro.stats.components.parser;
 
 import net.ripe.commons.ip.Ipv4;
 import net.ripe.commons.ip.Ipv4Range;
+import net.ripe.commons.ip.StartAndSizeComparator;
 import org.apache.commons.csv.CSVRecord;
+
+import java.util.Comparator;
 
 public class IPv4Record extends Record {
 
@@ -52,6 +55,11 @@ public class IPv4Record extends Record {
         Ipv4 start = Ipv4.of(getStart());
         int prefix = 33 - Long.toBinaryString(Long.parseLong(getValue())).length();
         return Ipv4Range.from(start).andPrefixLength(prefix);
+    }
+
+    @Override
+    public Comparator getComparator() {
+        return StartAndSizeComparator.<Ipv4, Ipv4Range>get();
     }
 
 

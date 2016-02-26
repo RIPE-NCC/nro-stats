@@ -27,42 +27,70 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package net.nro.stats.parser;
+package net.nro.stats.components.parser;
 
 import org.apache.commons.csv.CSVRecord;
 
-public class Summary implements Line {
-
+public class Header implements Line {
+    private final String version;
     private final String registry;
-    private final String type;
-    private final String count;
+    private final String serial;
+    private final String records;
+    private final String startDate;
+    private final String endDate;
+    private final String utcOffset;
 
-    public Summary(String registry, String type, String count) {
+    public Header(String version, String registry, String serial, String records, String startDate, String endDate, String utcOffset) {
+        this.version = version;
         this.registry = registry;
-        this.type = type;
-        this.count = count;
+        this.serial = serial;
+        this.records = records;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.utcOffset = utcOffset;
     }
 
-    public Summary(CSVRecord line) {
-        if (!fits(line)) throw new RuntimeException("Given line was not a Summary");
-        this.registry = line.get(0);
-        this.type = line.get(2);
-        this.count = line.get(4);
+    public Header(CSVRecord line) {
+        if (!fits(line)) throw new RuntimeException("Given line was not a Header");
+
+        this.version = line.get(0);
+        this.registry = line.get(1);
+        this.serial = line.get(2);
+        this.records = line.get(3);
+        this.startDate = line.get(4);
+        this.endDate = line.get(5);
+        this.utcOffset = line.get(6);
+    }
+
+    public String getVersion() {
+        return version;
     }
 
     public String getRegistry() {
         return registry;
     }
 
-    public String getType() {
-        return type;
-    }
-
-    public String getCount() {
-        return count;
+    public String getSerial() {
+        return serial;
     }
 
     public static boolean fits(CSVRecord line) {
-        return line.size() == 6 && "summary".equals(line.get(5));
+        return line.size() == 7 && ("2.3".equals(line.get(0)) || "2".equals(line.get(0)));
+    }
+
+    public String getRecords() {
+        return records;
+    }
+
+    public String getStartDate() {
+        return startDate;
+    }
+
+    public String getEndDate() {
+        return endDate;
+    }
+
+    public String getUtcOffset() {
+        return utcOffset;
     }
 }

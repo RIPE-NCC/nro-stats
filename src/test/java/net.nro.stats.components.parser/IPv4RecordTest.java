@@ -1,4 +1,4 @@
-package net.nro.stats.parser;
+package net.nro.stats.components.parser;
 
 import net.ripe.commons.ip.Ipv4;
 import net.ripe.commons.ip.Ipv4Range;

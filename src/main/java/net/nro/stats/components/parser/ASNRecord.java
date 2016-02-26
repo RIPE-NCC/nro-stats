@@ -27,30 +27,38 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package net.nro.stats.parser;
+package net.nro.stats.components.parser;
 
-import net.ripe.commons.ip.Ipv6;
-import net.ripe.commons.ip.Ipv6Range;
+import net.ripe.commons.ip.Asn;
+import net.ripe.commons.ip.AsnRange;
+import net.ripe.commons.ip.StartAndSizeComparator;
 import org.apache.commons.csv.CSVRecord;
 
-public class IPv6Record extends Record {
+import java.util.Comparator;
 
-    public IPv6Record(String registry, String countryCode, String start, String value, String date, String status, String regId, String... extensions) {
-        super(registry, countryCode, "ipv6", start, value, date, status, regId, extensions);
+public class ASNRecord extends Record {
+
+    public ASNRecord(String registry, String countryCode, String start, String value, String date, String status, String regId, String... extensions) {
+        super(registry, countryCode, "asn", start, value, date, status, regId, extensions);
     }
 
-    public IPv6Record(CSVRecord line) {
+    public ASNRecord(CSVRecord line) {
         super(line);
     }
 
     public static boolean fits(CSVRecord line) {
-        return line.size() > 7 && "ipv6".equals(line.get(2));
+        return line.size() > 7 && "asn".equals(line.get(2));
     }
 
     @Override
-    public Ipv6Range getRange() {
-        Ipv6 start = Ipv6.of(getStart());
-        int prefix = Integer.parseInt(getValue());
-        return Ipv6Range.from(start).andPrefixLength(prefix);
+    public AsnRange getRange() {
+        Asn start = Asn.of(getStart());
+        Asn end = Asn.of(Long.parseLong(getStart()) + Long.parseLong(getValue()));
+        return AsnRange.from(start).to(end);
+    }
+
+    @Override
+    public Comparator getComparator() {
+        return StartAndSizeComparator.<Asn, AsnRange>get();
     }
 }

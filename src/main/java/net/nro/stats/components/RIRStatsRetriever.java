@@ -27,7 +27,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package net.nro.stats.services;
+package net.nro.stats.components;
 
 import net.nro.stats.resources.RIRStats;
 import net.nro.stats.resources.ResourceHolderConfig;
@@ -38,7 +38,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import java.io.IOException;
@@ -46,8 +46,8 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Service
-public class RIRStatsRetrieverService {
+@Component
+public class RIRStatsRetriever {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public List<RIRStats> fetchAll(List<ResourceHolderConfig> rirConfig) {

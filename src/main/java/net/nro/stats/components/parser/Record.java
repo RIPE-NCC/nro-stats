@@ -27,10 +27,12 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package net.nro.stats.parser;
+package net.nro.stats.components.parser;
 
 import net.ripe.commons.ip.AbstractRange;
 import org.apache.commons.csv.CSVRecord;
+
+import java.util.Comparator;
 
 public abstract class Record implements Line {
     private final String registry;
@@ -118,7 +120,9 @@ public abstract class Record implements Line {
         return extensions.length > 0;
     }
 
-    abstract AbstractRange getRange();
+    public abstract AbstractRange getRange();
+
+    public abstract Comparator getComparator();
 }
 
 

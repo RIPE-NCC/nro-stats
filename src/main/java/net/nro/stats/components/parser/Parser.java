@@ -1,13 +1,12 @@
-package net.nro.stats.parser;
+package net.nro.stats.components.parser;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayInputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -15,7 +14,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
-@Service
+@Component
 public class Parser {
     Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -46,7 +45,7 @@ public class Parser {
                 } else if (ASNRecord.fits(line)) {
                     fileContent.add(new ASNRecord(line));
                 } else {
-                    throw new RuntimeException("Malformed line number " + line.getRecordNumber());
+                    throw new RuntimeException("Malformed line number " + line.getRecordNumber() + "\n" + line.toString());
                 }
              }
         } catch (IOException e) {

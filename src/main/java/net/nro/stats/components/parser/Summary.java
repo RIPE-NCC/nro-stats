@@ -27,70 +27,42 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package net.nro.stats.parser;
+package net.nro.stats.components.parser;
 
 import org.apache.commons.csv.CSVRecord;
 
-public class Header implements Line {
-    private final String version;
+public class Summary implements Line {
+
     private final String registry;
-    private final String serial;
-    private final String records;
-    private final String startDate;
-    private final String endDate;
-    private final String utcOffset;
+    private final String type;
+    private final String count;
 
-    public Header(String version, String registry, String serial, String records, String startDate, String endDate, String utcOffset) {
-        this.version = version;
+    public Summary(String registry, String type, String count) {
         this.registry = registry;
-        this.serial = serial;
-        this.records = records;
-        this.startDate = startDate;
-        this.endDate = endDate;
-        this.utcOffset = utcOffset;
+        this.type = type;
+        this.count = count;
     }
 
-    public Header(CSVRecord line) {
-        if (!fits(line)) throw new RuntimeException("Given line was not a Header");
-
-        this.version = line.get(0);
-        this.registry = line.get(1);
-        this.serial = line.get(2);
-        this.records = line.get(3);
-        this.startDate = line.get(4);
-        this.endDate = line.get(5);
-        this.utcOffset = line.get(6);
-    }
-
-    public String getVersion() {
-        return version;
+    public Summary(CSVRecord line) {
+        if (!fits(line)) throw new RuntimeException("Given line was not a Summary");
+        this.registry = line.get(0);
+        this.type = line.get(2);
+        this.count = line.get(4);
     }
 
     public String getRegistry() {
         return registry;
     }
 
-    public String getSerial() {
-        return serial;
+    public String getType() {
+        return type;
+    }
+
+    public String getCount() {
+        return count;
     }
 
     public static boolean fits(CSVRecord line) {
-        return line.size() == 7 && "2.3".equals(line.get(0));
-    }
-
-    public String getRecords() {
-        return records;
-    }
-
-    public String getStartDate() {
-        return startDate;
-    }
-
-    public String getEndDate() {
-        return endDate;
-    }
-
-    public String getUtcOffset() {
-        return utcOffset;
+        return line.size() == 6 && "summary".equals(line.get(5));
     }
 }

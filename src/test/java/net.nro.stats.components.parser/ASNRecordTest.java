@@ -1,4 +1,4 @@
-package net.nro.stats.parser;
+package net.nro.stats.components.parser;
 
 import net.ripe.commons.ip.Asn;
 import net.ripe.commons.ip.AsnRange;

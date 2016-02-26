@@ -1,4 +1,4 @@
-package net.nro.stats.parser;
+package net.nro.stats.components.parser;
 
 import net.ripe.commons.ip.Ipv6;
 import net.ripe.commons.ip.Ipv6Range;
@@ -9,7 +9,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class IPv6RecordTest extends LineTestBase {
+public class IPv6RecordTest extends net.nro.stats.components.parser.LineTestBase {
 
     @Before
     public void setUp() throws Exception {

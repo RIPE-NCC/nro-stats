@@ -1,4 +1,4 @@
-package net.nro.stats.parser;
+package net.nro.stats.components.parser;
 
 import org.apache.commons.csv.CSVRecord;
 import org.junit.Before;
