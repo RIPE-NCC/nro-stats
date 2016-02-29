@@ -74,13 +74,9 @@ public class ParserTest {
     private void testFileAndAssertLineCount(String filePath, int expectedRows, String message) throws IOException {
         URL testFile = this.getClass().getClassLoader().getResource(filePath);
         assert testFile != null;
-        try {
-            byte[] bytes = bytesRetriever.retrieveBytes(testFile.toURI());
-            List<Line> lines = sut.parse(bytes);
-            assertTrue(message, lines.size() == expectedRows);
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        }
+        byte[] bytes = bytesRetriever.retrieveBytes(testFile.getPath());
+        List<Line> lines = sut.parse(bytes);
+        assertTrue(message, lines.size() == expectedRows);
     }
 
     public byte[] bytesFromFile(String filePath) throws IOException {

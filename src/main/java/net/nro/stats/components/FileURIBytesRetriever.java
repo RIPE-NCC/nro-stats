@@ -15,10 +15,10 @@ import java.net.URL;
  * Created by rudi on 29-02-16.
  */
 @Component
-@Profile("test")
+@Profile("local")
 public class FileURIBytesRetriever implements URIBytesRetriever {
     @Override
-    public byte[] retrieveBytes(URI uri) {
+    public byte[] retrieveBytes(String uri) {
 
         ByteArrayOutputStream outputStream = null;
         try (FileInputStream inputStream = new FileInputStream(new File(uri)))

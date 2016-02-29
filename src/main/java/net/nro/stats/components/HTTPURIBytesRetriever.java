@@ -21,12 +21,12 @@ import java.net.URI;
 
 @Component
 @Scope("prototype")
-//@Profile("production")
+@Profile("production")
 public class HTTPURIBytesRetriever implements URIBytesRetriever {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Override
-    public byte[] retrieveBytes(URI uri) {
+    public byte[] retrieveBytes(String uri) {
         logger.debug("retrieveBytes " + uri);
         try (CloseableHttpClient httpClient = HttpClientBuilder.create().build();
              CloseableHttpResponse response = httpClient.execute(new HttpGet(uri))) {

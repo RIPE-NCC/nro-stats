@@ -34,18 +34,18 @@ import java.net.URISyntaxException;
 
 public class ResourceHolderConfig {
     private ResourceHolder resourceHolder;
-    private URI uri;
+    private String uri;
 
     public ResourceHolderConfig(ResourceHolder resourceHolder, String uri) throws URISyntaxException {
         this.resourceHolder = resourceHolder;
-        this.uri = new URI(uri);
+        this.uri = uri;
     }
 
     public ResourceHolder getResourceHolder() {
         return resourceHolder;
     }
 
-    public URI getUri() {
+    public String getUri() {
         return uri;
     }
 
