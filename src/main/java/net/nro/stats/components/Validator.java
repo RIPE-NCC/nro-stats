@@ -29,7 +29,7 @@
  */
 package net.nro.stats.components;
 
-import net.nro.stats.components.parser.Line;
+import net.nro.stats.resources.ParsedRIRStats;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -38,7 +38,7 @@ import java.util.List;
 // TODO: Build me
 @Component
 public class Validator {
-    public List<List<Line>> validate(List<List<Line>> sourceLinesPerRIR) {
+    public List<ParsedRIRStats> validate(List<ParsedRIRStats> sourceLinesPerRIR) {
         return sourceLinesPerRIR;
     }
 }

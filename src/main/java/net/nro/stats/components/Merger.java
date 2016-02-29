@@ -30,8 +30,10 @@
 package net.nro.stats.components;
 
 import net.nro.stats.components.parser.*;
+import net.nro.stats.resources.ParsedRIRStats;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -41,6 +43,9 @@ import java.util.stream.Collectors;
 @Component
 public class Merger {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    @Value("${nro.stats.extended.order}")
+    private String[] rirs;
 
     class PrioritizedRecord<I extends Record> {
         private int prio;
@@ -60,33 +65,43 @@ public class Merger {
         }
     }
 
-    public List<Line> merge(List<List<Line>> inputLinesPerRIR) {
+    public List<Line> merge(List<ParsedRIRStats> parsedRIRStats) {
 
 
 
-        List<PrioritizedRecord<IPv4Record>> mergedIPv4Lines = null;
-        List<PrioritizedRecord<IPv6Record>> mergedIPv6Lines = null;
-        List<PrioritizedRecord<ASNRecord>> mergedASNLines = null;
+        List<PrioritizedRecord<IPv4Record>> mergedIPv4Lines = new ArrayList<>();
+        List<PrioritizedRecord<IPv6Record>> mergedIPv6Lines = new ArrayList<>();
+        List<PrioritizedRecord<ASNRecord>> mergedASNLines = new ArrayList<>();
 
-        for( int i = 0; i < inputLinesPerRIR.size(); i++) {
+        int i = 0;
+        for( String rir : rirs) {
+            ParsedRIRStats stats = parsedRIRStats
+                    .stream()
+                    .filter(localStats -> localStats
+                            .getRir()
+                            .getResourceHolder()
+                            .getIdentifier()
+                            .equals(rir))
+                    .collect(Collectors.toList())
+                    .get(0);
             final int prio = i;
-            mergedIPv4Lines = inputLinesPerRIR.get(prio).stream()
+            mergedIPv4Lines.addAll(stats.getLines().stream()
                     .filter(record -> record instanceof IPv4Record)
                     .map(record -> new PrioritizedRecord<IPv4Record>(prio, (IPv4Record)record))
                     .sorted((o1, o2) -> ((IPv4Record)o1.getRecord()).getComparator().compare(o1.getRecord().getRange(), o2.getRecord().getRange()))
-                    .collect(Collectors.toList());
-            mergedIPv6Lines = inputLinesPerRIR.get(prio).stream()
+                    .collect(Collectors.toList()));
+            mergedIPv6Lines.addAll(stats.getLines().stream()
                     .filter(record -> record instanceof IPv6Record)
                     .map(record -> new PrioritizedRecord<IPv6Record>(prio, (IPv6Record)record))
                     .sorted((o1, o2) -> ((IPv6Record)o1.getRecord()).getComparator().compare(o1.getRecord().getRange(), o2.getRecord().getRange()))
-                    .collect(Collectors.toList());
-            mergedASNLines = inputLinesPerRIR.get(prio).stream()
+                    .collect(Collectors.toList()));
+            mergedASNLines.addAll(stats.getLines().stream()
                     .filter(record -> record instanceof ASNRecord)
                     .map(record -> new PrioritizedRecord<ASNRecord>(prio, (ASNRecord)record))
                     .sorted((o1, o2) -> ((ASNRecord)o1.getRecord()).getComparator().compare(o1.getRecord().getRange(), o2.getRecord().getRange()))
-                    .collect(Collectors.toList());
+                    .collect(Collectors.toList()));
 
-
+            i++;
         }
 
         List<Line> result = handleConflicts(mergedIPv4Lines);

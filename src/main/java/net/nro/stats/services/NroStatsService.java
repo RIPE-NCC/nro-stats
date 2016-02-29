@@ -1,20 +1,20 @@
 /**
  * The BSD License
- *
+ * <p>
  * Copyright (c) 2010-2016 RIPE NCC
  * All rights reserved.
- *
+ * <p>
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- *   - Redistributions of source code must retain the above copyright notice,
- *     this list of conditions and the following disclaimer.
- *   - Redistributions in binary form must reproduce the above copyright notice,
- *     this list of conditions and the following disclaimer in the documentation
- *     and/or other materials provided with the distribution.
- *   - Neither the name of the RIPE NCC nor the names of its contributors may be
- *     used to endorse or promote products derived from this software without
- *     specific prior written permission.
- *
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ * - Redistributions in binary form must reproduce the above copyright notice,
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
+ * - Neither the name of the RIPE NCC nor the names of its contributors may be
+ * used to endorse or promote products derived from this software without
+ * specific prior written permission.
+ * <p>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -32,10 +32,10 @@ package net.nro.stats.services;
 import net.nro.stats.components.Merger;
 import net.nro.stats.components.RIRStatsRetriever;
 import net.nro.stats.components.StatsWriter;
-import net.nro.stats.components.URIBytesRetriever;
 import net.nro.stats.components.Validator;
 import net.nro.stats.components.parser.Line;
 import net.nro.stats.components.parser.Parser;
+import net.nro.stats.resources.ParsedRIRStats;
 import net.nro.stats.resources.RIRStats;
 import net.nro.stats.resources.ResourceHolderConfig;
 import org.slf4j.Logger;
@@ -76,11 +76,11 @@ public class NroStatsService {
         try {
             List<RIRStats> rirStats = rirStatsRetriever.fetchAll(resourceHolders);
 
-            List<List<Line>> sourceLinesPerRIR = rirStats.stream().map(stat -> {
-                return parser.parse(stat.getContent());
-            }).collect(Collectors.toList());
+            List<ParsedRIRStats> parsedRIRStats = rirStats.stream().map(stat ->
+                    new ParsedRIRStats(parser.parse(stat.getContent()), stat.getRir())
+                ).collect(Collectors.toList());
 
-            List<List<Line>> validatedSourceLinesPerRIR = validator.validate(sourceLinesPerRIR);
+            List<ParsedRIRStats> validatedSourceLinesPerRIR = validator.validate(parsedRIRStats);
 
             List<Line> targetLines = merger.merge(validatedSourceLinesPerRIR);
 

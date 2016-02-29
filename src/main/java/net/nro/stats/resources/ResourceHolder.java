@@ -37,7 +37,7 @@ public enum ResourceHolder {
     AFRINIC("afrinic"),
     APNIC("apnic"),
     ARIN("arin"),
-    RIPENCC("ripe-ncc"),
+    RIPENCC("ripencc"),
     LACNIC("lacnic"),
     IANA("iana"),
     IETF("ietf");
