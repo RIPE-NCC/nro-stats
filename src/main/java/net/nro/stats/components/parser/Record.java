@@ -134,7 +134,7 @@ public abstract class Record implements Line {
     // TODO:
     @Override
     public String toString() {
-        return super.toString();
+        return String.format("Record[%s; %s; %s; %s; %s; %s; %s; %s;]", getRegistry(), getCountryCode(), getType(), getStart(), getValue(), getDate(), getStatus(), getRegId(), String.join(";", getExtensions()));
     }
 }
 
