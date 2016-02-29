@@ -7,6 +7,3 @@
 .idea
 *.iml
 target
-
-# local stats files for testing
-/stats

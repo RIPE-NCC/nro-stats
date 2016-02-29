@@ -51,6 +51,10 @@ public class IPv4Record extends Record {
         return line.size() > 6 && "ipv4".equals(line.get(2));
     }
 
+    public IPv4Record clone(Ipv4Range range) {
+        return new IPv4Record(getRegistry(), getCountryCode(), range.start().toString(), range.size().toString(), getDate(), getStatus(),getRegId(), getExtensions());
+    }
+
     @Override
     public Ipv4Range getRange() {
         Ipv4 start = Ipv4.of(getStart());
