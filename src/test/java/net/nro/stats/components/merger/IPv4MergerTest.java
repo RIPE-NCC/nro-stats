@@ -62,7 +62,7 @@ public class IPv4MergerTest extends LineTestBase {
             ipv4Records.add(new IPv4Record(line));
         }
         List<IPv4Record> mergedRecords = iPv4Merger.merge(ipv4Records);
-        Assert.assertEquals(4, mergedRecords.size());
+        Assert.assertEquals(18, mergedRecords.size());
     }
 
 }

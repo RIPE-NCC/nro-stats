@@ -37,8 +37,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.math.BigInteger;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
+import static com.google.common.base.Strings.padEnd;
 import static com.google.common.base.Strings.padStart;
 
 @Component
@@ -53,28 +58,51 @@ public class IPv4Merger {
         this.conflictResolver = conflictResolver;
     }
 
-    public List<IPv4Record> merge(List<IPv4Record> records) {
+    public List<IPv4Record> merge(List<IPv4Record> recordsList) {
         IPv4Node root = new IPv4Node(0, 'x', null);
         IPv4Node node;
-        for (IPv4Record record : records) {
-            List<Ipv4Range> range = record.getRange().splitToPrefixes();
-            for (Ipv4Range r : range) {
+        Queue<IPv4Record> records = new ConcurrentLinkedQueue<>();
+        records.addAll(recordsList);
+        IPv4Record record;
+        while ((record = records.poll()) != null) {
+            Queue<Ipv4Range> ranges = new ConcurrentLinkedQueue<>();
+            ranges.addAll(record.getRange().splitToPrefixes());
+            Ipv4Range range;
+            while ((range=ranges.poll()) != null) {
                 node = root;
-                char[] binary = padStart(r.start().asBigInteger().toString(2), 32, '0').substring(0, 33 - Long.toBinaryString(r.size()).length()).toCharArray();
-                for (char c: binary) {
+                String binaryRange = padStart(range.start().asBigInteger().toString(2), 32, '0').substring(0, 33 - Long.toBinaryString(range.size()).length());
+                for (char c: binaryRange.toCharArray()) {
                     if (c == '0') {
                         node = node.getLeftNode();
                     } else { // c =='1'
                         node = node.getRightNode();
                     }
+                    if (node.getRecord() != null) {
+                        if (conflictResolver.resolve(node.getRecord(), record) == record) {
+                            records.offer(node.getRecord());
+                            node.unclaim();
+                        } else {
+                            continue;
+                        }
+                    }
                 }
-                IPv4Record modifiedRecord = record.clone(r);
+                if (node.getRecord() == null) {
+                    IPv4Record modifiedRecord = record.clone(range);
 
-                if (node.claim(conflictResolver, modifiedRecord)) {
-                    //This one claimed it.. so all good
-                } else {
-                    //child has some with higher priority
-                    logger.warn("Unable to claim {}", r);
+                    if (node.claim(conflictResolver, modifiedRecord)) {
+                        //This one claimed it.. so all good
+                    } else {
+                        //child has some with higher priority
+                        //Split to lower range and try to gather it
+                        if (binaryRange.length() != 32) {
+                            String zeroRange = binaryRange + "0";
+                            ranges.offer(Ipv4Range.from(new BigInteger(padEnd(zeroRange, 32, '0'), 2)).andPrefixLength(zeroRange.length()));
+                            String oneRange = binaryRange + "1";
+                            ranges.offer(Ipv4Range.from(new BigInteger(padEnd(oneRange, 32, '0'), 2)).andPrefixLength(oneRange.length()));
+                        }
+                        logger.warn("Unable to claim {}", range);
+
+                    }
                 }
             }
         }

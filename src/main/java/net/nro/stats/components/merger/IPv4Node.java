@@ -71,11 +71,7 @@ public class IPv4Node {
 
     public boolean claim(ConflictResolver conflictResolver, IPv4Record record) {
         if (left == null && right == null) {
-            if (this.record == null) {
-                this.record = record;
-            } else {
-                this.record = conflictResolver.resolve(this.record, record);
-            }
+            this.record = record;
             return true;
         } else {
             if (defeatsAll(conflictResolver, record, getAllChildRecords())) {
@@ -112,5 +108,9 @@ public class IPv4Node {
             }
             return records;
         }
+    }
+
+    public void unclaim() {
+        record = null;
     }
 }
