@@ -27,42 +27,37 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package net.nro.stats.components.merger;
+package net.nro.stats.components;
 
-import net.nro.stats.components.ConflictResolver;
 import net.nro.stats.components.parser.IPv4Record;
-import net.nro.stats.components.parser.LineTestBase;
+import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
-import java.util.ArrayList;
+import java.io.StringReader;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Iterator;
 
-public class IPv4MergerTest extends LineTestBase {
-
+public class ConflictResolverTest {
 
     private ConflictResolver resolver = new ConflictResolver(Arrays.asList("apnic,afrinic,arin,ripencc,lacnic".split(",")));
-    IPv4Merger iPv4Merger = new IPv4Merger(resolver);
-
-    @Before
-    public void setUp() throws Exception {
-        createRawLines("parser/ipv4Merger.txt");
-    }
-
 
     @Test
-    @Ignore
-    public void testBasic() {
-        List<IPv4Record> ipv4Records = new ArrayList<>();
-        for (CSVRecord line : lines) {
-            ipv4Records.add(new IPv4Record(line));
-        }
-        List<IPv4Record> mergedRecords = iPv4Merger.merge(ipv4Records);
-        Assert.assertEquals(4, mergedRecords.size());
-    }
+    public void testBasic() throws Exception {
+        Iterable<CSVRecord> lines = CSVFormat
+                .DEFAULT
+                .withDelimiter('|')
+                .withCommentMarker('#') // only recognized at start of line!
+                .withRecordSeparator('\n')
+                .withIgnoreEmptyLines()
+                .withIgnoreSurroundingSpaces()
+                .parse(new StringReader("apnic|AU|ipv4|1.0.0.0|256|20110811|assigned|A91872ED\n" +
+                        "ripencc|CN|ipv4|1.0.1.0|256|20110414|allocated|A92E1062|ext4|ext5|ext6\n"));
 
+
+        Iterator<CSVRecord> iterator = lines.iterator();
+        IPv4Record rec = resolver.resolve(new IPv4Record(iterator.next()), new IPv4Record(iterator.next()));
+        Assert.assertTrue(rec.getRegistry().equals("apnic"));
+    }
 }
