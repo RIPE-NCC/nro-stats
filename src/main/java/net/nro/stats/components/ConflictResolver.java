@@ -27,42 +27,25 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package net.nro.stats.components.merger;
+package net.nro.stats.components;
 
-import net.nro.stats.components.ConflictResolver;
 import net.nro.stats.components.parser.IPv4Record;
-import net.nro.stats.components.parser.LineTestBase;
-import org.apache.commons.csv.CSVRecord;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-public class IPv4MergerTest extends LineTestBase {
+@Component
+public class ConflictResolver {
+    private List<String> registryPriorityOrder;
 
-
-    private ConflictResolver resolver = new ConflictResolver(Arrays.asList("apnic,afrinic,arin,ripencc,lacnic".split(",")));
-    IPv4Merger iPv4Merger = new IPv4Merger(resolver);
-
-    @Before
-    public void setUp() throws Exception {
-        createRawLines("parser/ipv4Merger.txt");
+    @Autowired
+    public ConflictResolver(@Value("${nro.stats.extended.order}") List<String> registryPriorityOrder) {
+        this.registryPriorityOrder = registryPriorityOrder;
     }
 
-
-    @Test
-    @Ignore
-    public void testBasic() {
-        List<IPv4Record> ipv4Records = new ArrayList<>();
-        for (CSVRecord line : lines) {
-            ipv4Records.add(new IPv4Record(line));
-        }
-        List<IPv4Record> mergedRecords = iPv4Merger.merge(ipv4Records);
-        Assert.assertEquals(4, mergedRecords.size());
+    public IPv4Record resolve(IPv4Record record1, IPv4Record record2) {
+        return (registryPriorityOrder.indexOf(record1.getRegistry()) > registryPriorityOrder.indexOf(record2.getRegistry())) ? record2 : record1;
     }
-
 }

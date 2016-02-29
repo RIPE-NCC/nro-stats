@@ -29,6 +29,7 @@
  */
 package net.nro.stats.components.merger;
 
+import net.nro.stats.components.ConflictResolver;
 import net.nro.stats.components.parser.IPv4Record;
 
 import java.util.ArrayList;
@@ -38,7 +39,7 @@ public class IPv4Node {
     int level;
     char value;
     IPv4Node parent, left, right;
-    private List<IPv4Record> records;
+    private IPv4Record record;
 
     public IPv4Node(int level, char value, IPv4Node parent) {
         this.level = level;
@@ -64,14 +65,52 @@ public class IPv4Node {
         return right;
     }
 
-    public void addRecords(IPv4Record record) {
-        if (this.records == null) {
-            this.records = new ArrayList<>();
-        }
-        this.records.add(record);
+    public IPv4Record getRecord() {
+        return record;
     }
 
-    public List<IPv4Record> getRecords() {
-        return records;
+    public boolean claim(ConflictResolver conflictResolver, IPv4Record record) {
+        if (left == null && right == null) {
+            if (this.record == null) {
+                this.record = record;
+            } else {
+                this.record = conflictResolver.resolve(this.record, record);
+            }
+            return true;
+        } else {
+            if (defeatsAll(conflictResolver, record, getAllChildRecords())) {
+                left = null;
+                right = null;
+                this.record = record;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean defeatsAll(ConflictResolver conflictResolver, IPv4Record record, List<IPv4Record> childRecords) {
+        for (IPv4Record cr : childRecords) {
+            if (conflictResolver.resolve(record, cr) == cr) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public List<IPv4Record> getAllChildRecords() {
+        if (record != null) {
+            List<IPv4Record> records = new ArrayList<>();
+            records.add(record);
+            return records;
+        } else {
+            List<IPv4Record> records = new ArrayList<>();
+            if (left != null) {
+                records.addAll(left.getAllChildRecords());
+            }
+            if (right != null) {
+                records.addAll(right.getAllChildRecords());
+            }
+            return records;
+        }
     }
 }

@@ -29,16 +29,31 @@
  */
 package net.nro.stats.components.merger;
 
+import net.nro.stats.components.ConflictResolver;
 import net.nro.stats.components.parser.IPv4Record;
 import net.ripe.commons.ip.Ipv4Range;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 import static com.google.common.base.Strings.padStart;
 
+@Component
 public class IPv4Merger {
 
-    public void merge(List<IPv4Record> records) {
+    Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    ConflictResolver conflictResolver;
+
+    @Autowired
+    public IPv4Merger(ConflictResolver conflictResolver) {
+        this.conflictResolver = conflictResolver;
+    }
+
+    public List<IPv4Record> merge(List<IPv4Record> records) {
         IPv4Node root = new IPv4Node(0, 'x', null);
         IPv4Node node;
         for (IPv4Record record : records) {
@@ -53,8 +68,18 @@ public class IPv4Merger {
                         node = node.getRightNode();
                     }
                 }
-                node.addRecords(record.clone(r));
+                IPv4Record modifiedRecord = record.clone(r);
+
+                if (node.claim(conflictResolver, modifiedRecord)) {
+                    //This one claimed it.. so all good
+                } else {
+                    //child has some with higher priority
+                    logger.warn("Unable to claim {}", r);
+                }
             }
         }
+
+
+        return root.getAllChildRecords();
     }
 }
