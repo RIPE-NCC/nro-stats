@@ -44,17 +44,17 @@ public class Merger {
             mergedIPv4Lines = inputLinesPerRIR.get(prio).stream()
                     .filter(record -> record instanceof IPv4Record)
                     .map(record -> new PrioritizedRecord<IPv4Record>(prio, (IPv4Record)record))
-                    .sorted((o1, o2) -> ((IPv4Record)o1.getRecord()).getComparator().compare(o1, o2))
+                    .sorted((o1, o2) -> ((IPv4Record)o1.getRecord()).getComparator().compare(o1.getRecord().getRange(), o2.getRecord().getRange()))
                     .collect(Collectors.toList());
             mergedIPv6Lines = inputLinesPerRIR.get(prio).stream()
                     .filter(record -> record instanceof IPv6Record)
                     .map(record -> new PrioritizedRecord<IPv6Record>(prio, (IPv6Record)record))
-                    .sorted((o1, o2) -> ((IPv6Record)o1.getRecord()).getComparator().compare(o1, o2))
+                    .sorted((o1, o2) -> ((IPv6Record)o1.getRecord()).getComparator().compare(o1.getRecord().getRange(), o2.getRecord().getRange()))
                     .collect(Collectors.toList());
             mergedASNLines = inputLinesPerRIR.get(prio).stream()
                     .filter(record -> record instanceof ASNRecord)
                     .map(record -> new PrioritizedRecord<ASNRecord>(prio, (ASNRecord)record))
-                    .sorted((o1, o2) -> ((ASNRecord)o1.getRecord()).getComparator().compare(o1, o2))
+                    .sorted((o1, o2) -> ((ASNRecord)o1.getRecord()).getComparator().compare(o1.getRecord().getRange(), o2.getRecord().getRange()))
                     .collect(Collectors.toList());
 
 
@@ -76,7 +76,7 @@ public class Merger {
                 results.add(lines.get(i).getRecord());
             }
             else {
-                logger.info("Conflict: " + lines.get(i).toString());
+                logger.info("Conflict: " + lines.get(i).getRecord().toString());
             }
         }
         return results;
