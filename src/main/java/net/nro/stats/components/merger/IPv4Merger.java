@@ -27,38 +27,34 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package net.nro.stats.components.parser;
+package net.nro.stats.components.merger;
 
-import org.apache.commons.csv.CSVRecord;
-import org.junit.Before;
-import org.junit.Test;
+import net.nro.stats.components.parser.IPv4Record;
+import net.ripe.commons.ip.Ipv4Range;
 
-import static org.junit.Assert.assertTrue;
+import java.util.List;
 
-public class HeaderTest extends LineTestBase {
+import static com.google.common.base.Strings.padStart;
 
-    @Before
-    public void setUp() throws Exception {
-        createRawLines("parser/header.txt");
-    }
+public class IPv4Merger {
 
-    @Test
-    public void testFits() throws Exception {
-        for(CSVRecord line : lines) {
-            assertTrue(String.format("line %d should fit Header", line.getRecordNumber()), Header.fits(line));
+    public void merge(List<IPv4Record> records) {
+        IPv4Node root = new IPv4Node(0, 'x', null);
+        IPv4Node node;
+        for (IPv4Record record : records) {
+            List<Ipv4Range> range = record.getRange().splitToPrefixes();
+            for (Ipv4Range r : range) {
+                node = root;
+                char[] binary = padStart(r.start().asBigInteger().toString(2), 32, '0').substring(0, 33 - Long.toBinaryString(r.size()).length()).toCharArray();
+                for (char c: binary) {
+                    if (c == '0') {
+                        node = node.getLeftNode();
+                    } else { // c =='1'
+                        node = node.getRightNode();
+                    }
+                }
+                node.addRecords(record.clone(r));
+            }
         }
-    }
-
-    @Test
-    public void testValuesCorrect() throws Exception {
-        CSVRecord line1 = lines.iterator().next();
-        Header header1 = new Header(line1);
-        assertTrue("Header field not correct: version", line1.get(0).equals(header1.getVersion()));
-        assertTrue("Header field not correct: registry", line1.get(1).equals(header1.getRegistry()));
-        assertTrue("Header field not correct: serial", line1.get(2).equals(header1.getSerial()));
-        assertTrue("Header field not correct: records", line1.get(3).equals(header1.getRecords()));
-        assertTrue("Header field not correct: startDate", line1.get(4).equals(header1.getStartDate()));
-        assertTrue("Header field not correct: endDate", line1.get(5).equals(header1.getEndDate()));
-        assertTrue("Header field not correct: utcOffset", line1.get(6).equals(header1.getUtcOffset()));
     }
 }

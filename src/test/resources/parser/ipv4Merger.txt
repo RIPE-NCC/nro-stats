@@ -1,0 +1,3 @@
+ripencc|AU|ipv4|1.0.0.0|16777216|20110811|assigned|A91872ED
+ripencc|NL|ipv4|2.0.0.0|16777216|20120911|assigned|A91875ED
+apnic|CN|ipv4|1.0.1.0|256|20110414|allocated|A92E1062|ext4|ext5|ext6
