@@ -27,38 +27,26 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package net.nro.stats.components.parser;
+package net.nro.stats.resources;
 
-import net.ripe.commons.ip.Ipv6;
-import net.ripe.commons.ip.Ipv6Range;
-import net.ripe.commons.ip.StartAndSizeComparator;
-import org.apache.commons.csv.CSVRecord;
+import net.nro.stats.components.parser.Line;
 
-import java.util.Comparator;
+import java.util.List;
 
-public class IPv6Record extends Record {
+public class ParsedRIRStats {
+    private List<Line> lines;
+    private ResourceHolderConfig rir;
 
-    public IPv6Record(String registry, String countryCode, String start, String value, String date, String status, String regId, String... extensions) {
-        super(registry, countryCode, "ipv6", start, value, date, status, regId, extensions);
+    public ParsedRIRStats(List<Line> lines, ResourceHolderConfig rir) {
+        this.lines = lines;
+        this.rir = rir;
     }
 
-    public IPv6Record(CSVRecord line) {
-        super(line);
+    public List<Line> getLines() {
+        return lines;
     }
 
-    public static boolean fits(CSVRecord line) {
-        return line.size() > 6 && "ipv6".equals(line.get(2));
-    }
-
-    @Override
-    public Ipv6Range getRange() {
-        Ipv6 start = Ipv6.of(getStart());
-        int prefix = Integer.parseInt(getValue());
-        return Ipv6Range.from(start).andPrefixLength(prefix);
-    }
-
-    @Override
-    public Comparator getComparator() {
-        return StartAndSizeComparator.<Ipv6, Ipv6Range>get();
+    public ResourceHolderConfig getRir() {
+        return rir;
     }
 }

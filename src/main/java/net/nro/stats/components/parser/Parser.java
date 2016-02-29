@@ -45,7 +45,7 @@ public class Parser {
                 } else if (ASNRecord.fits(line)) {
                     fileContent.add(new ASNRecord(line));
                 } else {
-                    throw new RuntimeException("Malformed line number " + line.getRecordNumber() + "\n" + line.toString());
+                    logger.warn("Malformed line number " + line.getRecordNumber() + "\n" + line.toString());
                 }
              }
         } catch (IOException e) {

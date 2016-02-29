@@ -34,11 +34,13 @@ public class IPv4RecordTest extends LineTestBase {
             assertEquals("IPv4Record field not correct: value", line.get(4), record.getValue());
             assertEquals("IPv4Record field not correct: date", line.get(5), record.getDate());
             assertEquals("IPv4Record field not correct: status", line.get(6), record.getStatus());
-            assertEquals("IPv4Record field not correct: regId", line.get(7), record.getRegId());
+            if (line.size() > 7) {
+                assertEquals("IPv4Record field not correct: regId", line.get(7), record.getRegId());
 
-            assertEquals("IPv4Record: number of extensions does not match line", line.size() - 8 , record.getExtensions().length);
-            for (int i = 0; i < record.getExtensions().length; i++) {
-                assertEquals(String.format("extension %d does not match on line %d", i, line.getRecordNumber()), record.getExtensions()[i], line.get(i + 8));
+                assertEquals("IPv4Record: number of extensions does not match line", line.size() - 8, record.getExtensions().length);
+                for (int i = 0; i < record.getExtensions().length; i++) {
+                    assertEquals(String.format("extension %d does not match on line %d", i, line.getRecordNumber()), record.getExtensions()[i], line.get(i + 8));
+                }
             }
         }
     }
@@ -46,13 +48,13 @@ public class IPv4RecordTest extends LineTestBase {
     @Test
     public void testIpRangeConversion() throws Exception {
         IPv4Record record1 = new IPv4Record("", "", "0.0.0.0", "1", "", "", "");
-        assertEquals("", record1.getRange(), Ipv4Range.from(Ipv4.of("0.0.0.0")).to(Ipv4.of("0.0.0.0")));
+        assertEquals("", Ipv4Range.from(Ipv4.of("0.0.0.0")).to(Ipv4.of("0.0.0.0")), record1.getRange());
 
         IPv4Record record2 = new IPv4Record("", "", "100.0.0.0", "256", "", "", "");
-        assertEquals("", record2.getRange(), Ipv4Range.from(Ipv4.of("100.0.0.0")).to(Ipv4.of("100.0.0.255")));
+        assertEquals("", Ipv4Range.from(Ipv4.of("100.0.0.0")).to(Ipv4.of("100.0.0.255")), record2.getRange());
 
         IPv4Record record3 = new IPv4Record("", "", "192.168.0.0", "1024", "", "", "");
-        assertEquals("", record3.getRange(), Ipv4Range.from(Ipv4.of("192.168.0.0")).to(Ipv4.of("192.168.3.255")));
+        assertEquals("", Ipv4Range.from(Ipv4.of("192.168.0.0")).to(Ipv4.of("192.168.3.255")), record3.getRange());
 
     }
 }

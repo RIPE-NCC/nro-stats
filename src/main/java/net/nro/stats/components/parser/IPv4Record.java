@@ -34,6 +34,7 @@ import net.ripe.commons.ip.Ipv4Range;
 import net.ripe.commons.ip.StartAndSizeComparator;
 import org.apache.commons.csv.CSVRecord;
 
+import java.math.BigInteger;
 import java.util.Comparator;
 
 public class IPv4Record extends Record {
@@ -47,20 +48,20 @@ public class IPv4Record extends Record {
     }
 
     public static boolean fits(CSVRecord line) {
-        return line.size() > 7 && "ipv4".equals(line.get(2));
+        return line.size() > 6 && "ipv4".equals(line.get(2));
     }
 
     @Override
     public Ipv4Range getRange() {
         Ipv4 start = Ipv4.of(getStart());
-        int prefix = 33 - Long.toBinaryString(Long.parseLong(getValue())).length();
-        return Ipv4Range.from(start).andPrefixLength(prefix);
+        BigInteger endInt = start.asBigInteger().add(BigInteger.valueOf(Long.parseLong(getValue()) - 1));
+        Ipv4 end = Ipv4.of(endInt);
+        return Ipv4Range.from(start).to(end);
     }
 
     @Override
     public Comparator getComparator() {
         return StartAndSizeComparator.<Ipv4, Ipv4Range>get();
     }
-
 
 }

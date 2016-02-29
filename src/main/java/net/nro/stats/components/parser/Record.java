@@ -67,12 +67,19 @@ public abstract class Record implements Line {
         this.value = line.get(4);
         this.date = line.get(5);
         this.status = line.get(6);
-        this.regId = line.get(7);
 
-        String[] exts = new String[line.size() - 8];
-        for (int i = 8; i < line.size(); i++) {
-            exts[i - 8] = line.get(i);
+        String[] exts;
+        if (line.size() > 7) {
+            this.regId = line.get(7);
+            exts = new String[line.size() - 8];
+            for (int i = 8; i < line.size(); i++) {
+                exts[i - 8] = line.get(i);
+            }
+        } else {
+            this.regId = "";
+            exts = new String[0];
         }
+
         this.extensions = exts;
     }
 
@@ -123,6 +130,12 @@ public abstract class Record implements Line {
     public abstract AbstractRange getRange();
 
     public abstract Comparator getComparator();
+
+    // TODO:
+    @Override
+    public String toString() {
+        return super.toString();
+    }
 }
 
 

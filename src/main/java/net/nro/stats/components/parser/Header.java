@@ -75,6 +75,7 @@ public class Header implements Line {
     }
 
     public static boolean fits(CSVRecord line) {
+        // Afrinic still has version '2' in their extended-delegated stats
         return line.size() == 7 && ("2.3".equals(line.get(0)) || "2".equals(line.get(0)));
     }
 
