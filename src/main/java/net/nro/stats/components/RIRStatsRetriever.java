@@ -31,18 +31,14 @@ package net.nro.stats.components;
 
 import net.nro.stats.resources.RIRStats;
 import net.nro.stats.resources.ResourceHolderConfig;
-import org.apache.commons.io.IOUtils;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -50,29 +46,16 @@ import java.util.stream.Collectors;
 public class RIRStatsRetriever {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public List<RIRStats> fetchAll(List<ResourceHolderConfig> rirConfig) {
-        return rirConfig
-                .parallelStream()
-                .filter(r -> !StringUtils.isEmpty(r.getUrl()))
-                .map(rir -> {
-                    try (CloseableHttpClient httpClient = HttpClientBuilder.create().build();
-                         CloseableHttpResponse response = httpClient.execute(new HttpGet(rir.getUrl()))) {
+    @Autowired
+    URIBytesRetriever retriever;
 
-                        if (response.getStatusLine().getStatusCode() == 200) {
-                            try (InputStream is = response.getEntity().getContent()) {
-                                byte[] content = IOUtils.toByteArray(is);
-                                return new RIRStats(rir, content);
-                            } catch (Exception e) {
-                                logger.error("Failed to get the content of the file. ", e);
-                                throw new RuntimeException("Failed to get the content of the file.");
-                            }
-                        } else {
-                            logger.error("Invalid response from RIR {}, {}", rir, response.getStatusLine().getStatusCode());
-                            throw new RuntimeException(String.format("Invalid response from RIR %s ", rir));
-                        }
-                    } catch (IOException io) {
-                        throw new RuntimeException("Unable to fetch rir resource", io);
-                    }
+    public List<RIRStats> fetchAll(List<ResourceHolderConfig> rirConfig) {
+        logger.debug("fetchAll");
+        return rirConfig
+                .stream()
+                .map(rir -> {
+                    logger.debug("Fetching: " + rir);
+                    return new RIRStats(rir, retriever.retrieveBytes(rir.getUri()));
                 }).collect(Collectors.toList());
     }
 }

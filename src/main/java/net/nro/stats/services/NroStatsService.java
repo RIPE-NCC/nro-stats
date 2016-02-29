@@ -32,6 +32,7 @@ package net.nro.stats.services;
 import net.nro.stats.components.Merger;
 import net.nro.stats.components.RIRStatsRetriever;
 import net.nro.stats.components.StatsWriter;
+import net.nro.stats.components.URIBytesRetriever;
 import net.nro.stats.components.Validator;
 import net.nro.stats.components.parser.Line;
 import net.nro.stats.components.parser.Parser;
@@ -69,12 +70,13 @@ public class NroStatsService {
     @Autowired
     RIRStatsRetriever rirStatsRetriever;
 
+
     public void generate() {
         logger.info("Generating Extended NRO Stats");
         try {
             List<RIRStats> rirStats = rirStatsRetriever.fetchAll(resourceHolders);
 
-            List<List<Line>> sourceLinesPerRIR = rirStats.parallelStream().map(stat -> {
+            List<List<Line>> sourceLinesPerRIR = rirStats.stream().map(stat -> {
                 return parser.parse(stat.getContent());
             }).collect(Collectors.toList());
 
@@ -89,4 +91,5 @@ public class NroStatsService {
             logger.error("Failed while generating NRO Extended stats", e);
         }
     }
+
 }

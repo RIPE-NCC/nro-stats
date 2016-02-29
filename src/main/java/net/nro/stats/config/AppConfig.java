@@ -36,6 +36,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,7 +50,7 @@ public class AppConfig {
     private static final String URL_IDENTIFIER = ".url";
 
     @Bean
-    public List<ResourceHolderConfig> resourceHolders() {
+    public List<ResourceHolderConfig> resourceHolders() throws URISyntaxException {
         List<ResourceHolderConfig> resourceHolders = new ArrayList<>();
         for (String rir : env.getProperty("nro.stats.extended.order").split(",")) {
             String url = env.getProperty(PRE_IDENTIFIER + rir + URL_IDENTIFIER);

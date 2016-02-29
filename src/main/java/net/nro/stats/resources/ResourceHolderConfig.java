@@ -29,28 +29,31 @@
  */
 package net.nro.stats.resources;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
 public class ResourceHolderConfig {
     private ResourceHolder resourceHolder;
-    private String url;
+    private URI uri;
 
-    public ResourceHolderConfig(ResourceHolder resourceHolder, String url) {
+    public ResourceHolderConfig(ResourceHolder resourceHolder, String uri) throws URISyntaxException {
         this.resourceHolder = resourceHolder;
-        this.url = url;
+        this.uri = new URI(uri);
     }
 
     public ResourceHolder getResourceHolder() {
         return resourceHolder;
     }
 
-    public String getUrl() {
-        return url;
+    public URI getUri() {
+        return uri;
     }
 
     @Override
     public String toString() {
         return "ResourceHolderConfig{" +
                 "resourceHolder=" + resourceHolder +
-                ", url='" + url + '\'' +
+                ", url='" + uri + '\'' +
                 '}';
     }
 }

@@ -1,9 +1,11 @@
 package net.nro.stats.components.parser;
 
+import net.nro.stats.components.FileURIBytesRetriever;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.*;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
 
@@ -12,6 +14,7 @@ import static org.junit.Assert.assertTrue;
 public class ParserTest {
 
     private Parser sut;
+    private FileURIBytesRetriever bytesRetriever = new FileURIBytesRetriever();
 
     @Before
     public void beforeEach() {
@@ -42,9 +45,13 @@ public class ParserTest {
     private void testFileAndAssertLineCount(String filePath, int expectedRows, String message) throws IOException {
         URL testFile = this.getClass().getClassLoader().getResource(filePath);
         assert testFile != null;
-        String testFilePath = testFile.getPath();
-        List<Line> lines = sut.parse(bytesFromFile(testFilePath));
-        assertTrue(message, lines.size() == expectedRows);
+        try {
+            byte[] bytes = bytesRetriever.retrieveBytes(testFile.toURI());
+            List<Line> lines = sut.parse(bytes);
+            assertTrue(message, lines.size() == expectedRows);
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
     }
 
     public byte[] bytesFromFile(String filePath) throws IOException {
