@@ -31,6 +31,7 @@ package net.nro.stats.components.merger;
 
 import net.nro.stats.components.CSVRecordUtil;
 import net.nro.stats.components.ConflictResolver;
+import net.nro.stats.components.parser.IPv4Record;
 import net.nro.stats.components.parser.IPv6Record;
 import org.apache.commons.csv.CSVRecord;
 import org.junit.Assert;
@@ -48,38 +49,38 @@ public class IPv6MergerTest {
 
     @Test
     public void basicOK() throws Exception {
-        Iterable<CSVRecord> lines = CSVRecordUtil.read(
-                new StringReader("arin||ipv6|2620:101:9800::|37||available|\n" +
-                        "arin||ipv6|2620:101:a000::|47||reserved|\n"));
+        List<IPv6Record> inputRecords = new ArrayList<>();
+        inputRecords.add(createRecord("arin", "2620:101:9800::", "37"));
+        inputRecords.add(createRecord("arin", "2620:101:a000::", "47"));
 
-        List<IPv6Record> ipv6Records = getiPv6Records(lines);
-
-        List<IPv6Record> mergedRecords = merger.merge(ipv6Records);
+        List<IPv6Record> mergedRecords = merger.merge(inputRecords);
         Assert.assertEquals(2, mergedRecords.size());
     }
 
     @Test
     public void basicConflictResolutionHigherFirst() throws Exception {
-        Iterable<CSVRecord> lines = CSVRecordUtil.read(
-                new StringReader("arin||ipv6|2620:101:9800::|37||available|\n" +
-                        "ripencc||ipv6|2620:101:9800::|37||available|\n"));
+        List<IPv6Record> inputRecords = new ArrayList<>();
+        inputRecords.add(createRecord("arin", "2620:101:9800::", "37"));
+        inputRecords.add(createRecord("ripencc", "2620:101:9800::", "37"));
 
-        List<IPv6Record> ipv6Records = getiPv6Records(lines);
-
-        List<IPv6Record> mergedRecords = merger.merge(ipv6Records);
+        List<IPv6Record> mergedRecords = merger.merge(inputRecords);
+        // only one accepted
         Assert.assertEquals(1, mergedRecords.size());
+        // the newer claim is accepted
+        Assert.assertEquals("", "arin", mergedRecords.get(0).getRegistry());
     }
 
     @Test
     public void basicConflictResolutionLowerFirst() throws Exception {
-        Iterable<CSVRecord> lines = CSVRecordUtil.read(
-                new StringReader("ripencc||ipv6|2620:101:9800::|37||available|\n" +
-                        "arin||ipv6|2620:101:9800::|37||available|\n"));
+        List<IPv6Record> inputRecords = new ArrayList<>();
+        inputRecords.add(createRecord("ripencc", "2620:101:9800::", "37"));
+        inputRecords.add(createRecord("arin", "2620:101:9800::", "37"));
 
-        List<IPv6Record> ipv6Records = getiPv6Records(lines);
-
-        List<IPv6Record> mergedRecords = merger.merge(ipv6Records);
+        List<IPv6Record> mergedRecords = merger.merge(inputRecords);
+        // only one accepted
         Assert.assertEquals(1, mergedRecords.size());
+        // the newer claim is accepted
+        Assert.assertEquals("", "arin", mergedRecords.get(0).getRegistry());
     }
 
     private List<IPv6Record> getiPv6Records(Iterable<CSVRecord> lines) {
@@ -88,5 +89,9 @@ public class IPv6MergerTest {
             ipv6Records.add(new IPv6Record(line));
         }
         return ipv6Records;
+    }
+
+    private IPv6Record createRecord(String registry, String startIp, String addressCount) {
+        return new IPv6Record(registry, "NL", startIp, addressCount, null, null, null);
     }
 }
