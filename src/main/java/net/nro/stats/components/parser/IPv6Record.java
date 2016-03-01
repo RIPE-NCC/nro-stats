@@ -29,8 +29,6 @@
  */
 package net.nro.stats.components.parser;
 
-import net.ripe.commons.ip.AbstractRange;
-import net.ripe.commons.ip.Ipv4Range;
 import net.ripe.commons.ip.Ipv6;
 import net.ripe.commons.ip.Ipv6Range;
 import net.ripe.commons.ip.PrefixUtils;
@@ -39,7 +37,7 @@ import org.apache.commons.csv.CSVRecord;
 
 import java.util.Comparator;
 
-public class IPv6Record extends Record {
+public class IPv6Record extends Record<Ipv6Range> {
 
     public IPv6Record(String registry, String countryCode, String start, String value, String date, String status, String regId, String... extensions) {
         super(registry, countryCode, "ipv6", start, value, date, status, regId, extensions);
@@ -66,8 +64,8 @@ public class IPv6Record extends Record {
     }
 
     @Override
-    public <T extends Record, R extends AbstractRange> T clone(R range) {
-        return (T)(new IPv6Record(getRegistry(), getCountryCode(), range.start().toString(),
-                String.valueOf(PrefixUtils.getPrefixLength(((Ipv6Range) range))), getDate(), getStatus(),getRegId(), getExtensions()));
+    public IPv6Record clone(Ipv6Range range) {
+        return new IPv6Record(getRegistry(), getCountryCode(), range.start().toString(),
+                String.valueOf(PrefixUtils.getPrefixLength(range)), getDate(), getStatus(),getRegId(), getExtensions());
     }
 }

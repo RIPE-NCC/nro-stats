@@ -32,76 +32,44 @@ package net.nro.stats.components.merger;
 import net.nro.stats.components.ConflictResolver;
 import net.nro.stats.components.parser.IPv4Record;
 import net.ripe.commons.ip.Ipv4Range;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static com.google.common.base.Strings.padEnd;
 import static com.google.common.base.Strings.padStart;
 
 @Component
-public class IPv4Merger {
-
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    private ConflictResolver conflictResolver;
+public class IPv4Merger extends IPMerger<IPv4Record, Ipv4Range> {
 
     @Autowired
     public IPv4Merger(ConflictResolver conflictResolver) {
-        this.conflictResolver = conflictResolver;
+        super(conflictResolver);
     }
 
-    public List<IPv4Record> merge(List<IPv4Record> recordsList) {
-        IPNode<IPv4Record> root = new IPNode<>(0, 'x', null);
-        IPNode<IPv4Record> node;
-        Queue<IPv4Record> records = new ConcurrentLinkedQueue<>();
-        records.addAll(recordsList);
-        IPv4Record record;
-        while ((record = records.poll()) != null) {
-            Queue<Ipv4Range> ranges = new ConcurrentLinkedQueue<>();
-            ranges.addAll(record.getRange().splitToPrefixes());
-            Ipv4Range range;
-            while ((range = ranges.poll()) != null) {
-                node = root;
-                String binaryRange = padStart(range.start().asBigInteger().toString(2), 32, '0').substring(0, 33 - Long.toBinaryString(range.size()).length());
-                for (char c : binaryRange.toCharArray()) {
-                    if (c == '0') {
-                        node = node.getLeftNode();
-                    } else { // c =='1'
-                        node = node.getRightNode();
-                    }
-                    if (node.getRecord() != null) {
-                        if (conflictResolver.resolve(node.getRecord(), record) == record) {
-                            logger.warn("Conflict found for {} b/w {} and {}", node.getRecord().getRange(), node.getRecord().getRegistry(), record.getRegistry());
-                            records.offer(node.getRecord());
-                            node.unclaim();
-                        }
-                    }
-                }
-                if (node.getRecord() == null) {
-                    IPv4Record modifiedRecord = record.clone(range);
+    @Override
+    public String getSignificantBinaryValues(Ipv4Range range) {
+        return padStart(range.start().asBigInteger().toString(2), 32, '0').substring(0, 33 - Long.toBinaryString(range.size()).length());
+    }
 
-                    if (!node.claim(conflictResolver, modifiedRecord)) {
-                        if (binaryRange.length() != 32) {
-                            logger.warn("Unable to claim {} by {}, splitting it and will try again.", range, record.getRegistry());
-                            String zeroRange = binaryRange + "0";
-                            ranges.offer(Ipv4Range.from(new BigInteger(padEnd(zeroRange, 32, '0'), 2)).andPrefixLength(zeroRange.length()));
-                            String oneRange = binaryRange + "1";
-                            ranges.offer(Ipv4Range.from(new BigInteger(padEnd(oneRange, 32, '0'), 2)).andPrefixLength(oneRange.length()));
-                        } else {
-                            logger.warn("Unable to claim {} by {}", range, record.getRegistry());
-                        }
-                    }
-                }
-            }
+    @Override
+    public List<Ipv4Range> prefixRanges(Ipv4Range range) {
+        return range.splitToPrefixes();
+    }
+
+    @Override
+    public List<Ipv4Range> splitRanges(Ipv4Range range) {
+        List<Ipv4Range> rangeList = new ArrayList<>();
+        if (range.size() > 1) {
+            String binaryRange = getSignificantBinaryValues(range);
+            String zeroRange = binaryRange + "0";
+            rangeList.add(Ipv4Range.from(new BigInteger(padEnd(zeroRange, 32, '0'), 2)).andPrefixLength(zeroRange.length()));
+            String oneRange = binaryRange + "1";
+            rangeList.add(Ipv4Range.from(new BigInteger(padEnd(oneRange, 32, '0'), 2)).andPrefixLength(oneRange.length()));
         }
-
-        return root.getAllChildRecords();
+        return rangeList;
     }
 }

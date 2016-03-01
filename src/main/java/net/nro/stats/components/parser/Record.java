@@ -34,7 +34,7 @@ import org.apache.commons.csv.CSVRecord;
 
 import java.util.Comparator;
 
-public abstract class Record implements Line {
+public abstract class Record<R extends AbstractRange> implements Line {
     private final String registry;
     private final String countryCode;
     private final String type;
@@ -127,11 +127,11 @@ public abstract class Record implements Line {
         return extensions.length > 0;
     }
 
-    public abstract AbstractRange getRange();
+    public abstract R getRange();
 
     public abstract Comparator getComparator();
 
-    public abstract <T extends Record, R extends AbstractRange> T clone(R range);
+    public abstract <T extends Record> T clone(R range);
 
     // TODO:
     @Override

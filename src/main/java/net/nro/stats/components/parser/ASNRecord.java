@@ -29,7 +29,6 @@
  */
 package net.nro.stats.components.parser;
 
-import net.ripe.commons.ip.AbstractRange;
 import net.ripe.commons.ip.Asn;
 import net.ripe.commons.ip.AsnRange;
 import net.ripe.commons.ip.StartAndSizeComparator;
@@ -37,7 +36,7 @@ import org.apache.commons.csv.CSVRecord;
 
 import java.util.Comparator;
 
-public class ASNRecord extends Record {
+public class ASNRecord extends Record<AsnRange> {
 
     public ASNRecord(String registry, String countryCode, String start, String value, String date, String status, String regId, String... extensions) {
         super(registry, countryCode, "asn", start, value, date, status, regId, extensions);
@@ -54,7 +53,7 @@ public class ASNRecord extends Record {
     @Override
     public AsnRange getRange() {
         Asn start = Asn.of(getStart());
-        Asn end = Asn.of(Long.parseLong(getStart()) + Long.parseLong(getValue()));
+        Asn end = Asn.of(Long.parseLong(getStart()) + Long.parseLong(getValue()) - 1);
         return AsnRange.from(start).to(end);
     }
 
@@ -64,7 +63,7 @@ public class ASNRecord extends Record {
     }
 
     @Override
-    public <T extends Record, R extends AbstractRange> T clone(R range) {
-        return (T) new ASNRecord(getRegistry(), getCountryCode(), range.start().toString(), range.size().toString(), getDate(), getStatus(), getRegId(), getExtensions());
+    public ASNRecord clone(AsnRange range) {
+        return new ASNRecord(getRegistry(), getCountryCode(), range.start().toString(), range.size().toString(), getDate(), getStatus(), getRegId(), getExtensions());
     }
 }

@@ -75,7 +75,7 @@ public class ASNRecordTest extends LineTestBase {
     @Test
     public void testASNRangeConversion() throws Exception {
         ASNRecord record1 = new ASNRecord("", "", "1", "10", "", "", "");
-        assertEquals("", record1.getRange(), AsnRange.from(Asn.of(1L)).to(Asn.of(11L)));
+        assertEquals("", record1.getRange(), AsnRange.from(Asn.of(1L)).to(Asn.of(10L)));
 
     }
 }

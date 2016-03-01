@@ -33,76 +33,45 @@ import net.nro.stats.components.ConflictResolver;
 import net.nro.stats.components.parser.IPv6Record;
 import net.ripe.commons.ip.Ipv6Range;
 import net.ripe.commons.ip.PrefixUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static com.google.common.base.Strings.padEnd;
 import static com.google.common.base.Strings.padStart;
 
 @Component
-public class IPv6Merger {
-
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    private ConflictResolver conflictResolver;
+public class IPv6Merger extends IPMerger<IPv6Record, Ipv6Range> {
 
     @Autowired
     public IPv6Merger(ConflictResolver conflictResolver) {
-        this.conflictResolver = conflictResolver;
+        super(conflictResolver);
     }
 
-    public List<IPv6Record> merge(List<IPv6Record> recordsList) {
-        IPNode<IPv6Record> root = new IPNode<>(0, 'x', null);
-        IPNode<IPv6Record> node;
-        Queue<IPv6Record> records = new ConcurrentLinkedQueue<>();
-        records.addAll(recordsList);
-        IPv6Record record;
-        while ((record = records.poll()) != null) {
-            Queue<Ipv6Range> ranges = new ConcurrentLinkedQueue<>();
-            ranges.addAll(record.getRange().splitToPrefixes());
-            Ipv6Range range;
-            while ((range = ranges.poll()) != null) {
-                node = root;
-                String binaryRange = padStart(range.start().asBigInteger().toString(2), 128, '0').substring(0, 129 - PrefixUtils.getPrefixLength(range));
-                for (char c : binaryRange.toCharArray()) {
-                    if (c == '0') {
-                        node = node.getLeftNode();
-                    } else { // c =='1'
-                        node = node.getRightNode();
-                    }
-                    if (node.getRecord() != null) {
-                        if (conflictResolver.resolve(node.getRecord(), record) == record) {
-                            logger.warn("Conflict found for {} b/w {} and {}", node.getRecord().getRange(), node.getRecord().getRegistry(), record.getRegistry());
-                            records.offer(node.getRecord());
-                            node.unclaim();
-                        }
-                    }
-                }
-                if (node.getRecord() == null) {
-                    IPv6Record modifiedRecord = record.clone(range);
 
-                    if (!node.claim(conflictResolver, modifiedRecord)) {
-                        if (binaryRange.length() != 128) {
-                            logger.warn("Unable to claim {} by {}, splitting it and will try again.", range, record.getRegistry());
-                            String zeroRange = binaryRange + "0";
-                            ranges.offer(Ipv6Range.from(new BigInteger(padEnd(zeroRange, 128, '0'), 2)).andPrefixLength(zeroRange.length()));
-                            String oneRange = binaryRange + "1";
-                            ranges.offer(Ipv6Range.from(new BigInteger(padEnd(oneRange, 128, '0'), 2)).andPrefixLength(oneRange.length()));
-                        } else {
-                            logger.warn("Unable to claim {} by {}", range, record.getRegistry());
-                        }
-                    }
-                }
-            }
+    @Override
+    public List<Ipv6Range> prefixRanges(Ipv6Range range) {
+        return range.splitToPrefixes();
+    }
+
+    @Override
+    public String getSignificantBinaryValues(Ipv6Range range) {
+        return padStart(range.start().asBigInteger().toString(2), 128, '0').substring(0, 129 - PrefixUtils.getPrefixLength(range));
+    }
+
+    @Override
+    public List<Ipv6Range> splitRanges(Ipv6Range range) {
+        List<Ipv6Range> ranges = new ArrayList<>();
+        if (range.size().longValue() > 1) {
+            String binaryRange = getSignificantBinaryValues(range);
+            String zeroRange = binaryRange + "0";
+            ranges.add(Ipv6Range.from(new BigInteger(padEnd(zeroRange, 128, '0'), 2)).andPrefixLength(zeroRange.length()));
+            String oneRange = binaryRange + "1";
+            ranges.add(Ipv6Range.from(new BigInteger(padEnd(oneRange, 128, '0'), 2)).andPrefixLength(oneRange.length()));
         }
-
-        return root.getAllChildRecords();
+        return ranges;
     }
 }

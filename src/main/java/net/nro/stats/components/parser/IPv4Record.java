@@ -29,7 +29,6 @@
  */
 package net.nro.stats.components.parser;
 
-import net.ripe.commons.ip.AbstractRange;
 import net.ripe.commons.ip.Ipv4;
 import net.ripe.commons.ip.Ipv4Range;
 import net.ripe.commons.ip.StartAndSizeComparator;
@@ -38,7 +37,7 @@ import org.apache.commons.csv.CSVRecord;
 import java.math.BigInteger;
 import java.util.Comparator;
 
-public class IPv4Record extends Record {
+public class IPv4Record extends Record<Ipv4Range> {
 
     public IPv4Record(String registry, String countryCode, String start, String value, String date, String status, String regId, String... extensions) {
         super(registry, countryCode, "ipv4", start, value, date, status, regId, extensions);
@@ -66,8 +65,8 @@ public class IPv4Record extends Record {
     }
 
     @Override
-    public <T extends Record, R extends AbstractRange> T clone(R range) {
-        return (T)(new IPv4Record(getRegistry(), getCountryCode(), range.start().toString(), range.size().toString(), getDate(), getStatus(),getRegId(), getExtensions()));
+    public IPv4Record clone(Ipv4Range range) {
+        return new IPv4Record(getRegistry(), getCountryCode(), range.start().toString(), range.size().toString(), getDate(), getStatus(),getRegId(), getExtensions());
     }
 
 }
