@@ -38,7 +38,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.math.BigInteger;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -68,10 +67,10 @@ public class IPv4Merger {
             Queue<Ipv4Range> ranges = new ConcurrentLinkedQueue<>();
             ranges.addAll(record.getRange().splitToPrefixes());
             Ipv4Range range;
-            while ((range=ranges.poll()) != null) {
+            while ((range = ranges.poll()) != null) {
                 node = root;
                 String binaryRange = padStart(range.start().asBigInteger().toString(2), 32, '0').substring(0, 33 - Long.toBinaryString(range.size()).length());
-                for (char c: binaryRange.toCharArray()) {
+                for (char c : binaryRange.toCharArray()) {
                     if (c == '0') {
                         node = node.getLeftNode();
                     } else { // c =='1'
@@ -89,11 +88,7 @@ public class IPv4Merger {
                 if (node.getRecord() == null) {
                     IPv4Record modifiedRecord = record.clone(range);
 
-                    if (node.claim(conflictResolver, modifiedRecord)) {
-                        //This one claimed it.. so all good
-                    } else {
-                        //child has some with higher priority
-                        //Split to lower range and try to gather it
+                    if (!node.claim(conflictResolver, modifiedRecord)) {
                         if (binaryRange.length() != 32) {
                             String zeroRange = binaryRange + "0";
                             ranges.offer(Ipv4Range.from(new BigInteger(padEnd(zeroRange, 32, '0'), 2)).andPrefixLength(zeroRange.length()));
