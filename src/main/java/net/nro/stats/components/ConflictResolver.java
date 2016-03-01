@@ -29,7 +29,7 @@
  */
 package net.nro.stats.components;
 
-import net.nro.stats.components.parser.IPv4Record;
+import net.nro.stats.components.parser.Record;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -45,7 +45,7 @@ public class ConflictResolver {
         this.registryPriorityOrder = registryPriorityOrder;
     }
 
-    public IPv4Record resolve(IPv4Record record1, IPv4Record record2) {
+    public <T extends Record> T resolve(T record1, T record2) {
         return (registryPriorityOrder.indexOf(record1.getRegistry()) > registryPriorityOrder.indexOf(record2.getRegistry())) ? record2 : record1;
     }
 }
