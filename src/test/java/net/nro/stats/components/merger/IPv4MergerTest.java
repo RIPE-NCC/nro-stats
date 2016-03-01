@@ -53,9 +53,7 @@ public class IPv4MergerTest extends LineTestBase {
         createRawLines("parser/ipv4Merger.txt");
     }
 
-
     @Test
-    @Ignore
     public void testBasic() {
         List<IPv4Record> ipv4Records = new ArrayList<>();
         for (CSVRecord line : lines) {

@@ -78,6 +78,7 @@ public class IPv4Merger {
                     }
                     if (node.getRecord() != null) {
                         if (conflictResolver.resolve(node.getRecord(), record) == record) {
+                            logger.warn("Conflict found for {} b/w {} and {}", node.getRecord().getRange(), node.getRecord().getRegistry(), record.getRegistry());
                             records.offer(node.getRecord());
                             node.unclaim();
                         } else {
@@ -95,8 +96,7 @@ public class IPv4Merger {
                             String oneRange = binaryRange + "1";
                             ranges.offer(Ipv4Range.from(new BigInteger(padEnd(oneRange, 32, '0'), 2)).andPrefixLength(oneRange.length()));
                         }
-                        logger.warn("Unable to claim {}", range);
-
+                        logger.warn("Unable to claim {} by {}", range, record.getRegistry());
                     }
                 }
             }
