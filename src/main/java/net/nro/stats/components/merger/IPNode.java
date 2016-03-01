@@ -30,18 +30,18 @@
 package net.nro.stats.components.merger;
 
 import net.nro.stats.components.ConflictResolver;
-import net.nro.stats.components.parser.IPv4Record;
+import net.nro.stats.components.parser.Record;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class IPv4Node {
+public class IPNode<R extends Record> {
     int level;
     char value;
-    IPv4Node parent, left, right;
-    private IPv4Record record;
+    IPNode<R> parent, left, right;
+    private R record;
 
-    public IPv4Node(int level, char value, IPv4Node parent) {
+    public IPNode(int level, char value, IPNode parent) {
         this.level = level;
         this.value = value;
         this.parent = parent;
@@ -51,25 +51,25 @@ public class IPv4Node {
         return (parent == null) ? "" : parent.getValue() + value;
     }
 
-    public IPv4Node getLeftNode() {
+    public IPNode<R> getLeftNode() {
         if (left == null) {
-            left = new IPv4Node(level + 1, '0', this);
+            left = new IPNode<>(level + 1, '0', this);
         }
         return left;
     }
 
-    public IPv4Node getRightNode() {
+    public IPNode<R> getRightNode() {
         if (right == null) {
-            right = new IPv4Node(level + 1, '1', this);
+            right = new IPNode<>(level + 1, '1', this);
         }
         return right;
     }
 
-    public IPv4Record getRecord() {
+    public R getRecord() {
         return record;
     }
 
-    public boolean claim(ConflictResolver conflictResolver, IPv4Record record) {
+    public boolean claim(ConflictResolver conflictResolver, R record) {
         if (left == null && right == null) {
             this.record = record;
             return true;
@@ -84,8 +84,8 @@ public class IPv4Node {
         return false;
     }
 
-    private boolean defeatsAll(ConflictResolver conflictResolver, IPv4Record record, List<IPv4Record> childRecords) {
-        for (IPv4Record cr : childRecords) {
+    private boolean defeatsAll(ConflictResolver conflictResolver, R record, List<R> childRecords) {
+        for (R cr : childRecords) {
             if (conflictResolver.resolve(record, cr) == cr) {
                 return false;
             }
@@ -93,13 +93,13 @@ public class IPv4Node {
         return true;
     }
 
-    public List<IPv4Record> getAllChildRecords() {
+    public List<R> getAllChildRecords() {
         if (record != null) {
-            List<IPv4Record> records = new ArrayList<>();
+            List<R> records = new ArrayList<>();
             records.add(record);
             return records;
         } else {
-            List<IPv4Record> records = new ArrayList<>();
+            List<R> records = new ArrayList<>();
             if (left != null) {
                 records.addAll(left.getAllChildRecords());
             }

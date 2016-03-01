@@ -30,8 +30,9 @@
 package net.nro.stats.components.merger;
 
 import net.nro.stats.components.ConflictResolver;
-import net.nro.stats.components.parser.IPv4Record;
-import net.ripe.commons.ip.Ipv4Range;
+import net.nro.stats.components.parser.IPv6Record;
+import net.ripe.commons.ip.Ipv6Range;
+import net.ripe.commons.ip.PrefixUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,30 +47,30 @@ import static com.google.common.base.Strings.padEnd;
 import static com.google.common.base.Strings.padStart;
 
 @Component
-public class IPv4Merger {
+public class IPv6Merger {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private ConflictResolver conflictResolver;
 
     @Autowired
-    public IPv4Merger(ConflictResolver conflictResolver) {
+    public IPv6Merger(ConflictResolver conflictResolver) {
         this.conflictResolver = conflictResolver;
     }
 
-    public List<IPv4Record> merge(List<IPv4Record> recordsList) {
-        IPNode<IPv4Record> root = new IPNode<>(0, 'x', null);
-        IPNode<IPv4Record> node;
-        Queue<IPv4Record> records = new ConcurrentLinkedQueue<>();
+    public List<IPv6Record> merge(List<IPv6Record> recordsList) {
+        IPNode<IPv6Record> root = new IPNode<>(0, 'x', null);
+        IPNode<IPv6Record> node;
+        Queue<IPv6Record> records = new ConcurrentLinkedQueue<>();
         records.addAll(recordsList);
-        IPv4Record record;
+        IPv6Record record;
         while ((record = records.poll()) != null) {
-            Queue<Ipv4Range> ranges = new ConcurrentLinkedQueue<>();
+            Queue<Ipv6Range> ranges = new ConcurrentLinkedQueue<>();
             ranges.addAll(record.getRange().splitToPrefixes());
-            Ipv4Range range;
+            Ipv6Range range;
             while ((range = ranges.poll()) != null) {
                 node = root;
-                String binaryRange = padStart(range.start().asBigInteger().toString(2), 32, '0').substring(0, 33 - Long.toBinaryString(range.size()).length());
+                String binaryRange = padStart(range.start().asBigInteger().toString(2), 128, '0').substring(0, 129 - PrefixUtils.getPrefixLength(range));
                 for (char c : binaryRange.toCharArray()) {
                     if (c == '0') {
                         node = node.getLeftNode();
@@ -85,15 +86,15 @@ public class IPv4Merger {
                     }
                 }
                 if (node.getRecord() == null) {
-                    IPv4Record modifiedRecord = record.clone(range);
+                    IPv6Record modifiedRecord = record.clone(range);
 
                     if (!node.claim(conflictResolver, modifiedRecord)) {
-                        if (binaryRange.length() != 32) {
+                        if (binaryRange.length() != 128) {
                             logger.warn("Unable to claim {} by {}, splitting it and will try again.", range, record.getRegistry());
                             String zeroRange = binaryRange + "0";
-                            ranges.offer(Ipv4Range.from(new BigInteger(padEnd(zeroRange, 32, '0'), 2)).andPrefixLength(zeroRange.length()));
+                            ranges.offer(Ipv6Range.from(new BigInteger(padEnd(zeroRange, 128, '0'), 2)).andPrefixLength(zeroRange.length()));
                             String oneRange = binaryRange + "1";
-                            ranges.offer(Ipv4Range.from(new BigInteger(padEnd(oneRange, 32, '0'), 2)).andPrefixLength(oneRange.length()));
+                            ranges.offer(Ipv6Range.from(new BigInteger(padEnd(oneRange, 128, '0'), 2)).andPrefixLength(oneRange.length()));
                         } else {
                             logger.warn("Unable to claim {} by {}", range, record.getRegistry());
                         }

@@ -29,6 +29,7 @@
  */
 package net.nro.stats.components.parser;
 
+import net.ripe.commons.ip.AbstractRange;
 import net.ripe.commons.ip.Ipv4;
 import net.ripe.commons.ip.Ipv4Range;
 import net.ripe.commons.ip.StartAndSizeComparator;
@@ -51,10 +52,6 @@ public class IPv4Record extends Record {
         return line.size() > 6 && "ipv4".equals(line.get(2));
     }
 
-    public IPv4Record clone(Ipv4Range range) {
-        return new IPv4Record(getRegistry(), getCountryCode(), range.start().toString(), range.size().toString(), getDate(), getStatus(),getRegId(), getExtensions());
-    }
-
     @Override
     public Ipv4Range getRange() {
         Ipv4 start = Ipv4.of(getStart());
@@ -66,6 +63,11 @@ public class IPv4Record extends Record {
     @Override
     public Comparator getComparator() {
         return StartAndSizeComparator.<Ipv4, Ipv4Range>get();
+    }
+
+    @Override
+    public <T extends Record, R extends AbstractRange> T clone(R range) {
+        return (T)(new IPv4Record(getRegistry(), getCountryCode(), range.start().toString(), range.size().toString(), getDate(), getStatus(),getRegId(), getExtensions()));
     }
 
 }

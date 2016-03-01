@@ -131,6 +131,8 @@ public abstract class Record implements Line {
 
     public abstract Comparator getComparator();
 
+    public abstract <T extends Record, R extends AbstractRange> T clone(R range);
+
     // TODO:
     @Override
     public String toString() {

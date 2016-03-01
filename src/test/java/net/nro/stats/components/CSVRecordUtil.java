@@ -27,47 +27,33 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package net.nro.stats.components.parser;
+package net.nro.stats.components;
 
-import net.ripe.commons.ip.AbstractRange;
-import net.ripe.commons.ip.Ipv4Range;
-import net.ripe.commons.ip.Ipv6;
-import net.ripe.commons.ip.Ipv6Range;
-import net.ripe.commons.ip.PrefixUtils;
-import net.ripe.commons.ip.StartAndSizeComparator;
+import net.nro.stats.components.parser.IPv6Record;
+import net.nro.stats.components.parser.Line;
+import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
+import org.junit.Assert;
+import org.junit.Test;
 
-import java.util.Comparator;
+import java.io.Reader;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
 
-public class IPv6Record extends Record {
+public class CSVRecordUtil {
 
-    public IPv6Record(String registry, String countryCode, String start, String value, String date, String status, String regId, String... extensions) {
-        super(registry, countryCode, "ipv6", start, value, date, status, regId, extensions);
+    public static Iterable<CSVRecord> read(Reader reader) throws Exception {
+        Iterable<CSVRecord> lines = CSVFormat
+                .DEFAULT
+                .withDelimiter('|')
+                .withCommentMarker('#') // only recognized at start of line!
+                .withRecordSeparator('\n')
+                .withIgnoreEmptyLines()
+                .withIgnoreSurroundingSpaces()
+                .parse(reader);
+        return lines;
+
     }
 
-    public IPv6Record(CSVRecord line) {
-        super(line);
-    }
-
-    public static boolean fits(CSVRecord line) {
-        return line.size() > 6 && "ipv6".equals(line.get(2));
-    }
-
-    @Override
-    public Ipv6Range getRange() {
-        Ipv6 start = Ipv6.of(getStart());
-        int prefix = Integer.parseInt(getValue());
-        return Ipv6Range.from(start).andPrefixLength(prefix);
-    }
-
-    @Override
-    public Comparator getComparator() {
-        return StartAndSizeComparator.<Ipv6, Ipv6Range>get();
-    }
-
-    @Override
-    public <T extends Record, R extends AbstractRange> T clone(R range) {
-        return (T)(new IPv6Record(getRegistry(), getCountryCode(), range.start().toString(),
-                String.valueOf(PrefixUtils.getPrefixLength(((Ipv6Range) range))), getDate(), getStatus(),getRegId(), getExtensions()));
-    }
 }
