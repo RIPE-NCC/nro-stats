@@ -89,7 +89,7 @@ public class IPv6MergerTest {
         inputRecords.add(createRecord("afrinic",    "2001:db8::", "64"));
         inputRecords.add(createRecord("apnic",      "2001:db8::", "68"));
         List<IPv6Record> mergedRecords = merger.merge(inputRecords);
-        Assert.assertEquals("newer claim on subrange leads to two range allocations", 2, mergedRecords.size());
+        Assert.assertEquals("newer claim on subrange leads to two range allocations", 5, mergedRecords.size());
         // apnic claim is for a subrange of afrinic claim
 //        Assert.assertTrue("Merger demotes older claim to subrange when newer claim on subrange", allocationExists(mergedRecords, "afrinic", "2001:db8:0000:0000:0000:0000:0000:0000/124") );
 //        Assert.assertTrue("Merger allocates newer claim on subrange of older claim", allocationExists(mergedRecords, "apnic", "2001:db8:0000:0000:0000:0000:0000:00f0/124") );

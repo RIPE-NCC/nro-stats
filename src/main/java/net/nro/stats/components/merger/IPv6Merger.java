@@ -59,13 +59,13 @@ public class IPv6Merger extends IPMerger<IPv6Record, Ipv6Range> {
 
     @Override
     public String getSignificantBinaryValues(Ipv6Range range) {
-        return padStart(range.start().asBigInteger().toString(2), 128, '0').substring(0, 129 - PrefixUtils.getPrefixLength(range));
+        return padStart(range.start().asBigInteger().toString(2), 128, '0').substring(0, PrefixUtils.getPrefixLength(range));
     }
 
     @Override
     public List<Ipv6Range> splitRanges(Ipv6Range range) {
         List<Ipv6Range> ranges = new ArrayList<>();
-        if (range.size().longValue() > 1) {
+        if (range.size().compareTo(BigInteger.ZERO) > 0) {
             String binaryRange = getSignificantBinaryValues(range);
             String zeroRange = binaryRange + "0";
             ranges.add(Ipv6Range.from(new BigInteger(padEnd(zeroRange, 128, '0'), 2)).andPrefixLength(zeroRange.length()));
