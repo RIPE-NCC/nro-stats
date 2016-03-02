@@ -27,43 +27,40 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package net.nro.stats.components.parser;
+package net.nro.stats.components.merger;
 
+import net.nro.stats.components.ConflictResolver;
+import net.nro.stats.components.parser.ASNRecord;
 import net.ripe.commons.ip.Asn;
 import net.ripe.commons.ip.AsnRange;
-import net.ripe.commons.ip.StartAndSizeComparator;
-import org.apache.commons.csv.CSVRecord;
+import org.junit.Assert;
+import org.junit.Test;
 
-import java.util.Comparator;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
-public class ASNRecord extends Record<AsnRange> {
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 
-    public ASNRecord(String registry, String countryCode, String start, String value, String date, String status, String regId, String... extensions) {
-        super(registry, countryCode, "asn", start, value, date, status, regId, extensions);
+public class AsnMergerTest {
+
+    private ConflictResolver resolver = new ConflictResolver(Arrays.asList("apnic,afrinic,arin,ripencc,lacnic".split(",")));
+    ASNMerger asnMerger = new ASNMerger(resolver);
+
+    @Test
+    public void testBasic() {
+        List<ASNRecord> records = new ArrayList<>();
+        records.add(createRecord("lacnic", "4", "4"));
+        records.add(createRecord("ripencc", "4", "3"));
+        records.add(createRecord("apnic", "8", "1"));
+        records.add(createRecord("apnic", "10", "1"));
+        List<ASNRecord> mergedRecords = asnMerger.merge(records);
+        assertEquals(4, mergedRecords.size());
+//        assertArrayEquals(records.toArray(), mergedRecords.toArray());
     }
 
-    public ASNRecord(CSVRecord line) {
-        super(line);
-    }
-
-    public static boolean fits(CSVRecord line) {
-        return line.size() > 6 && "asn".equals(line.get(2));
-    }
-
-    @Override
-    public AsnRange getRange() {
-        Asn start = Asn.of(getStart());
-        Asn end = Asn.of(Long.parseLong(getStart()) + Long.parseLong(getValue()) - 1);
-        return AsnRange.from(start).to(end);
-    }
-
-    @Override
-    public Comparator getComparator() {
-        return StartAndSizeComparator.<Asn, AsnRange>get();
-    }
-
-    @Override
-    public ASNRecord clone(AsnRange range) {
-        return new ASNRecord(getRegistry(), getCountryCode(), range.start().asBigInteger().toString(), range.size().toString(), getDate(), getStatus(), getRegId(), getExtensions());
+    private ASNRecord createRecord(String registry, String asn, String length) {
+        return new ASNRecord(registry, "NL", asn, length, "", "", "", "");
     }
 }

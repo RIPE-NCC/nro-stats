@@ -30,16 +30,67 @@
 package net.nro.stats.components;
 
 import net.nro.stats.components.parser.Line;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 
 // TODO: build me
 @Component
 public class StatsWriter {
+
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    @Value("${nro.stats.extended.output}")
+    private String folder;
+
     public void write(List<Line> targetLines) {
         // convert lines back to a file and write it
         // file should be put in 'nro.stats.extended.output'
+        Path outFolder = Paths.get(folder);
+        if (Files.notExists(outFolder)) {
+            logger.info("outFolder {} missing. Creating it", outFolder);
+            try {
+                Files.createDirectory(outFolder);
+            } catch (IOException io) {
+                logger.error("Unable to create out folder.", io);
+                throw new RuntimeException(io);
+            }
+        }
+        Path outFile = Paths.get(folder, "nro.stats.extended.output");
+        if (Files.exists(outFile)) {
+            logger.info("File {} already present, moving it", outFile);
+            try {
+                SimpleDateFormat df = new SimpleDateFormat("yyyy.MM.dd.hh.mm.ss");
+                Path outFileOld = Paths.get(folder, "nro.stats.extended.output." + df.format(Files.getLastModifiedTime(outFile).toMillis()));
+                Files.move(outFile, outFileOld, StandardCopyOption.ATOMIC_MOVE);
+            } catch (Exception e) {
+                logger.error("Unable to move to backup old file", e);
+                throw new RuntimeException(e);
+            }
+        }
+
+        Charset charset = Charset.forName("US-ASCII");
+        try (BufferedWriter writer = Files.newBufferedWriter(outFile, charset);) {
+            for (Line line : targetLines) {
+                writer.write(line.toString());
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            logger.error("Unable to write the output file");
+            throw new RuntimeException(e);
+        }
+
     }
 }

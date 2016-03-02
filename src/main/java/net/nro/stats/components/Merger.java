@@ -62,13 +62,11 @@ public class Merger {
 
     public List<Line> merge(List<ParsedRIRStats> parsedRIRStats) {
 
-
-
         List<IPv4Record> mergedIPv4Lines = new ArrayList<>();
         List<IPv6Record> mergedIPv6Lines = new ArrayList<>();
         List<ASNRecord> mergedASNLines = new ArrayList<>();
 
-        int i = 0;
+        //TODO Ordering is not important here... this can be removed.
         for( String rir : rirs) {
             ParsedRIRStats stats = parsedRIRStats
                     .stream()
@@ -79,7 +77,6 @@ public class Merger {
                             .equals(rir))
                     .collect(Collectors.toList())
                     .get(0);
-            final int prio = i;
             mergedIPv4Lines.addAll(stats.getLines().stream()
                     .filter(record -> record instanceof IPv4Record)
                     .map(record -> (IPv4Record)record)
@@ -92,8 +89,6 @@ public class Merger {
                     .filter(record -> record instanceof ASNRecord)
                     .map(record -> (ASNRecord)record)
                     .collect(Collectors.toList()));
-
-            i++;
         }
 
         List<Line> result  = new ArrayList<>();
@@ -101,21 +96,5 @@ public class Merger {
         result.addAll(iPv6Merger.merge(mergedIPv6Lines));
         result.addAll(asnMerger.merge(mergedASNLines));
         return result;
-    }
-
-    private <T extends Record> List<Line> handleConflicts(List<T> lines) {
-        List<Line> results = new ArrayList<>();
-
-        for(int i = 0; i < lines.size(); i++) {
-
-            if (i == 0 || !lines.get(i).getRange().overlaps(lines.get(i-1).getRange())) {
-
-                results.add(lines.get(i));
-            }
-            else {
-                logger.info("Conflict: " + lines.get(i).toString());
-            }
-        }
-        return results;
     }
 }
