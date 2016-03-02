@@ -29,7 +29,9 @@
  */
 package net.nro.stats.components;
 
+import net.nro.stats.components.merger.ASNMerger;
 import net.nro.stats.components.merger.IPv4Merger;
+import net.nro.stats.components.merger.IPv6Merger;
 import net.nro.stats.components.parser.*;
 import net.nro.stats.resources.ParsedRIRStats;
 import org.slf4j.Logger;
@@ -48,6 +50,12 @@ public class Merger {
 
     @Autowired
     IPv4Merger iPv4Merger;
+
+    @Autowired
+    IPv6Merger iPv6Merger;
+
+    @Autowired
+    ASNMerger asnMerger;
 
     @Value("${nro.stats.extended.order}")
     private String[] rirs;
@@ -89,9 +97,9 @@ public class Merger {
         }
 
         List<Line> result  = new ArrayList<>();
-        result.addAll( iPv4Merger.merge(mergedIPv4Lines));
-//        result.addAll(handleConflicts(mergedIPv6Lines));
-//        result.addAll(handleConflicts(mergedASNLines));
+        result.addAll(iPv4Merger.merge(mergedIPv4Lines));
+        result.addAll(iPv6Merger.merge(mergedIPv6Lines));
+        result.addAll(asnMerger.merge(mergedASNLines));
         return result;
     }
 
