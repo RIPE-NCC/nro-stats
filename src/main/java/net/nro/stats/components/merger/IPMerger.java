@@ -30,22 +30,14 @@
 package net.nro.stats.components.merger;
 
 import net.nro.stats.components.ConflictResolver;
-import net.nro.stats.components.parser.IPv4Record;
-import net.nro.stats.components.parser.IPv6Record;
 import net.nro.stats.components.parser.Record;
 import net.ripe.commons.ip.AbstractRange;
-import net.ripe.commons.ip.Ipv4Range;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
-import java.math.BigInteger;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
-
-import static com.google.common.base.Strings.padEnd;
-import static com.google.common.base.Strings.padStart;
 
 public abstract class IPMerger<T extends Record<R>, R extends AbstractRange> {
 
@@ -58,7 +50,7 @@ public abstract class IPMerger<T extends Record<R>, R extends AbstractRange> {
     }
 
     public List<T> merge(List<T> recordsList) {
-        IPNode<T> node, root = new IPNode<>(0, 'x', null);
+        IPNode<T> node, root = new IPNode<>(null);
         Queue<T> records = new ConcurrentLinkedQueue<>();
         records.addAll(recordsList);
         T record;
@@ -70,16 +62,17 @@ public abstract class IPMerger<T extends Record<R>, R extends AbstractRange> {
                 node = root;
                 char[] significantBinaryValue = getSignificantBinaryValues(range).toCharArray();
                 for (char c : significantBinaryValue) {
-                    if (c == '0') {
-                        node = node.getLeftNode();
-                    } else { // c =='1'
-                        node = node.getRightNode();
-                    }
+                    node = getChildNode(node, c);
                     if (node.getRecord() != null) {
-                        if (conflictResolver.resolve(node.getRecord(), record) == record) {
+                        if (isNodeOwnerOfLessPriority(node, record)) {
                             logger.warn("Conflict found for {} b/w {} and {}", node.getRecord().getRange(), node.getRecord().getRegistry(), record.getRegistry());
+                            //Move current owner to back of queue, lower priority requests have to wait.
                             records.offer(node.getRecord());
                             node.unclaim();
+                        } else {
+                            //We need to ditch the current node, as it can not take any position below this node
+                            logger.warn("Something needs to be done here");
+                            break;
                         }
                     }
                 }
@@ -95,9 +88,17 @@ public abstract class IPMerger<T extends Record<R>, R extends AbstractRange> {
         return root.getAllChildRecords();
     }
 
+    private boolean isNodeOwnerOfLessPriority(IPNode<T> node, T record) {
+        return conflictResolver.resolve(node.getRecord(), record) == record;
+    }
+
     public abstract List<R> prefixRanges(R range);
 
     public abstract String getSignificantBinaryValues(R range);
 
     public abstract List<R> splitRanges(R range);
+
+    private IPNode<T> getChildNode(IPNode<T> node, char c) {
+        return (c == '0') ? node.getLeftNode() : node.getRightNode();
+    }
 }

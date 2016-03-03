@@ -36,31 +36,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class IPNode<R extends Record> {
-    int level;
-    char value;
     IPNode<R> parent, left, right;
     private R record;
 
-    public IPNode(int level, char value, IPNode parent) {
-        this.level = level;
-        this.value = value;
+    public IPNode(IPNode parent) {
         this.parent = parent;
-    }
-
-    public String getValue() {
-        return (parent == null) ? "" : parent.getValue() + value;
     }
 
     public IPNode<R> getLeftNode() {
         if (left == null) {
-            left = new IPNode<>(level + 1, '0', this);
+            left = new IPNode<>(this);
         }
         return left;
     }
 
     public IPNode<R> getRightNode() {
         if (right == null) {
-            right = new IPNode<>(level + 1, '1', this);
+            right = new IPNode<>(this);
         }
         return right;
     }
