@@ -31,17 +31,13 @@ package net.nro.stats.components.merger;
 
 import net.nro.stats.components.ConflictResolver;
 import net.nro.stats.components.parser.ASNRecord;
-import net.ripe.commons.ip.Asn;
-import net.ripe.commons.ip.AsnRange;
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class AsnMergerTest {
 
@@ -49,18 +45,81 @@ public class AsnMergerTest {
     ASNMerger asnMerger = new ASNMerger(resolver);
 
     @Test
-    public void testBasic() {
+    public void testNoConflict() {
         List<ASNRecord> records = new ArrayList<>();
-        records.add(createRecord("lacnic", "4", "4"));
-        records.add(createRecord("ripencc", "4", "3"));
+        records.add(createRecord("lacnic", "4", "1"));
+        records.add(createRecord("ripencc", "5", "2"));
         records.add(createRecord("apnic", "8", "1"));
         records.add(createRecord("apnic", "10", "1"));
         List<ASNRecord> mergedRecords = asnMerger.merge(records);
         assertEquals(4, mergedRecords.size());
-//        assertArrayEquals(records.toArray(), mergedRecords.toArray());
+        verifyRecord(mergedRecords, "lacnic", "4", "1");
+        verifyRecord(mergedRecords, "ripencc", "5", "2");
+        verifyRecord(mergedRecords, "apnic", "8", "1");
+        verifyRecord(mergedRecords, "apnic", "10", "1");
+    }
+
+    @Test
+    public void testBasicConflict() {
+        List<ASNRecord> records = new ArrayList<>();
+        records.add(createRecord("ripencc", "11", "1"));
+        records.add(createRecord("apnic", "11", "1"));
+        List<ASNRecord> mergedRecords = asnMerger.merge(records);
+        assertEquals(1, mergedRecords.size());
+        verifyRecord(mergedRecords, "apnic", "11", "1");
+    }
+
+    @Test
+    public void testConflictOverlap() {
+        List<ASNRecord> records = new ArrayList<>();
+        //Start same, end same
+        records.add(createRecord("ripencc", "11", "5"));
+        records.add(createRecord("apnic", "11", "5"));
+        //start same, end before
+        records.add(createRecord("ripencc", "21", "5"));
+        records.add(createRecord("apnic", "21", "3"));
+        //start same, end after
+        records.add(createRecord("ripencc", "31", "5"));
+        records.add(createRecord("apnic", "31", "7"));
+        //Start after, end before
+        records.add(createRecord("ripencc", "41", "5"));
+        records.add(createRecord("apnic", "42", "2"));
+        //start after, end same
+        records.add(createRecord("ripencc", "51", "5"));
+        records.add(createRecord("apnic", "52", "4"));
+        //start after, end after
+        records.add(createRecord("ripencc", "61", "5"));
+        records.add(createRecord("apnic", "64", "7"));
+
+        List<ASNRecord> mergedRecords = asnMerger.merge(records);
+        assertEquals(11, mergedRecords.size());
+        verifyRecord(mergedRecords, "apnic", "11", "5");
+        verifyRecord(mergedRecords, "apnic", "21", "3");
+        verifyRecord(mergedRecords, "ripencc", "24", "2");
+        verifyRecord(mergedRecords, "apnic", "31", "7");
+        verifyRecord(mergedRecords, "ripencc", "41", "1");
+        verifyRecord(mergedRecords, "apnic", "42", "2");
+        verifyRecord(mergedRecords, "ripencc", "44", "2");
+        verifyRecord(mergedRecords, "ripencc", "51", "1");
+        verifyRecord(mergedRecords, "apnic", "52", "4");
+        verifyRecord(mergedRecords, "ripencc", "61", "3");
+        verifyRecord(mergedRecords, "apnic", "64", "7");
     }
 
     private ASNRecord createRecord(String registry, String asn, String length) {
         return new ASNRecord(registry, "NL", asn, length, "", "", "", "");
+    }
+
+    private void verifyRecord(List<ASNRecord> records, String registry, String asn, String length) {
+        boolean found = false;
+        for (ASNRecord record : records) {
+            if (record.getRegistry().equals(registry) &&
+                    record.getStart().equals(asn) &&
+                    record.getValue().equals(length)) {
+                found = true;
+                break;
+            }
+        }
+        assertTrue(String.format("Record missing %s , %s - %s", registry, asn, length), found);
     }
 }
