@@ -41,7 +41,7 @@ import java.util.Iterator;
 
 public class ConflictResolverTest {
 
-    private ConflictResolver resolver = new ConflictResolver(Arrays.asList("apnic,afrinic,arin,ripencc,lacnic".split(",")));
+    private ConflictResolver resolver = new ConflictResolver("apnic,afrinic,arin,ripencc,lacnic".split(","));
 
     @Test
     public void testBasic() throws Exception {

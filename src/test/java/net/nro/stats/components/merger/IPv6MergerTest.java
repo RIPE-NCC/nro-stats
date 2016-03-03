@@ -45,7 +45,7 @@ import java.util.List;
 
 public class IPv6MergerTest {
 
-    private ConflictResolver resolver = new ConflictResolver(Arrays.asList("apnic,afrinic,arin,ripencc,lacnic".split(",")));
+    private ConflictResolver resolver = new ConflictResolver("apnic,afrinic,arin,ripencc,lacnic".split(","));
     IPv6Merger merger = new IPv6Merger(resolver);
 
     @Test

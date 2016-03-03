@@ -45,7 +45,7 @@ import static org.junit.Assert.assertEquals;
 
 public class AsnMergerTest {
 
-    private ConflictResolver resolver = new ConflictResolver(Arrays.asList("apnic,afrinic,arin,ripencc,lacnic".split(",")));
+    private ConflictResolver resolver = new ConflictResolver("apnic,afrinic,arin,ripencc,lacnic".split(","));
     ASNMerger asnMerger = new ASNMerger(resolver);
 
     @Test

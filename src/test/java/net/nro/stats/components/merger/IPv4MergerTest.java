@@ -42,7 +42,7 @@ import java.util.List;
 public class IPv4MergerTest extends LineTestBase {
 
 
-    private ConflictResolver resolver = new ConflictResolver(Arrays.asList("apnic,afrinic,arin,ripencc,lacnic".split(",")));
+    private ConflictResolver resolver = new ConflictResolver("apnic,afrinic,arin,ripencc,lacnic".split(","));
     IPv4Merger iPv4Merger = new IPv4Merger(resolver);
 
     @Test

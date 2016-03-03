@@ -34,6 +34,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Component
@@ -41,8 +42,8 @@ public class ConflictResolver {
     private List<String> registryPriorityOrder;
 
     @Autowired
-    public ConflictResolver(@Value("${nro.stats.extended.order}") List<String> registryPriorityOrder) {
-        this.registryPriorityOrder = registryPriorityOrder;
+    public ConflictResolver(@Value("${nro.stats.extended.order}") String[] registryPriorityOrder) {
+        this.registryPriorityOrder = Arrays.asList(registryPriorityOrder);
     }
 
     public <T extends Record> T resolve(T record1, T record2) {
