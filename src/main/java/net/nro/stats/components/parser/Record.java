@@ -136,7 +136,8 @@ public abstract class Record<R extends AbstractRange> implements Line {
     // TODO:
     @Override
     public String toString() {
-        return String.format("%s|%s|%s|%s|%s|%s|%s|%s", getRegistry(), getCountryCode(), getType(), getStart(), getValue(), getDate(), getStatus(), getRegId(), String.join(";", getExtensions()));
+        return String.format("%s|%s|%s|%s|%s|%s|%s|%s|%s", getRegistry(), getCountryCode(), getType(), getStart(),
+                getValue(), getDate(), getStatus(), getRegId(), String.join("|", getExtensions()));
     }
 }
 

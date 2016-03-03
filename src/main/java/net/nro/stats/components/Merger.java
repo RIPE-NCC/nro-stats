@@ -41,7 +41,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
@@ -57,44 +59,25 @@ public class Merger {
     @Autowired
     ASNMerger asnMerger;
 
-    @Value("${nro.stats.extended.order}")
-    private String[] rirs;
-
     public List<Line> merge(List<ParsedRIRStats> parsedRIRStats) {
 
-        List<IPv4Record> mergedIPv4Lines = new ArrayList<>();
-        List<IPv6Record> mergedIPv6Lines = new ArrayList<>();
-        List<ASNRecord> mergedASNLines = new ArrayList<>();
+        Map<Class<? extends Line>, List<Line>> collect = parsedRIRStats.stream()
+                .map(ParsedRIRStats::getLines)
+                .flatMap(Collection::stream)
+                .collect(Collectors.groupingBy(
+                        (Line l) -> l.getClass()
+                ));
 
-        //TODO Ordering is not important here... this can be removed.
-        for( String rir : rirs) {
-            ParsedRIRStats stats = parsedRIRStats
-                    .stream()
-                    .filter(localStats -> localStats
-                            .getRir()
-                            .getResourceHolder()
-                            .getIdentifier()
-                            .equals(rir))
-                    .collect(Collectors.toList())
-                    .get(0);
-            mergedIPv4Lines.addAll(stats.getLines().stream()
-                    .filter(record -> record instanceof IPv4Record)
-                    .map(record -> (IPv4Record)record)
-                    .collect(Collectors.toList()));
-            mergedIPv6Lines.addAll(stats.getLines().stream()
-                    .filter(record -> record instanceof IPv6Record)
-                    .map(record -> (IPv6Record)record)
-                    .collect(Collectors.toList()));
-            mergedASNLines.addAll(stats.getLines().stream()
-                    .filter(record -> record instanceof ASNRecord)
-                    .map(record -> (ASNRecord)record)
-                    .collect(Collectors.toList()));
-        }
+        collect.keySet().stream()
+                .forEach(k -> logger.info("Collected total {} of type {}", collect.get(k).size(), k));
 
         List<Line> result  = new ArrayList<>();
-        result.addAll(iPv4Merger.merge(mergedIPv4Lines));
-        result.addAll(iPv6Merger.merge(mergedIPv6Lines));
-        result.addAll(asnMerger.merge(mergedASNLines));
+        result.addAll(iPv4Merger.merge(collect.get(IPv4Record.class).parallelStream().map(r -> (IPv4Record)r).collect(Collectors.toList())));
+        result.addAll(iPv6Merger.merge(collect.get(IPv6Record.class).parallelStream().map(r -> (IPv6Record)r).collect(Collectors.toList())));
+        result.addAll(asnMerger.merge(collect.get(ASNRecord.class).parallelStream().map(r -> (ASNRecord)r).collect(Collectors.toList())));
+
+        logger.info("Number of Lines after merged {}", result.size());
+
         return result;
     }
 }

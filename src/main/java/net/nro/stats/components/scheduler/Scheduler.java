@@ -27,31 +27,30 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package net.nro.stats;
+package net.nro.stats.components.scheduler;
 
 import net.nro.stats.services.NroStatsService;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 
-@SpringBootApplication
-public class Application {
+/**
+ * Specifically disabled for local profile.
+ */
+@Component
+@Profile("!local")
+public class Scheduler {
 
-    public static void main(String[] args) {
-        SpringApplication.run(Application.class, args);
-    }
+    @Autowired
+    NroStatsService nroStatsService;
 
     /**
-     * For easy testing locally. If the application is running with local profile, generate the nro stats automatically.
-     *
-     * @param nroStatsService - service to trigger
-     * @return boolean
+     * The default job to trigger the scheduler
      */
-    @Bean
-    @Profile("local")
-    public Boolean generateOnStart(NroStatsService nroStatsService) {
+    @Scheduled(cron = "${nro.stats.extended.scheduler.cron}")
+    public void generateDelegateStats() {
         nroStatsService.generate();
-        return Boolean.TRUE;
     }
+
 }
