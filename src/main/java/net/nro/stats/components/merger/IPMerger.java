@@ -64,14 +64,13 @@ public abstract class IPMerger<T extends Record<R>, R extends AbstractRange> {
                 for (char c : significantBinaryValue) {
                     node = getChildNode(node, c);
                     if (node.getRecord() != null) {
+                        logger.warn("Conflict found for {} b/w {} and {}", node.getRecord().getRange(), node.getRecord().getRegistry(), record.getRegistry());
                         if (isNodeOwnerOfLessPriority(node, record)) {
-                            logger.warn("Conflict found for {} b/w {} and {}", node.getRecord().getRange(), node.getRecord().getRegistry(), record.getRegistry());
                             //Move current owner to back of queue, lower priority requests have to wait.
                             records.offer(node.getRecord());
                             node.unclaim();
                         } else {
                             //We need to ditch the current node, as it can not take any position below this node
-                            logger.warn("Something needs to be done here");
                             break;
                         }
                     }
