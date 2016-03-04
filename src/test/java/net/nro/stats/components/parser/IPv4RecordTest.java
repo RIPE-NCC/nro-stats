@@ -29,24 +29,23 @@
  */
 package net.nro.stats.components.parser;
 
+import net.nro.stats.components.CSVRecordUtil;
 import net.ripe.commons.ip.Ipv4;
 import net.ripe.commons.ip.Ipv4Range;
 import org.apache.commons.csv.CSVRecord;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.StringReader;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class IPv4RecordTest extends LineTestBase {
-
-    @Before
-    public void setUp() throws Exception {
-        createRawLines("parser/ipv4.txt");
-    }
+public class IPv4RecordTest {
 
     @Test
     public void testFits() throws Exception {
+        Iterable<CSVRecord> lines = CSVRecordUtil.read("parser/ipv4.txt");
         for (CSVRecord line : lines) {
             assertTrue(String.format("line %d should fit IPv4Record", line.getRecordNumber()), IPv4Record.fits(line));
         }
@@ -54,8 +53,15 @@ public class IPv4RecordTest extends LineTestBase {
 
     @Test
     public void testValuesCorrect() throws Exception {
+        Iterable<CSVRecord> lines = CSVRecordUtil.read(
+                new StringReader("apnic|AU|ipv4|1.0.0.0|256|20110811|assigned|A91872ED\n" +
+                        "apnic|AU|ipv4|1.0.0.0|256|20110811|assigned|\n" +
+                        "apnic|AU|ipv4|1.0.0.0|256|20110811|assigned\n" +
+                        "apnic|CN|ipv4|1.0.1.0|256|20110414|assigned|A92E1062|ext4|ext5|ext6\n"));
+
+
         for (CSVRecord line : lines) {
-            IPv4Record record = new IPv4Record(line);
+            IPv4Record record = new IPv4Record(line, "someDate");
             assertEquals("IPv4Record field not correct: registry", line.get(0), record.getRegistry());
             assertEquals("IPv4Record field not correct: countryCode", line.get(1), record.getCountryCode());
             assertEquals("IPv4Record field not correct: type", line.get(2), record.getType());

@@ -29,6 +29,8 @@
  */
 package net.nro.stats.components.parser;
 
-public interface Line {
+import net.nro.stats.resources.StatsSource;
 
+public interface Line {
+    StatsSource getSource();
 }

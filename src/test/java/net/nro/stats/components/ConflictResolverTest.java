@@ -57,7 +57,7 @@ public class ConflictResolverTest {
 
 
         Iterator<CSVRecord> iterator = lines.iterator();
-        IPv4Record rec = resolver.resolve(new IPv4Record(iterator.next()), new IPv4Record(iterator.next()));
+        IPv4Record rec = resolver.resolve(new IPv4Record(iterator.next(), "someDate"), new IPv4Record(iterator.next(), "someDate"));
         Assert.assertTrue(rec.getRegistry().equals("apnic"));
     }
 }

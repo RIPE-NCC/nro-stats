@@ -29,12 +29,15 @@
  */
 package net.nro.stats.components.parser;
 
+import com.google.common.base.Strings;
+import net.nro.stats.resources.StatsSource;
 import net.ripe.commons.ip.AbstractRange;
 import org.apache.commons.csv.CSVRecord;
 
 import java.util.Comparator;
 
 public abstract class Record<R extends AbstractRange> implements Line {
+    private final StatsSource source;
     private final String registry;
     private final String countryCode;
     private final String type;
@@ -45,10 +48,15 @@ public abstract class Record<R extends AbstractRange> implements Line {
     private final String regId;
     private final String[] extensions;
 
-    public Record(String registry, String countryCode, String Type, String start, String value, String date, String status, String regId, String... extensions) {
+    public Record(String registry, String countryCode, String type, String start, String value, String date, String status, String regId, String... extensions) {
+        this(StatsSource.ESTATS, registry, countryCode, type, start, value, date, status, regId, extensions);
+    }
+
+    public Record(StatsSource source, String registry, String countryCode, String type, String start, String value, String date, String status, String regId, String... extensions) {
+        this.source = source;
         this.registry = registry;
         this.countryCode = countryCode;
-        type = Type;
+        this.type = type;
         this.start = start;
         this.value = value;
         this.date = date;
@@ -57,16 +65,31 @@ public abstract class Record<R extends AbstractRange> implements Line {
         this.extensions = extensions;
     }
 
-    public Record(CSVRecord line) {
+    public Record(StatsSource source, CSVRecord line, String defaultDate) {
         if (!fits(line)) throw new RuntimeException("Given line was not a Record");
 
+        this.source = source;
         this.registry = line.get(0);
-        this.countryCode = line.get(1);
-        type = line.get(2);
+        this.countryCode = Strings.isNullOrEmpty(line.get(1)) ? "ZZ" : line.get(1);
+        this.type = line.get(2);
         this.start = line.get(3);
         this.value = line.get(4);
-        this.date = line.get(5);
-        this.status = line.get(6);
+        this.date = Strings.isNullOrEmpty(line.get(5)) ? defaultDate : line.get(5);
+        switch (line.get(6)) {
+            case "allocated": case "Allocated":
+            case "assigned": case "Assigned":
+            case "legacy":
+                this.status = "assigned";
+                break;
+            case "available": case "Available":
+                this.status = "available";
+                break;
+            case "reserved":case "Reserved":
+                this.status = "reserved";
+                break;
+            default:
+                this.status = line.get(6);
+        }
 
         String[] exts;
         if (line.size() > 7) {
@@ -81,6 +104,15 @@ public abstract class Record<R extends AbstractRange> implements Line {
         }
 
         this.extensions = exts;
+
+    }
+
+    public Record(CSVRecord line, String defaultDate) {
+        this(StatsSource.ESTATS, line, defaultDate);
+    }
+
+    public StatsSource getSource() {
+        return source;
     }
 
     public String getRegistry() {
@@ -140,7 +172,7 @@ public abstract class Record<R extends AbstractRange> implements Line {
         for (String ext : getExtensions()) {
             strValue = strValue.concat("|").concat(ext);
         }
-        return strValue;
+        return String.format("%s|%s", strValue, source.getValue());
     }
 }
 

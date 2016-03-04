@@ -29,10 +29,12 @@
  */
 package net.nro.stats.components.parser;
 
+import net.nro.stats.components.DateTimeProvider;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayInputStream;
@@ -45,15 +47,24 @@ import java.util.List;
 
 @Component
 public class Parser {
-    Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private static final String FILE_ENCODING = "US-ASCII";
-    
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    private Charset charset;
+
+    private DateTimeProvider dateTimeProvider;
+
+    @Autowired
+    public Parser(Charset charset, DateTimeProvider dateTimeProvider) {
+        this.charset = charset;
+        this.dateTimeProvider = dateTimeProvider;
+    }
+
     public List<Line> parse(byte[] content) {
         List<Line> fileContent = new ArrayList<>();
-
+        String today = dateTimeProvider.today();
         try {
-            Reader in = new InputStreamReader(new ByteArrayInputStream(content), Charset.forName(FILE_ENCODING));
+            Reader in = new InputStreamReader(new ByteArrayInputStream(content), charset);
             Iterable<CSVRecord> lines = CSVFormat
                     .DEFAULT
                     .withDelimiter('|')
@@ -68,11 +79,11 @@ public class Parser {
                 } else if (Summary.fits(line)) {
                     fileContent.add(new Summary(line));
                 } else if (IPv4Record.fits(line)) {
-                    fileContent.add(new IPv4Record(line));
+                    fileContent.add(new IPv4Record(line, today));
                 } else if (IPv6Record.fits(line)) {
-                    fileContent.add(new IPv6Record(line));
+                    fileContent.add(new IPv6Record(line, today));
                 } else if (ASNRecord.fits(line)) {
-                    fileContent.add(new ASNRecord(line));
+                    fileContent.add(new ASNRecord(line, today));
                 } else {
                     logger.warn("Malformed line number " + line.getRecordNumber() + "\n" + line.toString());
                 }

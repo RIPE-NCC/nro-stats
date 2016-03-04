@@ -43,8 +43,8 @@ public class IPv4Record extends Record<Ipv4Range> {
         super(registry, countryCode, "ipv4", start, value, date, status, regId, extensions);
     }
 
-    public IPv4Record(CSVRecord line) {
-        super(line);
+    public IPv4Record(CSVRecord line, String defaultDate) {
+        super(line, defaultDate);
     }
 
     public static boolean fits(CSVRecord line) {

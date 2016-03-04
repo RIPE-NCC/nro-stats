@@ -29,17 +29,13 @@
  */
 package net.nro.stats.components;
 
-import net.nro.stats.components.parser.IPv6Record;
-import net.nro.stats.components.parser.Line;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
-import org.junit.Assert;
-import org.junit.Test;
 
+import java.io.FileReader;
+import java.io.IOException;
 import java.io.Reader;
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.List;
+import java.net.URL;
 
 public class CSVRecordUtil {
 
@@ -56,4 +52,18 @@ public class CSVRecordUtil {
 
     }
 
+    public static Iterable<CSVRecord> read(String sourceFileName) throws IOException {
+        URL testFile = CSVRecordUtil.class.getClassLoader().getResource(sourceFileName);
+
+        assert testFile != null;
+        Reader in = new FileReader(testFile.getPath());
+        return CSVFormat
+                .DEFAULT
+                .withDelimiter('|')
+                .withCommentMarker('#') // only recognized at start of line!
+                .withRecordSeparator('\n')
+                .withIgnoreEmptyLines()
+                .withIgnoreSurroundingSpaces()
+                .parse(in);
+    }
 }

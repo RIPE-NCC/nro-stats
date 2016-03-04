@@ -133,7 +133,7 @@ public class IPv6MergerTest {
     private List<IPv6Record> getiPv6Records(Iterable<CSVRecord> lines) {
         List<IPv6Record> ipv6Records = new ArrayList<>();
         for (CSVRecord line : lines) {
-            ipv6Records.add(new IPv6Record(line));
+            ipv6Records.add(new IPv6Record(line, "somedate"));
         }
         return ipv6Records;
     }

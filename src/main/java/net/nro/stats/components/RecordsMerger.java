@@ -32,7 +32,12 @@ package net.nro.stats.components;
 import net.nro.stats.components.merger.ASNMerger;
 import net.nro.stats.components.merger.IPv4Merger;
 import net.nro.stats.components.merger.IPv6Merger;
-import net.nro.stats.components.parser.*;
+import net.nro.stats.components.parser.ASNRecord;
+import net.nro.stats.components.parser.Header;
+import net.nro.stats.components.parser.IPv4Record;
+import net.nro.stats.components.parser.IPv6Record;
+import net.nro.stats.components.parser.Line;
+import net.nro.stats.components.parser.Summary;
 import net.nro.stats.resources.ParsedRIRStats;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,8 +45,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -49,11 +52,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
-public class Merger {
+public class RecordsMerger {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    private DateTimeFormatter DATE_FORMAT_NRO = DateTimeFormatter.ofPattern("yyyyMMdd");
-    private DateTimeFormatter ZONE_FORMAT_NRO = DateTimeFormatter.ofPattern("Z");
 
     @Autowired
     private IPv4Merger iPv4Merger;
@@ -63,6 +63,9 @@ public class Merger {
 
     @Autowired
     private ASNMerger asnMerger;
+
+    @Autowired
+    private DateTimeProvider dateTimeProvider;
 
     @Value("${nro.stats.extended.identifier}")
     private String identifier;
@@ -82,21 +85,21 @@ public class Merger {
         collect.keySet().stream()
                 .forEach(k -> logger.info("Collected total {} of type {}", collect.get(k).size(), k));
 
+        String today = dateTimeProvider.today();
+
         List<Line> result  = new ArrayList<>();
-        ZonedDateTime todayDate = ZonedDateTime.now();
-        String today = todayDate.format(DATE_FORMAT_NRO);
-        result.addAll(iPv4Merger.merge(collect.get(IPv4Record.class).parallelStream().map(r -> (IPv4Record)r).collect(Collectors.toList())));
-        long ipv4 = result.size();
-        result.add(0, new Summary(identifier, "ipv4", String.valueOf(ipv4)));
-        result.addAll(iPv6Merger.merge(collect.get(IPv6Record.class).parallelStream().map(r -> (IPv6Record)r).collect(Collectors.toList())));
-        long ipv6 = result.size() - ipv4 - 1;
-        result.add(1, new Summary(identifier, "ipv6", String.valueOf(ipv6)));
         result.addAll(asnMerger.merge(collect.get(ASNRecord.class).parallelStream().map(r -> (ASNRecord)r).collect(Collectors.toList())));
-        long asn = result.size() - ipv4 - ipv6 - 2;
-        result.add(2, new Summary(identifier, "asn", String.valueOf(asn)));
+        long asn = result.size();
+        result.add(0, new Summary(identifier, "asn", String.valueOf(asn)));
+        result.addAll(iPv4Merger.merge(collect.get(IPv4Record.class).parallelStream().map(r -> (IPv4Record)r).collect(Collectors.toList())));
+        long ipv4 = result.size() - asn - 1;
+        result.add(1, new Summary(identifier, "ipv4", String.valueOf(ipv4)));
+        result.addAll(iPv6Merger.merge(collect.get(IPv6Record.class).parallelStream().map(r -> (IPv6Record)r).collect(Collectors.toList())));
+        long ipv6 = result.size() - ipv4 - asn - 2;
+        result.add(2, new Summary(identifier, "ipv6", String.valueOf(ipv6)));
         result.add(0, new Header(
                 version, identifier, today,
-                String.valueOf(ipv4 + ipv6 + asn), today, today, todayDate.format(ZONE_FORMAT_NRO)));
+                String.valueOf(ipv4 + ipv6 + asn), today, today, dateTimeProvider.localZone()));
 
         logger.info("Number of Lines after merged {}", result.size());
 

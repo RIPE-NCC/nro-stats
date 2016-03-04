@@ -29,25 +29,41 @@
  */
 package net.nro.stats.components.parser;
 
+import net.nro.stats.resources.StatsSource;
 import org.apache.commons.csv.CSVRecord;
 
 public class Summary implements Line {
 
+    private StatsSource source;
     private final String registry;
     private final String type;
     private final String count;
 
-    public Summary(String registry, String type, String count) {
+    public Summary(StatsSource source, String registry, String type, String count) {
+        this.source = source;
         this.registry = registry;
         this.type = type;
         this.count = count;
     }
+    public Summary(String registry, String type, String count) {
+        this(StatsSource.ESTATS, registry, type, count);
+    }
 
-    public Summary(CSVRecord line) {
+    public Summary(StatsSource source, CSVRecord line) {
         if (!fits(line)) throw new RuntimeException("Given line was not a Summary");
+        this.source = source;
         this.registry = line.get(0);
         this.type = line.get(2);
         this.count = line.get(4);
+    }
+
+    public Summary(CSVRecord line) {
+        this(StatsSource.ESTATS, line);
+    }
+
+    @Override
+    public StatsSource getSource() {
+        return source;
     }
 
     public String getRegistry() {

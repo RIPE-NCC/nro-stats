@@ -32,6 +32,7 @@ package net.nro.stats.components;
 import net.nro.stats.components.parser.Line;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -45,15 +46,20 @@ import java.nio.file.StandardCopyOption;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
-
-// TODO: build me
 @Component
 public class StatsWriter {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    @Value("${nro.stats.extended.output}")
     private String folder;
+
+    private Charset charset;
+
+    @Autowired
+    public StatsWriter(@Value("${nro.stats.extended.output}") String folder, Charset charset) {
+        this.folder = folder;
+        this.charset = charset;
+    }
 
     public void write(List<Line> targetLines) {
         // convert lines back to a file and write it
@@ -81,7 +87,6 @@ public class StatsWriter {
             }
         }
 
-        Charset charset = Charset.forName("US-ASCII");
         try (BufferedWriter writer = Files.newBufferedWriter(outFile, charset);) {
             for (Line line : targetLines) {
                 writer.write(line.toString());

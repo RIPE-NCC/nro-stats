@@ -29,9 +29,11 @@
  */
 package net.nro.stats.components.parser;
 
+import net.nro.stats.resources.StatsSource;
 import org.apache.commons.csv.CSVRecord;
 
 public class Header implements Line {
+    private final StatsSource source;
     private final String version;
     private final String registry;
     private final String serial;
@@ -40,7 +42,8 @@ public class Header implements Line {
     private final String endDate;
     private final String utcOffset;
 
-    public Header(String version, String registry, String serial, String records, String startDate, String endDate, String utcOffset) {
+    public Header(StatsSource source, String version, String registry, String serial, String records, String startDate, String endDate, String utcOffset) {
+        this.source = source;
         this.version = version;
         this.registry = registry;
         this.serial = serial;
@@ -50,9 +53,14 @@ public class Header implements Line {
         this.utcOffset = utcOffset;
     }
 
-    public Header(CSVRecord line) {
+    public Header(String version, String registry, String serial, String records, String startDate, String endDate, String utcOffset) {
+        this(StatsSource.ESTATS, version, registry, serial, records, startDate, endDate, utcOffset);
+    }
+
+    public Header(StatsSource source, CSVRecord line) {
         if (!fits(line)) throw new RuntimeException("Given line was not a Header");
 
+        this.source = source;
         this.version = line.get(0);
         this.registry = line.get(1);
         this.serial = line.get(2);
@@ -60,6 +68,15 @@ public class Header implements Line {
         this.startDate = line.get(4);
         this.endDate = line.get(5);
         this.utcOffset = line.get(6);
+    }
+
+    public Header(CSVRecord line) {
+        this(StatsSource.ESTATS, line);
+    }
+
+    @Override
+    public StatsSource getSource() {
+        return source;
     }
 
     public String getVersion() {

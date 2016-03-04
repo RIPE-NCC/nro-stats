@@ -27,43 +27,27 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package net.nro.stats.components.parser;
+package net.nro.stats.resources;
 
-import net.ripe.commons.ip.Asn;
-import net.ripe.commons.ip.AsnRange;
-import net.ripe.commons.ip.StartAndSizeComparator;
-import org.apache.commons.csv.CSVRecord;
+/**
+ * Referenced from original implementation
+ *
+ * Will have to revisit to adjust the implementation.
+ */
+public enum StatsSource {
+    STATS("stats"),
+    ESTATS("e-stats"),
+    IANA_REGISTRY("iana"),
+    IANAHOLD("iana-hold"),
+    IANARTN("iana-returns"),
+    RIRSWAP("rir-swap");
 
-import java.util.Comparator;
-
-public class ASNRecord extends Record<AsnRange> {
-
-    public ASNRecord(String registry, String countryCode, String start, String value, String date, String status, String regId, String... extensions) {
-        super(registry, countryCode, "asn", start, value, date, status, regId, extensions);
+    private String value;
+    StatsSource(String value) {
+        this.value = value;
     }
 
-    public ASNRecord(CSVRecord line, String defaultDate) {
-        super(line, defaultDate);
-    }
-
-    public static boolean fits(CSVRecord line) {
-        return line.size() > 6 && "asn".equals(line.get(2));
-    }
-
-    @Override
-    public AsnRange getRange() {
-        Asn start = Asn.of(getStart());
-        Asn end = Asn.of(Long.parseLong(getStart()) + Long.parseLong(getValue()) - 1);
-        return AsnRange.from(start).to(end);
-    }
-
-    @Override
-    public Comparator getComparator() {
-        return StartAndSizeComparator.<Asn, AsnRange>get();
-    }
-
-    @Override
-    public ASNRecord clone(AsnRange range) {
-        return new ASNRecord(getRegistry(), getCountryCode(), range.start().asBigInteger().toString(), range.size().toString(), getDate(), getStatus(), getRegId(), getExtensions());
+    public String getValue() {
+        return value;
     }
 }

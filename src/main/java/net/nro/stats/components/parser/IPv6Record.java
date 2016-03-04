@@ -43,8 +43,8 @@ public class IPv6Record extends Record<Ipv6Range> {
         super(registry, countryCode, "ipv6", start, value, date, status, regId, extensions);
     }
 
-    public IPv6Record(CSVRecord line) {
-        super(line);
+    public IPv6Record(CSVRecord line, String defaultDate) {
+        super(line, defaultDate);
     }
 
     public static boolean fits(CSVRecord line) {

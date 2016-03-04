@@ -29,6 +29,7 @@
  */
 package net.nro.stats.components.parser;
 
+import net.nro.stats.components.DateTimeProvider;
 import net.nro.stats.components.FileURIBytesRetriever;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,6 +37,7 @@ import org.junit.Test;
 import java.io.*;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.List;
 
 import static org.junit.Assert.assertTrue;
@@ -47,7 +49,7 @@ public class ParserTest {
 
     @Before
     public void beforeEach() {
-        sut = new Parser();
+        sut = new Parser(Charset.forName("US-ASCII"), new DateTimeProvider());
     }
 
     @Test

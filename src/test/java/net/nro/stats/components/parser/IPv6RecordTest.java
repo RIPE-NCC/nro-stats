@@ -29,24 +29,23 @@
  */
 package net.nro.stats.components.parser;
 
+import net.nro.stats.components.CSVRecordUtil;
 import net.ripe.commons.ip.Ipv6;
 import net.ripe.commons.ip.Ipv6Range;
 import org.apache.commons.csv.CSVRecord;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.StringReader;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class IPv6RecordTest extends net.nro.stats.components.parser.LineTestBase {
-
-    @Before
-    public void setUp() throws Exception {
-        createRawLines("parser/ipv6.txt");
-    }
+public class IPv6RecordTest {
 
     @Test
     public void testFits() throws Exception {
+        Iterable<CSVRecord> lines = CSVRecordUtil.read("parser/ipv6.txt");
         for (CSVRecord line : lines) {
             assertTrue(String.format("line %d should fit IPv6Record", line.getRecordNumber()), IPv6Record.fits(line));
         }
@@ -54,21 +53,18 @@ public class IPv6RecordTest extends net.nro.stats.components.parser.LineTestBase
 
     @Test
     public void testValuesCorrect() throws Exception {
+        Iterable<CSVRecord> lines = CSVRecordUtil.read(
+                new StringReader("afrinic|ZA|ipv6|2001:4200::|32|20051021|assigned|F36B9F4B|ext7"));
         for (CSVRecord line : lines) {
-            IPv6Record record = new IPv6Record(line);
-            assertEquals("IPv6Record field not correct: registry", line.get(0), record.getRegistry());
-            assertEquals("IPv6Record field not correct: countryCode", line.get(1), record.getCountryCode());
-            assertEquals("IPv6Record field not correct: type", line.get(2), record.getType());
-            assertEquals("IPv6Record field not correct: start", line.get(3), record.getStart());
-            assertEquals("IPv6Record field not correct: value", line.get(4), record.getValue());
-            assertEquals("IPv6Record field not correct: date", line.get(5), record.getDate());
-            assertEquals("IPv6Record field not correct: status", line.get(6), record.getStatus());
-            assertEquals("IPv6Record field not correct: regId", line.get(7), record.getRegId());
+            IPv6Record record = new IPv6Record(line, "someDate");
+            assertEquals("IPv6Record not equal", "afrinic|ZA|ipv6|2001:4200::|32|20051021|assigned|F36B9F4B|ext7|e-stats", record.toString());
+        }
 
-            assertEquals("IPv6Record: number of extensions does not match line", line.size() - 8 , record.getExtensions().length);
-            for (int i = 0; i < record.getExtensions().length; i++) {
-                assertEquals(String.format("extension %d does not match on line %d", i, line.getRecordNumber()), record.getExtensions()[i], line.get(i + 8));
-            }
+        lines = CSVRecordUtil.read(
+                new StringReader("afrinic|ZZ|ipv6|2001:4201::|32||reserved|"));
+        for (CSVRecord line : lines) {
+            IPv6Record record = new IPv6Record(line, "someDate");
+            assertEquals("IPv6Record not equal", "afrinic|ZZ|ipv6|2001:4201::|32|someDate|reserved||e-stats", record.toString());
         }
     }
 

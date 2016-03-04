@@ -29,7 +29,7 @@
  */
 package net.nro.stats.services;
 
-import net.nro.stats.components.Merger;
+import net.nro.stats.components.RecordsMerger;
 import net.nro.stats.components.RIRStatsRetriever;
 import net.nro.stats.components.StatsWriter;
 import net.nro.stats.components.Validator;
@@ -59,7 +59,7 @@ public class NroStatsService {
     Parser parser;
 
     @Autowired
-    Merger merger;
+    RecordsMerger recordsMerger;
 
     @Autowired
     Validator validator;
@@ -82,7 +82,7 @@ public class NroStatsService {
 
             List<ParsedRIRStats> validatedSourceLinesPerRIR = validator.validate(parsedRIRStats);
 
-            List<Line> targetLines = merger.merge(validatedSourceLinesPerRIR);
+            List<Line> targetLines = recordsMerger.merge(validatedSourceLinesPerRIR);
 
             writer.write(targetLines);
 

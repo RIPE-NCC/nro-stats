@@ -37,6 +37,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 
 import java.net.URISyntaxException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,5 +58,10 @@ public class AppConfig {
             resourceHolders.add(new ResourceHolderConfig(ResourceHolder.valueOf(rir.toUpperCase()), url));
         }
         return resourceHolders;
+    }
+
+    @Bean
+    public Charset charset() {
+        return Charset.forName("US-ASCII");
     }
 }
