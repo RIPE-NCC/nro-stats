@@ -133,11 +133,14 @@ public abstract class Record<R extends AbstractRange> implements Line {
 
     public abstract <T extends Record> T clone(R range);
 
-    // TODO:
     @Override
     public String toString() {
-        return String.format("%s|%s|%s|%s|%s|%s|%s|%s|%s", getRegistry(), getCountryCode(), getType(), getStart(),
-                getValue(), getDate(), getStatus(), getRegId(), String.join("|", getExtensions()));
+        String strValue = String.format("%s|%s|%s|%s|%s|%s|%s|%s", getRegistry(), getCountryCode(), getType(), getStart(),
+                getValue(), getDate(), getStatus(), getRegId());
+        for (String ext : getExtensions()) {
+            strValue = strValue.concat("|").concat(ext);
+        }
+        return strValue;
     }
 }
 

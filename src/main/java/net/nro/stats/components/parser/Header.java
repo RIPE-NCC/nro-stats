@@ -94,4 +94,9 @@ public class Header implements Line {
     public String getUtcOffset() {
         return utcOffset;
     }
+
+    @Override
+    public String toString() {
+        return String.format("%s|%s|%s|%s|%s|%s|%s", version, registry, serial, records, startDate, endDate, utcOffset);
+    }
 }

@@ -65,4 +65,9 @@ public class Summary implements Line {
     public static boolean fits(CSVRecord line) {
         return line.size() == 6 && "summary".equals(line.get(5));
     }
+
+    @Override
+    public String toString() {
+        return String.format("%s|*|%s|*|%s|summary", getRegistry(), getType(), getCount());
+    }
 }
