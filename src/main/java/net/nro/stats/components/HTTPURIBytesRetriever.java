@@ -44,13 +44,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 
-/**
- * Created by rudi on 29-02-16.
- */
-
 @Component
 @Scope("prototype")
-@Profile("production")
+@Profile("!local")
 public class HTTPURIBytesRetriever implements URIBytesRetriever {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 

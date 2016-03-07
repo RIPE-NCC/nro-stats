@@ -54,6 +54,7 @@
         <commons-io.version>2.4</commons-io.version>
         <commons-csv.version>1.2</commons-csv.version>
         <guava.version>19.0</guava.version>
+        <build.number>${project.version}</build.number>
     </properties>
 
     <developers>
@@ -122,6 +123,7 @@
     </dependencies>
 
     <build>
+        <finalName>nro-stats-${build.number}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
