@@ -29,20 +29,18 @@
  */
 package net.nro.stats.components.merger;
 
-import net.nro.stats.components.ConflictResolver;
+import net.nro.stats.components.resolver.OrderedResolver;
 import net.nro.stats.components.parser.IPv4Record;
-import net.nro.stats.components.parser.LineTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class IPv4MergerTest {
 
 
-    private ConflictResolver resolver = new ConflictResolver("apnic,afrinic,arin,ripencc,lacnic".split(","));
+    private OrderedResolver resolver = new OrderedResolver("apnic,afrinic,arin,ripencc,lacnic".split(","));
     IPv4Merger iPv4Merger = new IPv4Merger(resolver);
 
     @Test

@@ -27,49 +27,37 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package net.nro.stats.components.merger;
+package net.nro.stats.components;
 
 import net.nro.stats.components.parser.IPv4Record;
-import net.nro.stats.components.resolver.Resolver;
-import net.ripe.commons.ip.Ipv4Range;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import net.nro.stats.components.resolver.OrderedResolver;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVRecord;
+import org.junit.Assert;
+import org.junit.Test;
 
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.StringReader;
+import java.util.Iterator;
 
-import static com.google.common.base.Strings.padEnd;
-import static com.google.common.base.Strings.padStart;
+public class OrderedResolverTest {
 
-@Component
-public class IPv4Merger extends IPMerger<IPv4Record, Ipv4Range> {
+    private OrderedResolver resolver = new OrderedResolver("apnic,afrinic,arin,ripencc,lacnic".split(","));
 
-    @Autowired
-    public IPv4Merger(Resolver resolver) {
-        super(resolver);
-    }
+    @Test
+    public void testBasic() throws Exception {
+        Iterable<CSVRecord> lines = CSVFormat
+                .DEFAULT
+                .withDelimiter('|')
+                .withCommentMarker('#') // only recognized at start of line!
+                .withRecordSeparator('\n')
+                .withIgnoreEmptyLines()
+                .withIgnoreSurroundingSpaces()
+                .parse(new StringReader("apnic|AU|ipv4|1.0.0.0|256|20110811|assigned|A91872ED\n" +
+                        "ripencc|CN|ipv4|1.0.1.0|256|20110414|allocated|A92E1062|ext4|ext5|ext6\n"));
 
-    @Override
-    public String getSignificantBinaryValues(Ipv4Range range) {
-        return padStart(range.start().asBigInteger().toString(2), 32, '0').substring(0, 33 - Long.toBinaryString(range.size()).length());
-    }
 
-    @Override
-    public List<Ipv4Range> prefixRanges(Ipv4Range range) {
-        return range.splitToPrefixes();
-    }
-
-    @Override
-    public List<Ipv4Range> splitRanges(Ipv4Range range) {
-        List<Ipv4Range> rangeList = new ArrayList<>();
-        if (range.size() > 1) {
-            String binaryRange = getSignificantBinaryValues(range);
-            String zeroRange = binaryRange + "0";
-            rangeList.add(Ipv4Range.from(new BigInteger(padEnd(zeroRange, 32, '0'), 2)).andPrefixLength(zeroRange.length()));
-            String oneRange = binaryRange + "1";
-            rangeList.add(Ipv4Range.from(new BigInteger(padEnd(oneRange, 32, '0'), 2)).andPrefixLength(oneRange.length()));
-        }
-        return rangeList;
+        Iterator<CSVRecord> iterator = lines.iterator();
+        IPv4Record rec = resolver.resolve(new IPv4Record(iterator.next(), "someDate"), new IPv4Record(iterator.next(), "someDate"));
+        Assert.assertTrue(rec.getRegistry().equals("apnic"));
     }
 }

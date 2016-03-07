@@ -29,23 +29,19 @@
  */
 package net.nro.stats.components.merger;
 
-import net.nro.stats.components.CSVRecordUtil;
-import net.nro.stats.components.ConflictResolver;
-import net.nro.stats.components.parser.IPv4Record;
+import net.nro.stats.components.resolver.OrderedResolver;
 import net.nro.stats.components.parser.IPv6Record;
 import org.apache.commons.csv.CSVRecord;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class IPv6MergerTest {
 
-    private ConflictResolver resolver = new ConflictResolver("apnic,afrinic,arin,ripencc,lacnic".split(","));
+    private OrderedResolver resolver = new OrderedResolver("apnic,afrinic,arin,ripencc,lacnic".split(","));
     IPv6Merger merger = new IPv6Merger(resolver);
 
     @Test

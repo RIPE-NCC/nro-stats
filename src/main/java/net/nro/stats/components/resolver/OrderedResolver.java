@@ -27,7 +27,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package net.nro.stats.components;
+package net.nro.stats.components.resolver;
 
 import net.nro.stats.components.parser.Record;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,14 +38,15 @@ import java.util.Arrays;
 import java.util.List;
 
 @Component
-public class ConflictResolver {
+public class OrderedResolver implements Resolver {
     private List<String> registryPriorityOrder;
 
     @Autowired
-    public ConflictResolver(@Value("${nro.stats.extended.order}") String[] registryPriorityOrder) {
+    public OrderedResolver(@Value("${nro.stats.extended.order}") String[] registryPriorityOrder) {
         this.registryPriorityOrder = Arrays.asList(registryPriorityOrder);
     }
 
+    @Override
     public <T extends Record> T resolve(T record1, T record2) {
         return (registryPriorityOrder.indexOf(record1.getRegistry()) > registryPriorityOrder.indexOf(record2.getRegistry())) ? record2 : record1;
     }

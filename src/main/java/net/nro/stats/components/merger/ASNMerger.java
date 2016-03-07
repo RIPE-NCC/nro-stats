@@ -29,8 +29,8 @@
  */
 package net.nro.stats.components.merger;
 
-import net.nro.stats.components.ConflictResolver;
 import net.nro.stats.components.parser.ASNRecord;
+import net.nro.stats.components.resolver.Resolver;
 import net.ripe.commons.ip.AsnRange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,11 +47,11 @@ import java.util.stream.Collectors;
 public class ASNMerger {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private ConflictResolver conflictResolver;
+    private Resolver resolver;
 
     @Autowired
-    public ASNMerger(ConflictResolver conflictResolver) {
-        this.conflictResolver = conflictResolver;
+    public ASNMerger(Resolver resolver) {
+        this.resolver = resolver;
     }
 
     public List<ASNRecord> merge(List<ASNRecord> recordList) {
@@ -74,7 +74,7 @@ public class ASNMerger {
             while (next != null && current.getRange().contains(next.getRange().start())) {
                 logger.warn("Conflict found for ASN {} b/w {} and {}", next.getRange(), current.getRegistry(), next.getRegistry());
 
-                if (conflictResolver.resolve(current, next) == current) {
+                if (resolver.resolve(current, next) == current) {
                     next = stack.pop(); //Ignore this one.
                     List<AsnRange> nextExcludedRanges = next.getRange().exclude(current.getRange());
                     for (AsnRange range : nextExcludedRanges) {

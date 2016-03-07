@@ -29,8 +29,8 @@
  */
 package net.nro.stats.components.merger;
 
-import net.nro.stats.components.ConflictResolver;
 import net.nro.stats.components.parser.Record;
+import net.nro.stats.components.resolver.Resolver;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,12 +61,12 @@ public class IPNode<R extends Record> {
         return record;
     }
 
-    public boolean claim(ConflictResolver conflictResolver, R record) {
+    public boolean claim(Resolver resolver, R record) {
         if (left == null && right == null) {
             this.record = record;
             return true;
         } else {
-            if (defeatsAll(conflictResolver, record, getAllChildRecords())) {
+            if (defeatsAll(resolver, record, getAllChildRecords())) {
                 left = null;
                 right = null;
                 this.record = record;
@@ -76,9 +76,9 @@ public class IPNode<R extends Record> {
         return false;
     }
 
-    private boolean defeatsAll(ConflictResolver conflictResolver, R record, List<R> childRecords) {
+    private boolean defeatsAll(Resolver resolver, R record, List<R> childRecords) {
         for (R cr : childRecords) {
-            if (conflictResolver.resolve(record, cr) == cr) {
+            if (resolver.resolve(record, cr) == cr) {
                 return false;
             }
         }

@@ -29,8 +29,8 @@
  */
 package net.nro.stats.components.merger;
 
-import net.nro.stats.components.ConflictResolver;
 import net.nro.stats.components.parser.Record;
+import net.nro.stats.components.resolver.Resolver;
 import net.ripe.commons.ip.AbstractRange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,10 +43,10 @@ public abstract class IPMerger<T extends Record<R>, R extends AbstractRange> {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private ConflictResolver conflictResolver;
+    private Resolver resolver;
 
-    public IPMerger(ConflictResolver conflictResolver) {
-        this.conflictResolver = conflictResolver;
+    public IPMerger(Resolver resolver) {
+        this.resolver = resolver;
     }
 
     public List<T> merge(List<T> recordsList) {
@@ -77,7 +77,7 @@ public abstract class IPMerger<T extends Record<R>, R extends AbstractRange> {
                 }
                 if (node.getRecord() == null) {
                     T modifiedRecord = record.clone(range);
-                    if (!node.claim(conflictResolver, modifiedRecord)) {
+                    if (!node.claim(resolver, modifiedRecord)) {
                         ranges.addAll(splitRanges(range));
                     }
                 }
@@ -88,7 +88,7 @@ public abstract class IPMerger<T extends Record<R>, R extends AbstractRange> {
     }
 
     private boolean isNodeOwnerOfLessPriority(IPNode<T> node, T record) {
-        return conflictResolver.resolve(node.getRecord(), record) == record;
+        return resolver.resolve(node.getRecord(), record) == record;
     }
 
     public abstract List<R> prefixRanges(R range);

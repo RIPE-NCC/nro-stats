@@ -29,8 +29,8 @@
  */
 package net.nro.stats.components.merger;
 
-import net.nro.stats.components.ConflictResolver;
 import net.nro.stats.components.parser.IPv6Record;
+import net.nro.stats.components.resolver.Resolver;
 import net.ripe.commons.ip.Ipv6Range;
 import net.ripe.commons.ip.PrefixUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,8 +47,8 @@ import static com.google.common.base.Strings.padStart;
 public class IPv6Merger extends IPMerger<IPv6Record, Ipv6Range> {
 
     @Autowired
-    public IPv6Merger(ConflictResolver conflictResolver) {
-        super(conflictResolver);
+    public IPv6Merger(Resolver resolver) {
+        super(resolver);
     }
 
 

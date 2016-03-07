@@ -29,7 +29,7 @@
  */
 package net.nro.stats.components.merger;
 
-import net.nro.stats.components.ConflictResolver;
+import net.nro.stats.components.resolver.OrderedResolver;
 import net.nro.stats.components.parser.ASNRecord;
 import org.junit.Test;
 
@@ -41,7 +41,7 @@ import static org.junit.Assert.assertTrue;
 
 public class AsnMergerTest {
 
-    private ConflictResolver resolver = new ConflictResolver("apnic,afrinic,arin,ripencc,lacnic".split(","));
+    private OrderedResolver resolver = new OrderedResolver("apnic,afrinic,arin,ripencc,lacnic".split(","));
     ASNMerger asnMerger = new ASNMerger(resolver);
 
     @Test
@@ -104,6 +104,27 @@ public class AsnMergerTest {
         verifyRecord(mergedRecords, "apnic", "52", "4");
         verifyRecord(mergedRecords, "ripencc", "61", "3");
         verifyRecord(mergedRecords, "apnic", "64", "7");
+    }
+
+    @Test
+    public void testConflictOverlapPriorityFirst() {
+        List<ASNRecord> records = new ArrayList<>();
+        //Start same, end same
+        records.add(createRecord("apnic", "11", "5"));
+        records.add(createRecord("ripencc", "11", "5"));
+        //start same, end before
+        records.add(createRecord("apnic", "21", "3"));
+        records.add(createRecord("ripencc", "21", "5"));
+        //start same, end after
+        records.add(createRecord("apnic", "31", "7"));
+        records.add(createRecord("ripencc", "31", "5"));
+
+        List<ASNRecord> mergedRecords = asnMerger.merge(records);
+        assertEquals(4, mergedRecords.size());
+        verifyRecord(mergedRecords, "apnic", "11", "5");
+        verifyRecord(mergedRecords, "apnic", "21", "3");
+        verifyRecord(mergedRecords, "ripencc", "24", "2");
+        verifyRecord(mergedRecords, "apnic", "31", "7");
     }
 
     private ASNRecord createRecord(String registry, String asn, String length) {

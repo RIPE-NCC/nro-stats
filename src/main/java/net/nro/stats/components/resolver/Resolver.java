@@ -27,37 +27,10 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package net.nro.stats.components;
+package net.nro.stats.components.resolver;
 
-import net.nro.stats.components.parser.IPv4Record;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVRecord;
-import org.junit.Assert;
-import org.junit.Test;
+import net.nro.stats.components.parser.Record;
 
-import java.io.StringReader;
-import java.util.Arrays;
-import java.util.Iterator;
-
-public class ConflictResolverTest {
-
-    private ConflictResolver resolver = new ConflictResolver("apnic,afrinic,arin,ripencc,lacnic".split(","));
-
-    @Test
-    public void testBasic() throws Exception {
-        Iterable<CSVRecord> lines = CSVFormat
-                .DEFAULT
-                .withDelimiter('|')
-                .withCommentMarker('#') // only recognized at start of line!
-                .withRecordSeparator('\n')
-                .withIgnoreEmptyLines()
-                .withIgnoreSurroundingSpaces()
-                .parse(new StringReader("apnic|AU|ipv4|1.0.0.0|256|20110811|assigned|A91872ED\n" +
-                        "ripencc|CN|ipv4|1.0.1.0|256|20110414|allocated|A92E1062|ext4|ext5|ext6\n"));
-
-
-        Iterator<CSVRecord> iterator = lines.iterator();
-        IPv4Record rec = resolver.resolve(new IPv4Record(iterator.next(), "someDate"), new IPv4Record(iterator.next(), "someDate"));
-        Assert.assertTrue(rec.getRegistry().equals("apnic"));
-    }
+public interface Resolver {
+    <T extends Record> T resolve(T record1, T record2);
 }
