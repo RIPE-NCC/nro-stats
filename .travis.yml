@@ -3,5 +3,8 @@ language: java
 jdk:
   - oraclejdk8
 
+install:
+  - mvn clean install -Dbuild.number=${TRAVIS_BUILD_NUMBER} -Dbranch.name=${TRAVIS_BRANCH} -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+
 after_success:
   - mvn clean test jacoco:report coveralls:report
