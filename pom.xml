@@ -165,6 +165,7 @@
                         <exclude>.gitignore</exclude>
                         <exclude>.travis.yml</exclude>
                         <exclude>out/**</exclude>
+                        <exclude>log/**</exclude>
                     </excludes>
                 </configuration>
                 <executions>
