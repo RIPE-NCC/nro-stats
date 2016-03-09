@@ -56,48 +56,46 @@ public class ASNMerger {
 
     public List<ASNRecord> merge(List<ASNRecord> recordList) {
 
-        List<ASNRecord> finalList = new ArrayList<>();
-
-        List<ASNRecord> asnSortedRecords = recordList.stream()
-                .sorted((a1, a2) -> a1.getRange().start().compareTo(a2.getRange().start()))
-                .collect(Collectors.toList());
-
+        ASNIntervalTree resolvedRecords = new ASNIntervalTree();
         Deque<ASNRecord> stack = new ArrayDeque<>();
-        stack.addAll(asnSortedRecords);
 
-        ASNRecord current, next;
+        stack.addAll(recordList);
 
         while(!stack.isEmpty()) {
-            current = stack.pop();
-            next = stack.peek();
-
-            while (next != null && current.getRange().contains(next.getRange().start())) {
-                logger.warn("Conflict found for ASN {} b/w {} and {}", next.getRange(), current.getRegistry(), next.getRegistry());
-
-                if (resolver.resolve(current, next) == current) {
-                    next = stack.pop(); //Ignore this one.
-                    List<AsnRange> nextExcludedRanges = next.getRange().exclude(current.getRange());
-                    for (AsnRange range : nextExcludedRanges) {
-                        stack.push(next.clone(range));
-                    }
-                    next = stack.peek();
-                } else {
-                    List<AsnRange> currentExcludedRanges = current.getRange().exclude(next.getRange());
-                    if (currentExcludedRanges.size() == 1 && currentExcludedRanges.get(0).start().compareTo(next.getRange().start()) == -1) {
-                        current = current.clone(currentExcludedRanges.get(0));
-                    } else {
-                        next = stack.pop();
-                        for (AsnRange range : currentExcludedRanges) {
-                            stack.push(current.clone(range));
-                        }
-                        current = next;
-                        next = stack.peek();
-                    }
-                }
-            }
-            finalList.add(current);
+            processNextRecord(stack, resolvedRecords);
         }
-        return finalList;
+
+        return resolvedRecords.getOrderedRecords();
     }
 
+
+    private void excludeRangeAndScheduleRemainingForClaiming(ASNRecord source, ASNRecord overlap, Deque<ASNRecord> stack) {
+        List<AsnRange> remainingRanges = source.getRange().exclude(overlap.getRange());
+        for (AsnRange range: remainingRanges) {
+            stack.push(source.clone(range));
+        }
+    }
+
+    private void processNextRecord(Deque<ASNRecord> stack, ASNIntervalTree claimedRanges) {
+        ASNRecord newRecord = stack.pop();
+        // find any previously processed record of which the range overlaps this record's range
+        ASNNode overlap = claimedRanges.findFirstOverlap(newRecord.getRange());
+
+        // if no overlapping records found then we are free to add this one
+        if (overlap == null) {
+            claimedRanges.add(new ASNNode(newRecord));
+        }
+        else {
+            // we have overlapping ranges; let conflict resolver determine which record has precedence
+            ASNRecord previouslyClaimedRecord = overlap.getRecord();
+            if (resolver.resolve(newRecord, previouslyClaimedRecord) == previouslyClaimedRecord) {
+                excludeRangeAndScheduleRemainingForClaiming(newRecord, previouslyClaimedRecord, stack);
+            }
+            else {
+                claimedRanges.remove(overlap);
+                excludeRangeAndScheduleRemainingForClaiming(previouslyClaimedRecord, newRecord, stack);
+                stack.push(newRecord);
+            }
+        }
+    }
 }
