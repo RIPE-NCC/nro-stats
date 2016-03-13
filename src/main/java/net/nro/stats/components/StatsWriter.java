@@ -30,10 +30,10 @@
 package net.nro.stats.components;
 
 import net.nro.stats.components.parser.Line;
+import net.nro.stats.config.DelegatedExtended;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.BufferedWriter;
@@ -42,29 +42,101 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.text.SimpleDateFormat;
-import java.util.List;
+import java.util.stream.Stream;
+
+import static java.nio.file.StandardCopyOption.ATOMIC_MOVE;
+import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import static net.nro.stats.config.JavaExtensions.rethrowConsumer;
 
 @Component
 public class StatsWriter {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private String folder;
+    private DelegatedExtended delegatedExtended;
 
     private Charset charset;
 
     @Autowired
-    public StatsWriter(@Value("${nro.stats.extended.output}") String folder, Charset charset) {
-        this.folder = folder;
+    public StatsWriter(
+            DelegatedExtended delegatedExtended,
+            Charset charset) {
+        this.delegatedExtended = delegatedExtended;
         this.charset = charset;
     }
 
-    public void write(List<Line> targetLines) {
-        // convert lines back to a file and write it
-        // file should be put in 'nro.stats.extended.output'
-        Path outFolder = Paths.get(folder);
+    public void write(Stream<Line> targetLines) {
+        validateOutFolder();
+
+        Path outFile = Paths.get(delegatedExtended.getFolder(), delegatedExtended.getFile());
+        Path outFileTmp = Paths.get(delegatedExtended.getFolder(), delegatedExtended.getTmpFile());
+
+        if (Files.exists(outFile)) {
+            backupPreviousFile(outFile);
+        }
+
+        if (Files.exists(outFileTmp)) {
+            cleanup(outFileTmp);
+        }
+
+        write(targetLines, outFileTmp);
+
+        move(outFileTmp, outFile);
+
+    }
+
+    private void move(Path outFileTmp, Path outFile) {
+        try {
+            Files.move(outFileTmp, outFile, ATOMIC_MOVE, REPLACE_EXISTING);
+        } catch (IOException e) {
+            logger.error("Unable to move current generated file as new version");
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void write(Stream<Line> targetLines, Path outFileTmp) {
+        try (BufferedWriter writer = Files.newBufferedWriter(outFileTmp, charset)) {
+            targetLines.forEachOrdered(
+                    rethrowConsumer(line ->
+                    {
+                        writer.write(line.toString());
+                        writer.newLine();
+                    }
+                )
+            );
+        } catch (IOException e) {
+            logger.error("Unable to write the output file");
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void cleanup(Path outFileTmp) {
+        logger.warn("Last attempt to generate file failed. Cleaning up.");
+        try {
+            Files.delete(outFileTmp);
+        } catch (IOException e) {
+            logger.error("Unable to delete {} previously generated temp file", outFileTmp);
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void backupPreviousFile(Path outFile) {
+        logger.info("File {} already present, backing it up", outFile);
+        try {
+            SimpleDateFormat df = new SimpleDateFormat(delegatedExtended.getBackupFormat());
+            Path outFileOld = Paths.get(delegatedExtended.getFolder(),
+                    delegatedExtended.getFile() + "." + df.format(Files.getLastModifiedTime(outFile).toMillis()));
+            Files.copy(outFile, outFileOld, COPY_ATTRIBUTES);
+        } catch (Exception e) {
+            logger.error("Unable to move to backup old file", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void validateOutFolder() {
+        Path outFolder = Paths.get(delegatedExtended.getFolder());
         if (Files.notExists(outFolder)) {
             logger.info("outFolder {} missing. Creating it", outFolder);
             try {
@@ -74,28 +146,5 @@ public class StatsWriter {
                 throw new RuntimeException(io);
             }
         }
-        Path outFile = Paths.get(folder, "nro.stats.extended.output");
-        if (Files.exists(outFile)) {
-            logger.info("File {} already present, moving it", outFile);
-            try {
-                SimpleDateFormat df = new SimpleDateFormat("yyyy.MM.dd.hh.mm.ss");
-                Path outFileOld = Paths.get(folder, "nro.stats.extended.output." + df.format(Files.getLastModifiedTime(outFile).toMillis()));
-                Files.move(outFile, outFileOld, StandardCopyOption.ATOMIC_MOVE);
-            } catch (Exception e) {
-                logger.error("Unable to move to backup old file", e);
-                throw new RuntimeException(e);
-            }
-        }
-
-        try (BufferedWriter writer = Files.newBufferedWriter(outFile, charset);) {
-            for (Line line : targetLines) {
-                writer.write(line.toString());
-                writer.newLine();
-            }
-        } catch (IOException e) {
-            logger.error("Unable to write the output file");
-            throw new RuntimeException(e);
-        }
-
     }
 }

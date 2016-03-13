@@ -27,39 +27,43 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package net.nro.stats.components;
+package net.nro.stats.config;
 
-import org.springframework.context.annotation.Profile;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-
 @Component
-@Profile("local")
-public class FileURIBytesRetriever implements URIBytesRetriever {
-    @Override
-    public byte[] retrieveBytes(String uri) {
+@ConfigurationProperties(prefix = "nro.stats.extended.output")
+public class DelegatedExtended {
+    private String folder;
+    private String file;
+    private String backupFormat;
 
-        ByteArrayOutputStream outputStream = null;
+    public String getFolder() {
+        return folder;
+    }
 
-        try (FileInputStream inputStream = new FileInputStream(new File(uri)))
-        {
-            byte[] buffer = new byte[4096];
-            outputStream = new ByteArrayOutputStream();
-            int read = 0;
-            while ((read = inputStream.read(buffer)) != -1) {
-                outputStream.write(buffer, 0, read);
-            }
+    public void setFolder(String folder) {
+        this.folder = folder;
+    }
 
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return outputStream.toByteArray();
+    public String getFile() {
+        return file;
+    }
+
+    public String getTmpFile() {
+        return file+".tmp";
+    }
+
+    public void setFile(String file) {
+        this.file = file;
+    }
+
+    public String getBackupFormat() {
+        return backupFormat;
+    }
+
+    public void setBackupFormat(String backupFormat) {
+        this.backupFormat = backupFormat;
     }
 }

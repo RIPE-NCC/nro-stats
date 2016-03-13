@@ -32,12 +32,6 @@ package net.nro.stats.components;
 import net.nro.stats.components.merger.ASNMerger;
 import net.nro.stats.components.merger.IPv4Merger;
 import net.nro.stats.components.merger.IPv6Merger;
-import net.nro.stats.components.parser.ASNRecord;
-import net.nro.stats.components.parser.Header;
-import net.nro.stats.components.parser.IPv4Record;
-import net.nro.stats.components.parser.IPv6Record;
-import net.nro.stats.components.parser.Line;
-import net.nro.stats.components.parser.Summary;
 import net.nro.stats.resources.ParsedRIRStats;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,11 +39,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Component
 public class RecordsMerger {
@@ -73,36 +65,41 @@ public class RecordsMerger {
     @Value("${nro.stats.extended.version}")
     private String version;
 
-    public List<Line> merge(List<ParsedRIRStats> parsedRIRStats) {
+    public ParsedRIRStats merge(List<ParsedRIRStats> parsedRIRStats) {
 
-        Map<Class<? extends Line>, List<Line>> collect = parsedRIRStats.stream()
-                .map(ParsedRIRStats::getLines)
-                .flatMap(Collection::stream)
-                .collect(Collectors.groupingBy(
-                        (Line l) -> l.getClass()
-                ));
+        ParsedRIRStats nroStats = new ParsedRIRStats(null);
 
-        collect.keySet().stream()
-                .forEach(k -> logger.info("Collected total {} of type {}", collect.get(k).size(), k));
+        nroStats.addAllAsnRecord(
+                asnMerger.merge(
+                        parsedRIRStats.stream()
+                                .map(ParsedRIRStats::getAsnRecords)
+                                .reduce(Stream.empty(), Stream::concat)
+                                .collect(Collectors.toList())
+                )
+        );
 
-        String today = dateTimeProvider.today();
+        nroStats.addAllIPv4Record(
+                iPv4Merger.merge(
+                        parsedRIRStats.stream()
+                                .map(ParsedRIRStats::getIpv4Records)
+                                .reduce(Stream.empty(), Stream::concat)
+                                .collect(Collectors.toList())
+                )
+        );
 
-        List<Line> result  = new ArrayList<>();
-        result.addAll(asnMerger.merge(collect.get(ASNRecord.class).parallelStream().map(r -> (ASNRecord)r).collect(Collectors.toList())));
-        long asn = result.size();
-        result.add(0, new Summary(identifier, "asn", String.valueOf(asn)));
-        result.addAll(iPv4Merger.merge(collect.get(IPv4Record.class).parallelStream().map(r -> (IPv4Record)r).collect(Collectors.toList())));
-        long ipv4 = result.size() - asn - 1;
-        result.add(1, new Summary(identifier, "ipv4", String.valueOf(ipv4)));
-        result.addAll(iPv6Merger.merge(collect.get(IPv6Record.class).parallelStream().map(r -> (IPv6Record)r).collect(Collectors.toList())));
-        long ipv6 = result.size() - ipv4 - asn - 2;
-        result.add(2, new Summary(identifier, "ipv6", String.valueOf(ipv6)));
-        result.add(0, new Header(
-                version, identifier, today,
-                String.valueOf(ipv4 + ipv6 + asn), today, today, dateTimeProvider.localZone()));
+        nroStats.addAllIPv6Record(
+                iPv6Merger.merge(
+                        parsedRIRStats.stream()
+                                .map(ParsedRIRStats::getIpv6Records)
+                                .reduce(Stream.empty(), Stream::concat)
+                                .collect(Collectors.toList())
+                )
+        );
 
-        logger.info("Number of Lines after merged {}", result.size());
+        nroStats.generateHeaderAndSummary(version, identifier, dateTimeProvider);
 
-        return result;
+        logger.info("Number of Lines after merged {}", nroStats.getLines().count());
+
+        return nroStats;
     }
 }

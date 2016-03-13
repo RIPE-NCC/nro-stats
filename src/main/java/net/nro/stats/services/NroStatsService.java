@@ -77,14 +77,14 @@ public class NroStatsService {
             List<RIRStats> rirStats = rirStatsRetriever.fetchAll(resourceHolders);
 
             List<ParsedRIRStats> parsedRIRStats = rirStats.stream().map(stat ->
-                    new ParsedRIRStats(parser.parse(stat.getContent()), stat.getRir())
+                    parser.parseRirStats(stat)
                 ).collect(Collectors.toList());
 
             List<ParsedRIRStats> validatedSourceLinesPerRIR = validator.validate(parsedRIRStats);
 
-            List<Line> targetLines = recordsMerger.merge(validatedSourceLinesPerRIR);
+            ParsedRIRStats nroStats = recordsMerger.merge(validatedSourceLinesPerRIR);
 
-            writer.write(targetLines);
+            writer.write(nroStats.getLines());
 
             logger.info("Finished Generating Extended NRO stats");
         } catch (Exception e) {

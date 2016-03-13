@@ -30,6 +30,8 @@
 package net.nro.stats.components.parser;
 
 import net.nro.stats.components.DateTimeProvider;
+import net.nro.stats.resources.ParsedRIRStats;
+import net.nro.stats.resources.RIRStats;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.slf4j.Logger;
@@ -58,6 +60,42 @@ public class Parser {
     public Parser(Charset charset, DateTimeProvider dateTimeProvider) {
         this.charset = charset;
         this.dateTimeProvider = dateTimeProvider;
+    }
+
+    public ParsedRIRStats parseRirStats(RIRStats rirStats) {
+        String today = dateTimeProvider.today();
+        ParsedRIRStats parsedRIRStats = new ParsedRIRStats(rirStats.getRir());
+        try {
+            Reader in = new InputStreamReader(new ByteArrayInputStream(rirStats.getContent()), charset);
+            Iterable<CSVRecord> lines = CSVFormat
+                    .DEFAULT
+                    .withDelimiter('|')
+                    .withCommentMarker('#') // only recognized at start of line!
+                    .withRecordSeparator('\n')
+                    .withIgnoreEmptyLines()
+                    .withIgnoreSurroundingSpaces()
+                    .parse(in);
+            for (CSVRecord line : lines) {
+                if (Header.fits(line)) {
+                    parsedRIRStats.addHeader(new Header(line));
+                } else if (Summary.fits(line)) {
+                    parsedRIRStats.addSummary(new Summary(line));
+                } else if (IPv4Record.fits(line)) {
+                    parsedRIRStats.addIPv4Record(new IPv4Record(line, today));
+                } else if (IPv6Record.fits(line)) {
+                    parsedRIRStats.addIPv6Record(new IPv6Record(line, today));
+                } else if (ASNRecord.fits(line)) {
+                    parsedRIRStats.addAsnRecord(new ASNRecord(line, today));
+                } else {
+                    logger.warn("Malformed line number " + line.getRecordNumber() + "\n" + line.toString());
+                }
+            }
+        } catch (IOException e) {
+            logger.error(e.getMessage(), e);
+        }
+        logger.debug("Found records: " + parsedRIRStats.getLines().count());
+        return parsedRIRStats;
+
     }
 
     public List<Line> parse(byte[] content) {
