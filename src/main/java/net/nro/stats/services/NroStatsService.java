@@ -29,21 +29,19 @@
  */
 package net.nro.stats.services;
 
-import net.nro.stats.components.RecordsMerger;
 import net.nro.stats.components.RIRStatsRetriever;
+import net.nro.stats.components.RecordsMerger;
 import net.nro.stats.components.StatsWriter;
 import net.nro.stats.components.Validator;
-import net.nro.stats.components.parser.Line;
 import net.nro.stats.components.parser.Parser;
+import net.nro.stats.config.RIRDelegatedExtended;
 import net.nro.stats.resources.ParsedRIRStats;
 import net.nro.stats.resources.RIRStats;
-import net.nro.stats.resources.ResourceHolderConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -52,8 +50,8 @@ public class NroStatsService {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    @Resource
-    List<ResourceHolderConfig> resourceHolders;
+    @Autowired
+    RIRDelegatedExtended rirDelegatedExtended;
 
     @Autowired
     Parser parser;
@@ -74,7 +72,7 @@ public class NroStatsService {
     public void generate() {
         logger.info("Generating Extended NRO Stats");
         try {
-            List<RIRStats> rirStats = rirStatsRetriever.fetchAll(resourceHolders);
+            List<RIRStats> rirStats = rirStatsRetriever.fetchAll(rirDelegatedExtended);
 
             List<ParsedRIRStats> parsedRIRStats = rirStats.stream().map(stat ->
                     parser.parseRirStats(stat)

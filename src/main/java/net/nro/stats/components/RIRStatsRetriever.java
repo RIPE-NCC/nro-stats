@@ -29,16 +29,13 @@
  */
 package net.nro.stats.components;
 
+import net.nro.stats.config.RIRDelegatedExtended;
 import net.nro.stats.resources.RIRStats;
-import net.nro.stats.resources.ResourceHolderConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
-import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -49,13 +46,11 @@ public class RIRStatsRetriever {
     @Autowired
     URIBytesRetriever retriever;
 
-    public List<RIRStats> fetchAll(List<ResourceHolderConfig> rirConfig) {
+    public List<RIRStats> fetchAll(RIRDelegatedExtended rirDelegatedExtended) {
         logger.debug("fetchAll");
-        return rirConfig
-                .stream()
-                .map(rir -> {
-                    logger.debug("Fetching: " + rir);
-                    return new RIRStats(rir, retriever.retrieveBytes(rir.getUri()));
-                }).collect(Collectors.toList());
+        return rirDelegatedExtended.getUrl()
+                .keySet().parallelStream().map(rir ->
+                    new RIRStats(rir, retriever.retrieveBytes(rirDelegatedExtended.getUrl().get(rir)))
+                ).collect(Collectors.toList());
     }
 }

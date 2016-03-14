@@ -32,6 +32,7 @@ package net.nro.stats.components;
 import net.nro.stats.components.merger.ASNMerger;
 import net.nro.stats.components.merger.IPv4Merger;
 import net.nro.stats.components.merger.IPv6Merger;
+import net.nro.stats.config.DelegatedExtended;
 import net.nro.stats.resources.ParsedRIRStats;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,15 +60,12 @@ public class RecordsMerger {
     @Autowired
     private DateTimeProvider dateTimeProvider;
 
-    @Value("${nro.stats.extended.identifier}")
-    private String identifier;
-
-    @Value("${nro.stats.extended.version}")
-    private String version;
+    @Autowired
+    private DelegatedExtended delegatedExtended;
 
     public ParsedRIRStats merge(List<ParsedRIRStats> parsedRIRStats) {
 
-        ParsedRIRStats nroStats = new ParsedRIRStats(null);
+        ParsedRIRStats nroStats = new ParsedRIRStats(delegatedExtended.getIdentifier());
 
         nroStats.addAllAsnRecord(
                 asnMerger.merge(
@@ -96,7 +94,7 @@ public class RecordsMerger {
                 )
         );
 
-        nroStats.generateHeaderAndSummary(version, identifier, dateTimeProvider);
+        nroStats.generateHeaderAndSummary(delegatedExtended, dateTimeProvider);
 
         logger.info("Number of Lines after merged {}", nroStats.getLines().count());
 

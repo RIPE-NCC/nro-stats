@@ -45,7 +45,7 @@ public class JavaExtensionsTest {
     @Test
     public void test_Consumer_with_checked_exceptions() throws IllegalAccessException {
         Stream.of("java.lang.Object", "java.lang.Integer", "java.lang.String")
-                .forEach(rethrowConsumer(className -> System.out.println(Class.forName(className))));
+                .forEach(rethrowConsumer(Class::forName));
 
         Stream.of("java.lang.Object", "java.lang.Integer", "java.lang.String")
                 .forEach(rethrowConsumer(System.out::println));

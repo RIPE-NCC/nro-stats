@@ -31,9 +31,9 @@ package net.nro.stats.resources;
 
 public class RIRStats {
     private byte[] content;
-    private ResourceHolderConfig rir;
+    private String rir;
 
-    public RIRStats(ResourceHolderConfig rir, byte[] content) {
+    public RIRStats(String rir, byte[] content) {
         this.rir = rir;
         this.content = content;
     }
@@ -42,7 +42,7 @@ public class RIRStats {
         return content;
     }
 
-    public ResourceHolderConfig getRir() {
+    public String getRir() {
         return rir;
     }
 }

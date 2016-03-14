@@ -35,9 +35,27 @@ import org.springframework.stereotype.Component;
 @Component
 @ConfigurationProperties(prefix = "nro.stats.extended.output")
 public class DelegatedExtended {
+    private String identifier;
+    private String version;
     private String folder;
     private String file;
     private String backupFormat;
+
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
 
     public String getFolder() {
         return folder;

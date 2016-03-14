@@ -27,36 +27,24 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package net.nro.stats.resources;
+package net.nro.stats.config;
 
-import java.util.EnumSet;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
 
+import java.util.Map;
 
-// TODO [JT]:Do we really need this hardcoded enum? Properties file is more flexible (see application.properties)
-public enum ResourceHolder {
-    AFRINIC("afrinic"),
-    APNIC("apnic"),
-    ARIN("arin"),
-    RIPENCC("ripencc"),
-    LACNIC("lacnic"),
-    IANA("iana"),
-    IETF("ietf");
+@Configuration
+@ConfigurationProperties(prefix = "nro.stats.extended.input")
+public class RIRDelegatedExtended {
 
-    private String identifier;
+    private Map<String, String> url;
 
-    ResourceHolder(String name) {
-        identifier = name;
+    public Map<String, String> getUrl() {
+        return url;
     }
 
-    public String getIdentifier() {
-        return identifier;
-    }
-
-    public static EnumSet<ResourceHolder> getRIRs() {
-        return EnumSet.of(AFRINIC, APNIC, ARIN, RIPENCC, LACNIC);
-    }
-
-    public static boolean isRIR(ResourceHolder resourceHolder) {
-        return resourceHolder != null && getRIRs().contains(resourceHolder);
+    public void setUrl(Map<String, String> url) {
+        this.url = url;
     }
 }

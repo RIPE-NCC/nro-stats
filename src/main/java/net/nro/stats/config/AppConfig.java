@@ -29,36 +29,13 @@
  */
 package net.nro.stats.config;
 
-import net.nro.stats.resources.ResourceHolder;
-import net.nro.stats.resources.ResourceHolderConfig;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
 
-import java.net.URISyntaxException;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
 
 @Configuration
 public class AppConfig {
-
-    @Autowired
-    private Environment env;
-
-    private static final String PRE_IDENTIFIER = "nro.stats.extended.";
-    private static final String URL_IDENTIFIER = ".url";
-
-    @Bean
-    public List<ResourceHolderConfig> resourceHolders() throws URISyntaxException {
-        List<ResourceHolderConfig> resourceHolders = new ArrayList<>();
-        for (String rir : env.getProperty("nro.stats.extended.order").split(",")) {
-            String url = env.getProperty(PRE_IDENTIFIER + rir + URL_IDENTIFIER);
-            resourceHolders.add(new ResourceHolderConfig(ResourceHolder.valueOf(rir.toUpperCase()), url));
-        }
-        return resourceHolders;
-    }
 
     @Bean
     public Charset charset() {

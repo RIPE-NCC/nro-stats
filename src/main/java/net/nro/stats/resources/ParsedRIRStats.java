@@ -36,6 +36,7 @@ import net.nro.stats.components.parser.IPv4Record;
 import net.nro.stats.components.parser.IPv6Record;
 import net.nro.stats.components.parser.Line;
 import net.nro.stats.components.parser.Summary;
+import net.nro.stats.config.DelegatedExtended;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,9 +49,9 @@ public class ParsedRIRStats {
     private List<IPv6Record> ipv6Records;
     private List<ASNRecord> asnRecords;
 
-    private ResourceHolderConfig rir;
+    private String rir;
 
-    public ParsedRIRStats(ResourceHolderConfig rir) {
+    public ParsedRIRStats(String rir) {
         this.rir = rir;
         this.headers = new ArrayList<>();
         this.summary = new ArrayList<>();
@@ -63,14 +64,14 @@ public class ParsedRIRStats {
         return Stream.of(headers, summary, asnRecords, ipv4Records, ipv6Records).flatMap(List::stream);
     }
 
-    public void generateHeaderAndSummary(String version, String identifier, DateTimeProvider dateTimeProvider) {
-        addSummary(new Summary(identifier, "asn", String.valueOf(asnRecords.size())));
-        addSummary(new Summary(identifier, "ipv4", String.valueOf(ipv4Records.size())));
-        addSummary(new Summary(identifier, "ipv6", String.valueOf(ipv6Records.size())));
+    public void generateHeaderAndSummary(DelegatedExtended delegatedExtended, DateTimeProvider dateTimeProvider) {
+        addSummary(new Summary(delegatedExtended.getIdentifier(), "asn", String.valueOf(asnRecords.size())));
+        addSummary(new Summary(delegatedExtended.getIdentifier(), "ipv4", String.valueOf(ipv4Records.size())));
+        addSummary(new Summary(delegatedExtended.getIdentifier(), "ipv6", String.valueOf(ipv6Records.size())));
         String today = dateTimeProvider.today();
 
-        addHeader(new Header(
-                version, identifier, today, String.valueOf(asnRecords.size() + ipv4Records.size()+ ipv6Records.size()),
+        addHeader(new Header(delegatedExtended.getVersion(), delegatedExtended.getIdentifier(), today,
+                String.valueOf(asnRecords.size() + ipv4Records.size()+ ipv6Records.size()),
                 today, today, dateTimeProvider.localZone()));
     }
 
@@ -106,7 +107,7 @@ public class ParsedRIRStats {
         asnRecords.addAll(records);
     }
 
-    public ResourceHolderConfig getRir() {
+    public String getRir() {
         return rir;
     }
 
