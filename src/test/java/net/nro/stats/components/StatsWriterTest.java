@@ -29,32 +29,45 @@
  */
 package net.nro.stats.components;
 
-import net.nro.stats.config.RIRDelegatedExtended;
-import net.nro.stats.resources.RIRStats;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import net.nro.stats.components.parser.Summary;
+import net.nro.stats.config.DelegatedExtended;
+import net.nro.stats.resources.ParsedRIRStats;
+import org.junit.Before;
+import org.junit.Test;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
-@Component
-public class RIRStatsRetriever {
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-    private URIBytesRetriever retriever;
 
-    @Autowired
-    public RIRStatsRetriever(URIBytesRetriever retriever) {
-        this.retriever = retriever;
+public class StatsWriterTest {
+
+    StatsWriter statsWriter;
+
+    DelegatedExtended out = new DelegatedExtended();
+
+    @Before
+    public void setUp() throws Exception {
+        out.setFolder("tmp");
+        out.setFile("file");
+        out.setBackupFormat("$");
+        statsWriter = new StatsWriter(out, Charset.forName("US-ASCII"));
     }
 
-    public List<RIRStats> fetchAll(RIRDelegatedExtended rirDelegatedExtended) {
-        logger.debug("fetchAll");
-        return rirDelegatedExtended.getUrl()
-                .keySet().parallelStream().map(rir ->
-                    new RIRStats(rir, retriever.retrieveBytes(rirDelegatedExtended.getUrl().get(rir)))
-                ).collect(Collectors.toList());
+    @Test
+    public void testWrite() throws Exception {
+        ParsedRIRStats nroStats = new ParsedRIRStats("nro");
+        nroStats.addSummary(new Summary("nro", "asn", "0"));
+        statsWriter.write(nroStats);
+        assertFalse(Files.exists(Paths.get(out.getFolder(), out.getTmpFile())));
+        assertTrue(Files.exists(Paths.get(out.getFolder(), out.getFile())));
+        statsWriter.write(nroStats);
+        assertFalse(Files.exists(Paths.get(out.getFolder(), out.getTmpFile())));
+        assertTrue(Files.deleteIfExists(Paths.get(out.getFolder(), out.getFile())));
+        assertTrue(Files.deleteIfExists(Paths.get(out.getFolder(), out.getFile() + "." + out.getBackupFormat())));
+        assertTrue(Files.deleteIfExists(Paths.get(out.getFolder())));
     }
 }

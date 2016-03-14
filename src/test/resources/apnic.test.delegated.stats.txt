@@ -1,0 +1,5 @@
+2.3|apnic|20160225|74492||20160224|+1000
+apnic|*|asn|*|0|summary
+apnic|*|ipv4|*|1|summary
+apnic|*|ipv6|*|0|summary
+apnic|AU|ipv4|1.0.0.0|256|20110811|assigned|A91872ED

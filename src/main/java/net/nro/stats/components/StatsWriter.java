@@ -31,6 +31,7 @@ package net.nro.stats.components;
 
 import net.nro.stats.components.parser.Line;
 import net.nro.stats.config.DelegatedExtended;
+import net.nro.stats.resources.ParsedRIRStats;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,7 +68,7 @@ public class StatsWriter {
         this.charset = charset;
     }
 
-    public void write(Stream<Line> targetLines) {
+    public void write(ParsedRIRStats nroStats) {
         validateOutFolder();
 
         Path outFile = Paths.get(delegatedExtended.getFolder(), delegatedExtended.getFile());
@@ -81,7 +82,7 @@ public class StatsWriter {
             cleanup(outFileTmp);
         }
 
-        write(targetLines, outFileTmp);
+        write(nroStats.getLines(), outFileTmp);
 
         move(outFileTmp, outFile);
 

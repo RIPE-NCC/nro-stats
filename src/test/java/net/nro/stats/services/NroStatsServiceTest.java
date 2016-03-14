@@ -29,6 +29,8 @@
  */
 package net.nro.stats.services;
 
+import net.nro.stats.components.DummyDateTimeProvider;
+import net.nro.stats.components.FileURIBytesRetriever;
 import net.nro.stats.components.RIRStatsRetriever;
 import net.nro.stats.components.RecordsMerger;
 import net.nro.stats.components.StatsWriter;
@@ -36,56 +38,61 @@ import net.nro.stats.components.Validator;
 import net.nro.stats.components.parser.Parser;
 import net.nro.stats.config.RIRDelegatedExtended;
 import net.nro.stats.resources.ParsedRIRStats;
-import net.nro.stats.resources.RIRStats;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.runners.MockitoJUnitRunner;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.nio.charset.Charset;
+import java.util.HashMap;
+import java.util.Map;
 
-@Service
-public class NroStatsService {
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyListOf;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+@RunWith(MockitoJUnitRunner.class)
+public class NroStatsServiceTest {
+    @Spy
+    RIRDelegatedExtended rirDelegatedExtended = new RIRDelegatedExtended();
 
-    @Autowired
-    RIRDelegatedExtended rirDelegatedExtended;
+    @Spy
+    Parser parser = new Parser(Charset.forName("US-ASCII"), new DummyDateTimeProvider());
 
-    @Autowired
-    Parser parser;
-
-    @Autowired
+    @Mock
     RecordsMerger recordsMerger;
 
-    @Autowired
-    Validator validator;
+    @Spy
+    Validator validator = new Validator();
 
-    @Autowired
+    @Mock
     StatsWriter writer;
 
-    @Autowired
-    RIRStatsRetriever rirStatsRetriever;
+    @Spy
+    RIRStatsRetriever rirStatsRetriever = new RIRStatsRetriever(new FileURIBytesRetriever());
 
+    @InjectMocks
+    NroStatsService nroStatsService;
 
-    public void generate() {
-        logger.info("Generating Extended NRO Stats");
-        try {
-            List<RIRStats> rirStats = rirStatsRetriever.fetchAll(rirDelegatedExtended);
-
-            List<ParsedRIRStats> parsedRIRStats = rirStats.stream().map(parser::parseRirStats).collect(Collectors.toList());
-
-            List<ParsedRIRStats> validatedSourceLinesPerRIR = validator.validate(parsedRIRStats);
-
-            ParsedRIRStats nroStats = recordsMerger.merge(validatedSourceLinesPerRIR);
-
-            writer.write(nroStats);
-
-            logger.info("Finished Generating Extended NRO stats");
-        } catch (Exception e) {
-            logger.error("Failed while generating NRO Extended stats", e);
-        }
+    @Before
+    public void before() {
+        Map<String, String> urls = new HashMap<>();
+        urls.put("ripencc", "src/test/resources/ripencc.test.delegated.stats.txt");
+        urls.put("apnic", "src/test/resources/apnic.test.delegated.stats.txt");
+        rirDelegatedExtended.setUrl(urls);
+        ParsedRIRStats nroStats = new ParsedRIRStats("nro");
+        when(recordsMerger.merge(anyListOf(ParsedRIRStats.class))).thenReturn(nroStats);
     }
 
+    @Test
+    public void testGenerate() throws Exception {
+        nroStatsService.generate();
+
+        verify(recordsMerger).merge(anyListOf(ParsedRIRStats.class));
+        verify(writer).write(any());
+    }
 }

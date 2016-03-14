@@ -29,32 +29,14 @@
  */
 package net.nro.stats.components;
 
-import net.nro.stats.config.RIRDelegatedExtended;
-import net.nro.stats.resources.RIRStats;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import java.util.List;
-import java.util.stream.Collectors;
-
-@Component
-public class RIRStatsRetriever {
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    private URIBytesRetriever retriever;
-
-    @Autowired
-    public RIRStatsRetriever(URIBytesRetriever retriever) {
-        this.retriever = retriever;
+public class DummyDateTimeProvider extends DateTimeProvider {
+    @Override
+    public String today() {
+        return "today";
     }
 
-    public List<RIRStats> fetchAll(RIRDelegatedExtended rirDelegatedExtended) {
-        logger.debug("fetchAll");
-        return rirDelegatedExtended.getUrl()
-                .keySet().parallelStream().map(rir ->
-                    new RIRStats(rir, retriever.retrieveBytes(rirDelegatedExtended.getUrl().get(rir)))
-                ).collect(Collectors.toList());
+    @Override
+    public String localZone() {
+        return "localzone";
     }
 }
