@@ -72,7 +72,7 @@ public class NroStatsService {
     public void generate() {
         logger.info("Generating Extended NRO Stats");
         try {
-            List<RIRStats> rirStats = rirStatsRetriever.fetchAll(rirDelegatedExtended);
+            List<RIRStats> rirStats = rirStatsRetriever.fetchAll(rirDelegatedExtended.getUrl());
 
             List<ParsedRIRStats> parsedRIRStats = rirStats.stream().map(parser::parseRirStats).collect(Collectors.toList());
 

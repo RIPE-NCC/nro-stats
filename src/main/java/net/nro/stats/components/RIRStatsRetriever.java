@@ -29,7 +29,6 @@
  */
 package net.nro.stats.components;
 
-import net.nro.stats.config.RIRDelegatedExtended;
 import net.nro.stats.resources.RIRStats;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +36,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
@@ -50,11 +50,12 @@ public class RIRStatsRetriever {
         this.retriever = retriever;
     }
 
-    public List<RIRStats> fetchAll(RIRDelegatedExtended rirDelegatedExtended) {
+    public List<RIRStats> fetchAll(Map<String, String> urls) {
         logger.debug("fetchAll");
-        return rirDelegatedExtended.getUrl()
-                .keySet().parallelStream().map(rir ->
-                    new RIRStats(rir, retriever.retrieveBytes(rirDelegatedExtended.getUrl().get(rir)))
+        return urls.keySet()
+                .parallelStream()
+                .map(rir ->
+                    new RIRStats(rir, retriever.retrieveBytes(urls.get(rir)))
                 ).collect(Collectors.toList());
     }
 }

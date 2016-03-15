@@ -93,13 +93,11 @@ public class RecordsMergerTest {
     }
 
     private List<ParsedRIRStats> fetchTestRIRStats() {
-        RIRDelegatedExtended rirDelegatedExtended = new RIRDelegatedExtended();
         Map<String, String> urls = new HashMap<>();
         urls.put("ripencc", "src/test/resources/ripencc.test.delegated.stats.txt");
         urls.put("apnic", "src/test/resources/apnic.test.delegated.stats.txt");
-        rirDelegatedExtended.setUrl(urls);
         RIRStatsRetriever rirStatsRetriever = new RIRStatsRetriever(new FileURIBytesRetriever());
-        List<RIRStats> rirStatses = rirStatsRetriever.fetchAll(rirDelegatedExtended);
+        List<RIRStats> rirStatses = rirStatsRetriever.fetchAll(urls);
         Parser parser = new Parser(Charset.forName("US-ASCII"), new DummyDateTimeProvider());
         return rirStatses.stream().map(parser::parseRirStats).collect(Collectors.toList());
     }
