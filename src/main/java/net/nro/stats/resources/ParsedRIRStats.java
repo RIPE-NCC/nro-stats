@@ -119,15 +119,15 @@ public class ParsedRIRStats {
         return summary.stream();
     }
 
-    public Stream<IPv4Record> getIpv4Records() {
-        return ipv4Records.stream();
+    public List<IPv4Record> getIpv4Records() {
+        return ipv4Records;
     }
 
-    public Stream<IPv6Record> getIpv6Records() {
-        return ipv6Records.stream();
+    public List<IPv6Record> getIpv6Records() {
+        return ipv6Records;
     }
 
-    public Stream<ASNRecord> getAsnRecords() {
-        return asnRecords.stream();
+    public List<ASNRecord> getAsnRecords() {
+        return asnRecords;
     }
 }

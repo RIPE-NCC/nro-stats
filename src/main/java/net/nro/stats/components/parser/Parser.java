@@ -30,8 +30,9 @@
 package net.nro.stats.components.parser;
 
 import net.nro.stats.components.DateTimeProvider;
+import net.nro.stats.resources.ASNTransfer;
 import net.nro.stats.resources.ParsedRIRStats;
-import net.nro.stats.resources.RIRStats;
+import net.nro.stats.resources.URIContent;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.slf4j.Logger;
@@ -62,11 +63,11 @@ public class Parser {
         this.dateTimeProvider = dateTimeProvider;
     }
 
-    public ParsedRIRStats parseRirStats(RIRStats rirStats) {
+    public ParsedRIRStats parseRirStats(URIContent uriContent) {
         String today = dateTimeProvider.today();
-        ParsedRIRStats parsedRIRStats = new ParsedRIRStats(rirStats.getRir());
+        ParsedRIRStats parsedRIRStats = new ParsedRIRStats(uriContent.getIdentifier());
         try {
-            Reader in = new InputStreamReader(new ByteArrayInputStream(rirStats.getContent()), charset);
+            Reader in = new InputStreamReader(new ByteArrayInputStream(uriContent.getContent()), charset);
             Iterable<CSVRecord> lines = CSVFormat
                     .DEFAULT
                     .withDelimiter('|')
@@ -96,6 +97,32 @@ public class Parser {
         logger.debug("Found records: " + parsedRIRStats.getLines().count());
         return parsedRIRStats;
 
+    }
+
+    public ASNTransfer parseAsnTransfers(URIContent uriContent) {
+        ASNTransfer asnTransfer = null;
+        try {
+            Reader in = new InputStreamReader(new ByteArrayInputStream(uriContent.getContent()), charset);
+            List<ASNTransferRecord> asnTransferRecords = new ArrayList<>();
+            Iterable<CSVRecord> lines = CSVFormat
+                    .DEFAULT
+                    .withDelimiter('\t')
+                    .withCommentMarker('#') // only recognized at start of line!
+                    .withRecordSeparator('\n')
+                    .withIgnoreEmptyLines()
+                    .withIgnoreSurroundingSpaces()
+                    .parse(in);
+
+            lines.forEach(line -> {
+                asnTransferRecords.add(new ASNTransferRecord(line));
+            });
+
+            asnTransfer = new ASNTransfer(asnTransferRecords);
+
+        } catch (IOException e) {
+            logger.error(e.getMessage(), e);
+        }
+        return asnTransfer;
     }
 
     public List<Line> parse(byte[] content) {

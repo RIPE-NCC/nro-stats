@@ -29,14 +29,14 @@
  */
 package net.nro.stats.services;
 
-import net.nro.stats.components.RIRStatsRetriever;
+import net.nro.stats.components.URIContentRetriever;
 import net.nro.stats.components.RecordsMerger;
 import net.nro.stats.components.StatsWriter;
 import net.nro.stats.components.Validator;
 import net.nro.stats.components.parser.Parser;
 import net.nro.stats.config.RIRDelegatedExtended;
 import net.nro.stats.resources.ParsedRIRStats;
-import net.nro.stats.resources.RIRStats;
+import net.nro.stats.resources.URIContent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,19 +66,19 @@ public class NroStatsService {
     StatsWriter writer;
 
     @Autowired
-    RIRStatsRetriever rirStatsRetriever;
+    URIContentRetriever uriContentRetriever;
 
 
     public void generate() {
         logger.info("Generating Extended NRO Stats");
         try {
-            List<RIRStats> rirStats = rirStatsRetriever.fetchAll(rirDelegatedExtended.getUrl());
+            List<URIContent> rirStats = uriContentRetriever.fetchAll(rirDelegatedExtended.getRir());
 
             List<ParsedRIRStats> parsedRIRStats = rirStats.stream().map(parser::parseRirStats).collect(Collectors.toList());
 
-            List<ParsedRIRStats> validatedSourceLinesPerRIR = validator.validate(parsedRIRStats);
+            validator.validate(parsedRIRStats);
 
-            ParsedRIRStats nroStats = recordsMerger.merge(validatedSourceLinesPerRIR);
+            ParsedRIRStats nroStats = recordsMerger.merge(parsedRIRStats);
 
             writer.write(nroStats);
 

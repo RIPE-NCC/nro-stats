@@ -31,7 +31,7 @@ package net.nro.stats.services;
 
 import net.nro.stats.components.DummyDateTimeProvider;
 import net.nro.stats.components.FileURIBytesRetriever;
-import net.nro.stats.components.RIRStatsRetriever;
+import net.nro.stats.components.URIContentRetriever;
 import net.nro.stats.components.RecordsMerger;
 import net.nro.stats.components.StatsWriter;
 import net.nro.stats.components.Validator;
@@ -66,14 +66,14 @@ public class NroStatsServiceTest {
     @Mock
     RecordsMerger recordsMerger;
 
-    @Spy
-    Validator validator = new Validator();
+    @Mock
+    Validator validator;
 
     @Mock
     StatsWriter writer;
 
     @Spy
-    RIRStatsRetriever rirStatsRetriever = new RIRStatsRetriever(new FileURIBytesRetriever());
+    URIContentRetriever uriContentRetriever = new URIContentRetriever(new FileURIBytesRetriever());
 
     @InjectMocks
     NroStatsService nroStatsService;
@@ -83,7 +83,7 @@ public class NroStatsServiceTest {
         Map<String, String> urls = new HashMap<>();
         urls.put("ripencc", "src/test/resources/ripencc.test.delegated.stats.txt");
         urls.put("apnic", "src/test/resources/apnic.test.delegated.stats.txt");
-        rirDelegatedExtended.setUrl(urls);
+        rirDelegatedExtended.setRir(urls);
         ParsedRIRStats nroStats = new ParsedRIRStats("nro");
         when(recordsMerger.merge(anyListOf(ParsedRIRStats.class))).thenReturn(nroStats);
     }

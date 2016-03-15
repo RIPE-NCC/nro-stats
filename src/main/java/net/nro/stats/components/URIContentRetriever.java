@@ -29,7 +29,7 @@
  */
 package net.nro.stats.components;
 
-import net.nro.stats.resources.RIRStats;
+import net.nro.stats.resources.URIContent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,22 +40,27 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
-public class RIRStatsRetriever {
+public class URIContentRetriever {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private URIBytesRetriever retriever;
 
     @Autowired
-    public RIRStatsRetriever(URIBytesRetriever retriever) {
+    public URIContentRetriever(URIBytesRetriever retriever) {
         this.retriever = retriever;
     }
 
-    public List<RIRStats> fetchAll(Map<String, String> urls) {
-        logger.debug("fetchAll");
+    public List<URIContent> fetchAll(Map<String, String> urls) {
+        logger.debug("fetchAll called");
         return urls.keySet()
                 .parallelStream()
-                .map(rir ->
-                    new RIRStats(rir, retriever.retrieveBytes(urls.get(rir)))
-                ).collect(Collectors.toList());
+                .map(rir -> fetch(rir, urls.get(rir)))
+                .collect(Collectors.toList());
+    }
+
+    public URIContent fetch(String rir, String url) {
+        logger.debug("fetching {} for {}", url, rir);
+
+        return new URIContent(rir, retriever.retrieveBytes(url));
     }
 }

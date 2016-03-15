@@ -27,28 +27,39 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package net.nro.stats.resources;
+package net.nro.stats.components.parser;
 
-/**
- * Referenced from original implementation
- *
- * Will have to revisit to adjust the implementation.
- */
-public enum StatsSource {
-    STATS("stats"),
-    ESTATS("e-stats"),
-    IANA_REGISTRY("iana"),
-    IANAHOLD("iana-hold"),
-    IANARTN("iana-returns"),
-    RIRSWAP("rir-swap"),
-    ASN_TRANSFER("asn-transfer");
+import net.nro.stats.resources.StatsSource;
+import net.ripe.commons.ip.Asn;
+import net.ripe.commons.ip.AsnRange;
+import org.apache.commons.csv.CSVRecord;
 
-    private String value;
-    StatsSource(String value) {
-        this.value = value;
+public class ASNTransferRecord implements Line {
+    private final StatsSource source;
+
+    private final String asn;
+    private final String countryCode;
+
+    public ASNTransferRecord(CSVRecord record) {
+        this.source = StatsSource.ASN_TRANSFER;
+        this.asn = record.get(0);
+        this.countryCode = record.get(1);
     }
 
-    public String getValue() {
-        return value;
+    @Override
+    public StatsSource getSource() {
+        return source;
+    }
+
+    public Asn getAsn() {
+        return Asn.of(asn);
+    }
+
+    public AsnRange getAsnRange() {
+        return AsnRange.from(asn).to(asn);
+    }
+
+    public String getCountryCode() {
+        return countryCode;
     }
 }

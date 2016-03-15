@@ -27,22 +27,23 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package net.nro.stats.resources;
+package net.nro.stats.config;
 
-public class RIRStats {
-    private byte[] content;
-    private String rir;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
 
-    public RIRStats(String rir, byte[] content) {
-        this.rir = rir;
-        this.content = content;
-    }
+import java.util.Map;
 
-    public byte[] getContent() {
-        return content;
-    }
+@Configuration
+@ConfigurationProperties(prefix = "nro.stats.extended.asn.translate")
+public class AsnTranslate {
+    private Map<String, String> rir;
 
-    public String getRir() {
+    public Map<String, String> getRir() {
         return rir;
+    }
+
+    public void setRir(Map<String, String> rir) {
+        this.rir = rir;
     }
 }

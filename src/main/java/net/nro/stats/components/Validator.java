@@ -29,16 +29,60 @@
  */
 package net.nro.stats.components;
 
+import com.google.common.base.Strings;
+import net.nro.stats.components.parser.ASNRecord;
+import net.nro.stats.components.parser.Parser;
+import net.nro.stats.config.AsnTranslate;
+import net.nro.stats.resources.ASNTransfer;
 import net.nro.stats.resources.ParsedRIRStats;
+import net.nro.stats.resources.URIContent;
+import net.ripe.commons.ip.Asn;
+import net.ripe.commons.ip.AsnRange;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
-
-// TODO: Build me
 @Component
 public class Validator {
-    public List<ParsedRIRStats> validate(List<ParsedRIRStats> sourceLinesPerRIR) {
-        return sourceLinesPerRIR;
+
+    private URIContentRetriever contentRetriever;
+    private Parser parser;
+    private AsnTranslate asnTranslate;
+
+    @Autowired
+    public Validator(AsnTranslate asnTranslate, URIContentRetriever contentRetriever, Parser parser) {
+        this.contentRetriever = contentRetriever;
+        this.parser = parser;
+        this.asnTranslate = asnTranslate;
+    }
+
+    public void validate(List<ParsedRIRStats> sourceLinesPerRIR) {
+        sourceLinesPerRIR
+                .stream()
+                .filter(p -> asnTranslate.getRir().keySet().contains(p.getRir()))
+                .forEach(this::translateAsn);
+        return;
+    }
+
+    private void translateAsn(ParsedRIRStats rirStats) {
+        URIContent asnEuTranslate = contentRetriever.fetch(rirStats.getRir(), asnTranslate.getRir().get(rirStats.getRir()));
+        ASNTransfer asnTransfer = parser.parseAsnTransfers(asnEuTranslate);
+        asnTransfer.getRecords().stream()
+                .forEach(r -> {
+                    Optional<ASNRecord> optionalAsnRecord = rirStats.getAsnRecords().stream().filter(a -> a.getRange().contains(r.getAsn())).findFirst();
+                    if (optionalAsnRecord.isPresent()) {
+                        ASNRecord asnRecord = optionalAsnRecord.get();
+                        rirStats.getAsnRecords().remove(asnRecord);
+                        rirStats.addAsnRecord(asnRecord.clone(r.getAsnRange(), r.getCountryCode()));
+                        List<AsnRange> asnRanges = asnRecord.getRange().exclude(r.getAsnRange());
+                        for (AsnRange range: asnRanges) {
+                            rirStats.addAsnRecord(asnRecord.clone(range));
+                        }
+                    }
+                });
     }
 }

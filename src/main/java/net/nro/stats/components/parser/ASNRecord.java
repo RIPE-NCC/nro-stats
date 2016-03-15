@@ -66,4 +66,8 @@ public class ASNRecord extends Record<AsnRange> {
     public ASNRecord clone(AsnRange range) {
         return new ASNRecord(getRegistry(), getCountryCode(), range.start().asBigInteger().toString(), range.size().toString(), getDate(), getStatus(), getRegId(), getExtensions());
     }
+
+    public ASNRecord clone(AsnRange range, String countryCode) {
+        return new ASNRecord(getRegistry(), countryCode, range.start().asBigInteger().toString(), range.size().toString(), getDate(), getStatus(), getRegId(), getExtensions());
+    }
 }

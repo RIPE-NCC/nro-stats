@@ -29,26 +29,20 @@
  */
 package net.nro.stats.resources;
 
-/**
- * Referenced from original implementation
- *
- * Will have to revisit to adjust the implementation.
- */
-public enum StatsSource {
-    STATS("stats"),
-    ESTATS("e-stats"),
-    IANA_REGISTRY("iana"),
-    IANAHOLD("iana-hold"),
-    IANARTN("iana-returns"),
-    RIRSWAP("rir-swap"),
-    ASN_TRANSFER("asn-transfer");
+public class URIContent {
+    private String identifier;
+    private byte[] content;
 
-    private String value;
-    StatsSource(String value) {
-        this.value = value;
+    public URIContent(String identifier, byte[] content) {
+        this.identifier = identifier;
+        this.content = content;
     }
 
-    public String getValue() {
-        return value;
+    public byte[] getContent() {
+        return content;
+    }
+
+    public String getIdentifier() {
+        return identifier;
     }
 }

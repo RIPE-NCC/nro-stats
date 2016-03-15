@@ -29,26 +29,18 @@
  */
 package net.nro.stats.resources;
 
-/**
- * Referenced from original implementation
- *
- * Will have to revisit to adjust the implementation.
- */
-public enum StatsSource {
-    STATS("stats"),
-    ESTATS("e-stats"),
-    IANA_REGISTRY("iana"),
-    IANAHOLD("iana-hold"),
-    IANARTN("iana-returns"),
-    RIRSWAP("rir-swap"),
-    ASN_TRANSFER("asn-transfer");
+import net.nro.stats.components.parser.ASNTransferRecord;
 
-    private String value;
-    StatsSource(String value) {
-        this.value = value;
+import java.util.List;
+
+public class ASNTransfer {
+    private final List<ASNTransferRecord> records;
+
+    public ASNTransfer(List<ASNTransferRecord> records) {
+        this.records = records;
     }
 
-    public String getValue() {
-        return value;
+    public List<ASNTransferRecord> getRecords() {
+        return records;
     }
 }

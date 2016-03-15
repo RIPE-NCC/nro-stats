@@ -40,6 +40,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -71,7 +72,7 @@ public class RecordsMerger {
                 asnMerger.merge(
                         parsedRIRStats.stream()
                                 .map(ParsedRIRStats::getAsnRecords)
-                                .reduce(Stream.empty(), Stream::concat)
+                                .flatMap(Collection::stream)
                                 .collect(Collectors.toList())
                 )
         );
@@ -80,7 +81,7 @@ public class RecordsMerger {
                 iPv4Merger.merge(
                         parsedRIRStats.stream()
                                 .map(ParsedRIRStats::getIpv4Records)
-                                .reduce(Stream.empty(), Stream::concat)
+                                .flatMap(Collection::stream)
                                 .collect(Collectors.toList())
                 )
         );
@@ -89,7 +90,7 @@ public class RecordsMerger {
                 iPv6Merger.merge(
                         parsedRIRStats.stream()
                                 .map(ParsedRIRStats::getIpv6Records)
-                                .reduce(Stream.empty(), Stream::concat)
+                                .flatMap(Collection::stream)
                                 .collect(Collectors.toList())
                 )
         );

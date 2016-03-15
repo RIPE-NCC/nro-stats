@@ -38,13 +38,23 @@ import java.util.Map;
 @ConfigurationProperties(prefix = "nro.stats.extended.input")
 public class RIRDelegatedExtended {
 
-    private Map<String, String> url;
+    private Map<String, String> rir;
 
-    public Map<String, String> getUrl() {
-        return url;
+    private String iana;
+
+    public Map<String, String> getRir() {
+        return rir;
     }
 
-    public void setUrl(Map<String, String> url) {
-        this.url = url;
+    public void setRir(Map<String, String> rir) {
+        this.rir = rir;
+    }
+
+    public String getIana() {
+        return iana;
+    }
+
+    public void setIana(String iana) {
+        this.iana = iana;
     }
 }

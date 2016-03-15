@@ -35,9 +35,8 @@ import net.nro.stats.components.merger.IPv6Merger;
 import net.nro.stats.components.parser.Parser;
 import net.nro.stats.components.resolver.OrderedResolver;
 import net.nro.stats.config.DelegatedExtended;
-import net.nro.stats.config.RIRDelegatedExtended;
 import net.nro.stats.resources.ParsedRIRStats;
-import net.nro.stats.resources.RIRStats;
+import net.nro.stats.resources.URIContent;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -86,9 +85,9 @@ public class RecordsMergerTest {
 
         assertEquals(1, nroStats.getHeaders().count());
         assertEquals(3, nroStats.getSummary().count());
-        assertEquals(1, nroStats.getAsnRecords().count());
-        assertEquals(3, nroStats.getIpv4Records().count());
-        assertEquals(1, nroStats.getIpv6Records().count());
+        assertEquals(1, nroStats.getAsnRecords().size());
+        assertEquals(3, nroStats.getIpv4Records().size());
+        assertEquals(1, nroStats.getIpv6Records().size());
         assertEquals(9, nroStats.getLines().count());
     }
 
@@ -96,8 +95,8 @@ public class RecordsMergerTest {
         Map<String, String> urls = new HashMap<>();
         urls.put("ripencc", "src/test/resources/ripencc.test.delegated.stats.txt");
         urls.put("apnic", "src/test/resources/apnic.test.delegated.stats.txt");
-        RIRStatsRetriever rirStatsRetriever = new RIRStatsRetriever(new FileURIBytesRetriever());
-        List<RIRStats> rirStatses = rirStatsRetriever.fetchAll(urls);
+        URIContentRetriever uriContentRetriever = new URIContentRetriever(new FileURIBytesRetriever());
+        List<URIContent> rirStatses = uriContentRetriever.fetchAll(urls);
         Parser parser = new Parser(Charset.forName("US-ASCII"), new DummyDateTimeProvider());
         return rirStatses.stream().map(parser::parseRirStats).collect(Collectors.toList());
     }
