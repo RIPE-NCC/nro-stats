@@ -31,7 +31,7 @@ package net.nro.stats;
 
 
 import net.nro.stats.config.DelegatedExtended;
-import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,9 +47,9 @@ import org.springframework.web.client.RestTemplate;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -66,10 +66,25 @@ public class WebIntegrationTests {
 
     private RestTemplate restTemplate = new TestRestTemplate();
 
+    private String appContext;
+
+    @Before
+    public void setup() {
+        appContext = "http://localhost:" + port + "/nro-stats";
+    }
+
+    @Test
+    public void healthCheck() throws Exception {
+        ResponseEntity<Map> response = restTemplate.getForEntity(appContext + "/health", Map.class);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("UP", response.getBody().get("status"));
+    }
+
     @Test
     public void generateStats() throws Exception {
         ResponseEntity<String> response = restTemplate
-                .postForEntity("http://localhost:" + port + "/nro-stats/process", null, String.class);
+                .postForEntity(appContext + "/process", null, String.class);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
 
