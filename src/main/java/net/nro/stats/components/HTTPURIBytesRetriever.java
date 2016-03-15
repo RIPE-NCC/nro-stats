@@ -46,7 +46,7 @@ import java.net.URI;
 
 @Component
 @Scope("prototype")
-@Profile("!local")
+@Profile({"dev", "prepdev", "production"})
 public class HTTPURIBytesRetriever implements URIBytesRetriever {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 

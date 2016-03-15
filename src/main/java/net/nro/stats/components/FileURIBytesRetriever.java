@@ -29,37 +29,33 @@
  */
 package net.nro.stats.components;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 @Component
-@Profile("local")
+@Profile({"local", "test"})
 public class FileURIBytesRetriever implements URIBytesRetriever {
+
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
+
     @Override
     public byte[] retrieveBytes(String uri) {
 
-        ByteArrayOutputStream outputStream = null;
+        logger.info("Retrieving file {}", uri);
 
-        try (FileInputStream inputStream = new FileInputStream(new File(uri)))
-        {
-            byte[] buffer = new byte[4096];
-            outputStream = new ByteArrayOutputStream();
-            int read = 0;
-            while ((read = inputStream.read(buffer)) != -1) {
-                outputStream.write(buffer, 0, read);
-            }
+        byte[] output;
 
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+        try {
+            output = Files.readAllBytes(Paths.get(uri));
+        } catch (Exception e) {
+            logger.error("Unable to fetch the specified file", e);
+            throw new RuntimeException(e);
         }
-        return outputStream.toByteArray();
+        return output;
     }
 }

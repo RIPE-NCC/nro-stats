@@ -45,7 +45,7 @@ public class NroStatsController {
     @Autowired
     NroStatsService nroStatsService;
 
-    @RequestMapping(path = "process", method = RequestMethod.GET)
+    @RequestMapping(path = "process", method = RequestMethod.POST)
     public void process() {
         logger.info("Extended NRO process started manually");
         nroStatsService.generate();
