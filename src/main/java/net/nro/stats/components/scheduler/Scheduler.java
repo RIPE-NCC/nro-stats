@@ -36,10 +36,10 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 /**
- * Specifically disabled for local profile.
+ * Only enable scheduling when deployed at a server, not for local and test
  */
 @Component
-@Profile("!local")
+@Profile({"dev","prepdev","production"})
 public class Scheduler {
 
     @Autowired
