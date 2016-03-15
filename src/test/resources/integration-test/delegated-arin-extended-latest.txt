@@ -1,0 +1,15 @@
+2.3|arin|1456293874093|11|19700101|20160224|-0500
+arin|*|asn|*|4|summary
+arin|*|ipv4|*|2|summary
+arin|*|ipv6|*|5|summary
+arin|US|asn|1|1|20010920|assigned|abc43e5fcdb68e284085cf6f1b34834e
+arin|US|asn|2|1|19910110|assigned|c3a16289a7ed6fb75fec2e256e5b5101
+arin|US|asn|3|1||assigned|d98c567cda2db06e693f2b574eafe848
+arin||asn|394936|229||available|
+arin|US|ipv4|3.0.0.0|16777216|19880223|assigned|df4bb610f5374373d9edd182c1901c22
+arin|US|ipv4|4.0.0.0|16777216|19921201|allocated|abc43e5fcdb68e284085cf6f1b34834e
+arin|US|ipv6|2001:400::|32|19990803|allocated|04f048163e37eef48d891498545eefc0
+arin||ipv6|2001:401::|32||reserved|
+arin||ipv6|2001:402::|31||reserved|
+arin||ipv6|2001:404::|30||reserved|
+arin|US|ipv6|2001:408::|32|20100202|allocated|db974238714ca8de634a7ce1d083a14f

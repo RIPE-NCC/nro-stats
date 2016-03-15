@@ -1,0 +1,8 @@
+2.3|lacnic|20160223|4|19870101|20160223|-0300
+lacnic|*|ipv4|*|2|summary
+lacnic|*|ipv6|*|1|summary
+lacnic|*|asn|*|1|summary
+lacnic||ipv4|24.152.0.0|32768||reserved|
+lacnic|AR|ipv4|24.232.0.0|65536|19970602|allocated|22395
+lacnic||ipv6|2808::|13||available
+lacnic|MX|asn|278|1|19890331|allocated|31986

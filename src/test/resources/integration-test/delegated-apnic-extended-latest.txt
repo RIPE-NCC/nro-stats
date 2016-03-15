@@ -1,0 +1,38 @@
+######################################################################
+#
+# 	CONDITIONS OF USE
+# ____________________________________________________________________
+# 
+# 
+# The files are freely available for download and use on the condition 
+# that APNIC will not be held responsible for any loss or damage 
+# arising from the use of the information contained in these reports.
+# 
+# APNIC endeavours to the best of its ability to ensure the accuracy 
+# of these reports; however, APNIC makes no guarantee in this regard.
+# 
+# In particular, it should be noted that these reports seek to 
+# indicate where resources were first allocated or assigned. It is not
+# intended that these reports be considered as an authoritative 
+# statement of the location in which any specific resource may 
+# currently be in use.
+# 
+# For more information see: 
+#
+#       http://www.apnic.net/db/rir-stats-format.html
+# or
+#	ftp://ftp.apnic.net/pub/apnic/stats/apnic/README-EXTENDED.TXT
+#
+######################################################################
+#
+2.3|apnic|20160225|7||20160224|+1000
+apnic|*|asn|*|3|summary
+apnic|*|ipv4|*|2|summary
+apnic|*|ipv6|*|2|summary
+apnic|AU|ipv4|1.0.0.0|256|20110811|assigned|A91872ED
+apnic|CN|ipv4|1.0.1.0|256|20110414|allocated|A92E1062
+apnic|AU|ipv6|2001:df5:a800::|48|20140507|assigned|A91D5228
+apnic||ipv6|2001:df5:a801::|48||available|
+apnic||asn|58937|1||available|
+apnic|NZ|asn|58938|1|20130605|allocated|A91F5804
+apnic|HK|asn|58939|1|20130607|allocated|A91FC1F6
