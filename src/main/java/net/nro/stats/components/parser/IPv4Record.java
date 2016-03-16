@@ -29,6 +29,7 @@
  */
 package net.nro.stats.components.parser;
 
+import net.nro.stats.resources.StatsSource;
 import net.ripe.commons.ip.Ipv4;
 import net.ripe.commons.ip.Ipv4Range;
 import net.ripe.commons.ip.StartAndSizeComparator;
@@ -43,8 +44,16 @@ public class IPv4Record extends Record<Ipv4Range> {
         super(registry, countryCode, "ipv4", start, value, date, status, regId, extensions);
     }
 
+    public IPv4Record(StatsSource source, String registry, String countryCode, String start, String value, String date, String status, String regId, String... extensions) {
+        super(source, registry, countryCode, "ipv4", start, value, date, status, regId, extensions);
+    }
+
     public IPv4Record(CSVRecord line, String defaultDate) {
         super(line, defaultDate);
+    }
+    
+    public IPv4Record(StatsSource source, CSVRecord line, String defaultDate) {
+        super(source, line, defaultDate);
     }
 
     public static boolean fits(CSVRecord line) {
@@ -66,7 +75,7 @@ public class IPv4Record extends Record<Ipv4Range> {
 
     @Override
     public IPv4Record clone(Ipv4Range range) {
-        return new IPv4Record(getRegistry(), getCountryCode(), range.start().toString(), range.size().toString(), getDate(), getStatus(),getRegId(), getExtensions());
+        return new IPv4Record(getSource(), getRegistry(), getCountryCode(), range.start().toString(), range.size().toString(), getDate(), getStatus(),getRegId(), getExtensions());
     }
 
 }

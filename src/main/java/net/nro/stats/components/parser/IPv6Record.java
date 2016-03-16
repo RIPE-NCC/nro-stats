@@ -29,6 +29,7 @@
  */
 package net.nro.stats.components.parser;
 
+import net.nro.stats.resources.StatsSource;
 import net.ripe.commons.ip.Ipv6;
 import net.ripe.commons.ip.Ipv6Range;
 import net.ripe.commons.ip.PrefixUtils;
@@ -43,8 +44,16 @@ public class IPv6Record extends Record<Ipv6Range> {
         super(registry, countryCode, "ipv6", start, value, date, status, regId, extensions);
     }
 
+    public IPv6Record(StatsSource source, String registry, String countryCode, String start, String value, String date, String status, String regId, String... extensions) {
+        super(source, registry, countryCode, "ipv6", start, value, date, status, regId, extensions);
+    }
+
     public IPv6Record(CSVRecord line, String defaultDate) {
         super(line, defaultDate);
+    }
+
+    public IPv6Record(StatsSource source, CSVRecord line, String defaultDate) {
+        super(source, line, defaultDate);
     }
 
     public static boolean fits(CSVRecord line) {
@@ -65,7 +74,7 @@ public class IPv6Record extends Record<Ipv6Range> {
 
     @Override
     public IPv6Record clone(Ipv6Range range) {
-        return new IPv6Record(getRegistry(), getCountryCode(), range.start().toString(),
+        return new IPv6Record(getSource(), getRegistry(), getCountryCode(), range.start().toString(),
                 String.valueOf(PrefixUtils.getPrefixLength(range)), getDate(), getStatus(),getRegId(), getExtensions());
     }
 }

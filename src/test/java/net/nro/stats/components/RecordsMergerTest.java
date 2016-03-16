@@ -36,6 +36,7 @@ import net.nro.stats.components.parser.Parser;
 import net.nro.stats.components.resolver.OrderedResolver;
 import net.nro.stats.config.DelegatedExtended;
 import net.nro.stats.resources.ParsedRIRStats;
+import net.nro.stats.resources.StatsSource;
 import net.nro.stats.resources.URIContent;
 import org.junit.Before;
 import org.junit.Test;
@@ -95,9 +96,9 @@ public class RecordsMergerTest {
         Map<String, String> urls = new HashMap<>();
         urls.put("ripencc", "src/test/resources/ripencc.test.delegated.stats.txt");
         urls.put("apnic", "src/test/resources/apnic.test.delegated.stats.txt");
-        URIContentRetriever uriContentRetriever = new URIContentRetriever(new FileURIBytesRetriever());
+        URIContentRetriever uriContentRetriever = new URIContentRetriever(new FileRetriever(), new HttpRetriever());
         List<URIContent> rirStatses = uriContentRetriever.fetchAll(urls);
         Parser parser = new Parser(Charset.forName("US-ASCII"), new DummyDateTimeProvider());
-        return rirStatses.stream().map(parser::parseRirStats).collect(Collectors.toList());
+        return rirStatses.stream().map(p -> parser.parseRirStats(StatsSource.ESTATS,p)).collect(Collectors.toList());
     }
 }

@@ -32,6 +32,7 @@ package net.nro.stats.components.parser;
 import net.nro.stats.components.DateTimeProvider;
 import net.nro.stats.resources.ASNTransfer;
 import net.nro.stats.resources.ParsedRIRStats;
+import net.nro.stats.resources.StatsSource;
 import net.nro.stats.resources.URIContent;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
@@ -63,7 +64,7 @@ public class Parser {
         this.dateTimeProvider = dateTimeProvider;
     }
 
-    public ParsedRIRStats parseRirStats(URIContent uriContent) {
+    public ParsedRIRStats parseRirStats(StatsSource source, URIContent uriContent) {
         String today = dateTimeProvider.today();
         ParsedRIRStats parsedRIRStats = new ParsedRIRStats(uriContent.getIdentifier());
         try {
@@ -78,15 +79,15 @@ public class Parser {
                     .parse(in);
             for (CSVRecord line : lines) {
                 if (Header.fits(line)) {
-                    parsedRIRStats.addHeader(new Header(line));
+                    parsedRIRStats.addHeader(new Header(source, line));
                 } else if (Summary.fits(line)) {
-                    parsedRIRStats.addSummary(new Summary(line));
+                    parsedRIRStats.addSummary(new Summary(source, line));
                 } else if (IPv4Record.fits(line)) {
-                    parsedRIRStats.addIPv4Record(new IPv4Record(line, today));
+                    parsedRIRStats.addIPv4Record(new IPv4Record(source, line, today));
                 } else if (IPv6Record.fits(line)) {
-                    parsedRIRStats.addIPv6Record(new IPv6Record(line, today));
+                    parsedRIRStats.addIPv6Record(new IPv6Record(source, line, today));
                 } else if (ASNRecord.fits(line)) {
-                    parsedRIRStats.addAsnRecord(new ASNRecord(line, today));
+                    parsedRIRStats.addAsnRecord(new ASNRecord(source, line, today));
                 } else {
                     logger.warn("Malformed line number " + line.getRecordNumber() + "\n" + line.toString());
                 }

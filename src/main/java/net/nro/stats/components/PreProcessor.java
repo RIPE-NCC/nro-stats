@@ -29,43 +29,67 @@
  */
 package net.nro.stats.components;
 
-import com.google.common.base.Strings;
 import net.nro.stats.components.parser.ASNRecord;
+import net.nro.stats.components.parser.IPv4Record;
+import net.nro.stats.components.parser.IPv6Record;
 import net.nro.stats.components.parser.Parser;
+import net.nro.stats.components.parser.Record;
 import net.nro.stats.config.AsnTranslate;
 import net.nro.stats.resources.ASNTransfer;
 import net.nro.stats.resources.ParsedRIRStats;
 import net.nro.stats.resources.URIContent;
-import net.ripe.commons.ip.Asn;
 import net.ripe.commons.ip.AsnRange;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
-public class Validator {
+public class PreProcessor {
 
     private URIContentRetriever contentRetriever;
     private Parser parser;
     private AsnTranslate asnTranslate;
 
     @Autowired
-    public Validator(AsnTranslate asnTranslate, URIContentRetriever contentRetriever, Parser parser) {
+    public PreProcessor(AsnTranslate asnTranslate, URIContentRetriever contentRetriever, Parser parser) {
         this.contentRetriever = contentRetriever;
         this.parser = parser;
         this.asnTranslate = asnTranslate;
     }
 
-    public void validate(List<ParsedRIRStats> sourceLinesPerRIR) {
-        sourceLinesPerRIR
-                .stream()
+    public void processRirStats(List<ParsedRIRStats> rirStats) {
+        rirStats.stream()
                 .filter(p -> asnTranslate.getRir().keySet().contains(p.getRir()))
                 .forEach(this::translateAsn);
-        return;
+    }
+
+    public void processIanaStats(ParsedRIRStats ianaStats) {
+        List<ASNRecord> asnRecords = ianaStats.getAsnRecords().parallelStream()
+                .filter(this::filter)
+                .collect(Collectors.toList());
+        ianaStats.getAsnRecords().clear();
+        ianaStats.getAsnRecords().addAll(asnRecords);
+
+        List<IPv4Record> iPv4Records = ianaStats.getIpv4Records().parallelStream()
+                .filter(this::filter)
+                .collect(Collectors.toList());
+        ianaStats.getIpv4Records().clear();
+        ianaStats.getIpv4Records().addAll(iPv4Records);
+
+        List<IPv6Record> iPv6Records = ianaStats.getIpv6Records().parallelStream()
+                .filter(this::filter)
+                .collect(Collectors.toList());
+        ianaStats.getIpv6Records().clear();
+        ianaStats.getIpv6Records().addAll(iPv6Records);
+
+    }
+
+    private boolean filter(Record record) {
+        return "iana".equals(record.getRegId()) || "ietf".equals(record.getRegId()) ||
+                "ianapool".equals(record.getStatus());
     }
 
     private void translateAsn(ParsedRIRStats rirStats) {

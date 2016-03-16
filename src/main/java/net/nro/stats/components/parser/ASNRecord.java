@@ -29,6 +29,7 @@
  */
 package net.nro.stats.components.parser;
 
+import net.nro.stats.resources.StatsSource;
 import net.ripe.commons.ip.Asn;
 import net.ripe.commons.ip.AsnRange;
 import net.ripe.commons.ip.StartAndSizeComparator;
@@ -38,12 +39,20 @@ import java.util.Comparator;
 
 public class ASNRecord extends Record<AsnRange> {
 
+    public ASNRecord(StatsSource source, String registry, String countryCode, String start, String value, String date, String status, String regId, String... extensions) {
+        super(source, registry, countryCode, "asn", start, value, date, status, regId, extensions);
+    }
+
     public ASNRecord(String registry, String countryCode, String start, String value, String date, String status, String regId, String... extensions) {
         super(registry, countryCode, "asn", start, value, date, status, regId, extensions);
     }
 
     public ASNRecord(CSVRecord line, String defaultDate) {
         super(line, defaultDate);
+    }
+
+    public ASNRecord(StatsSource source, CSVRecord line, String defaultDate) {
+        super(source, line, defaultDate);
     }
 
     public static boolean fits(CSVRecord line) {
@@ -64,10 +73,10 @@ public class ASNRecord extends Record<AsnRange> {
 
     @Override
     public ASNRecord clone(AsnRange range) {
-        return new ASNRecord(getRegistry(), getCountryCode(), range.start().asBigInteger().toString(), range.size().toString(), getDate(), getStatus(), getRegId(), getExtensions());
+        return new ASNRecord(getSource(), getRegistry(), getCountryCode(), range.start().asBigInteger().toString(), range.size().toString(), getDate(), getStatus(), getRegId(), getExtensions());
     }
 
     public ASNRecord clone(AsnRange range, String countryCode) {
-        return new ASNRecord(getRegistry(), countryCode, range.start().asBigInteger().toString(), range.size().toString(), getDate(), getStatus(), getRegId(), getExtensions());
+        return new ASNRecord(getSource(), getRegistry(), countryCode, range.start().asBigInteger().toString(), range.size().toString(), getDate(), getStatus(), getRegId(), getExtensions());
     }
 }

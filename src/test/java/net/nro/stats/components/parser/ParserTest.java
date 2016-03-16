@@ -30,12 +30,11 @@
 package net.nro.stats.components.parser;
 
 import net.nro.stats.components.DateTimeProvider;
-import net.nro.stats.components.FileURIBytesRetriever;
+import net.nro.stats.components.FileRetriever;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.*;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.List;
@@ -45,7 +44,7 @@ import static org.junit.Assert.assertTrue;
 public class ParserTest {
 
     private Parser sut;
-    private FileURIBytesRetriever bytesRetriever = new FileURIBytesRetriever();
+    private FileRetriever bytesRetriever = new FileRetriever();
 
     @Before
     public void beforeEach() {

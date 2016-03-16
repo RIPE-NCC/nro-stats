@@ -29,33 +29,44 @@
  */
 package net.nro.stats.components;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Component;
+import net.nro.stats.components.parser.Parser;
+import net.nro.stats.config.AsnTranslate;
+import net.nro.stats.resources.ParsedRIRStats;
+import net.nro.stats.resources.StatsSource;
+import net.nro.stats.resources.URIContent;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Spy;
+import org.mockito.runners.MockitoJUnitRunner;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.charset.Charset;
 
-@Component
-@Profile({"local", "test"})
-public class FileURIBytesRetriever implements URIBytesRetriever {
+import static org.junit.Assert.assertEquals;
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+@RunWith(MockitoJUnitRunner.class)
+public class PreProcessorTest {
 
-    @Override
-    public byte[] retrieveBytes(String uri) {
+    @Spy
+    URIContentRetriever uriContentRetriever = new URIContentRetriever(new FileRetriever(), new HttpRetriever());
+    @Spy
+    AsnTranslate asnTranslate = new AsnTranslate();
+    @Spy
+    Parser parser = new Parser(Charset.forName("US-ASCII"), new DummyDateTimeProvider());
 
-        logger.info("Retrieving file {}", uri);
+    @InjectMocks
+    PreProcessor preProcessor;
 
-        byte[] output;
-
-        try {
-            output = Files.readAllBytes(Paths.get(uri));
-        } catch (Exception e) {
-            logger.error("Unable to fetch the specified file", e);
-            throw new RuntimeException(e);
-        }
-        return output;
+    @Test
+    public void testProcessIanaStats() throws Exception {
+        URIContent ianaContent = uriContentRetriever.fetch("iana", "src/test/resources/iana.test.delegated-extended.stats.txt");
+        ParsedRIRStats ianaStats = parser.parseRirStats(StatsSource.IANA_REGISTRY, ianaContent);
+        assertEquals(3, ianaStats.getAsnRecords().size());
+        assertEquals(3, ianaStats.getIpv4Records().size());
+        assertEquals(11, ianaStats.getIpv6Records().size());
+        preProcessor.processIanaStats(ianaStats);
+        assertEquals(1, ianaStats.getAsnRecords().size());
+        assertEquals(1, ianaStats.getIpv4Records().size());
+        assertEquals(8, ianaStats.getIpv6Records().size());
     }
 }

@@ -30,11 +30,12 @@
 package net.nro.stats.services;
 
 import net.nro.stats.components.DummyDateTimeProvider;
-import net.nro.stats.components.FileURIBytesRetriever;
+import net.nro.stats.components.FileRetriever;
+import net.nro.stats.components.HttpRetriever;
+import net.nro.stats.components.PreProcessor;
 import net.nro.stats.components.URIContentRetriever;
 import net.nro.stats.components.RecordsMerger;
 import net.nro.stats.components.StatsWriter;
-import net.nro.stats.components.Validator;
 import net.nro.stats.components.parser.Parser;
 import net.nro.stats.config.RIRDelegatedExtended;
 import net.nro.stats.resources.ParsedRIRStats;
@@ -67,13 +68,13 @@ public class NroStatsServiceTest {
     RecordsMerger recordsMerger;
 
     @Mock
-    Validator validator;
+    PreProcessor preProcessor;
 
     @Mock
     StatsWriter writer;
 
     @Spy
-    URIContentRetriever uriContentRetriever = new URIContentRetriever(new FileURIBytesRetriever());
+    URIContentRetriever uriContentRetriever = new URIContentRetriever(new FileRetriever(), new HttpRetriever());
 
     @InjectMocks
     NroStatsService nroStatsService;
@@ -84,6 +85,7 @@ public class NroStatsServiceTest {
         urls.put("ripencc", "src/test/resources/ripencc.test.delegated.stats.txt");
         urls.put("apnic", "src/test/resources/apnic.test.delegated.stats.txt");
         rirDelegatedExtended.setRir(urls);
+        rirDelegatedExtended.setIana("src/test/resources/iana.test.delegated-extended.stats.txt");
         ParsedRIRStats nroStats = new ParsedRIRStats("nro");
         when(recordsMerger.merge(anyListOf(ParsedRIRStats.class))).thenReturn(nroStats);
     }

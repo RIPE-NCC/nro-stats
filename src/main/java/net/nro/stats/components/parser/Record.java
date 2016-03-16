@@ -82,10 +82,10 @@ public abstract class Record<R extends AbstractRange> implements Line {
                 this.status = "assigned";
                 break;
             case "available": case "Available":
-                this.status = "available";
+                this.status = (isIana(registry))?"ianapool":"available";
                 break;
             case "reserved":case "Reserved":
-                this.status = "reserved";
+                this.status = (isIana(registry))?"ietf":"reserved";
                 break;
             default:
                 this.status = line.get(6);
@@ -105,6 +105,10 @@ public abstract class Record<R extends AbstractRange> implements Line {
 
         this.extensions = exts;
 
+    }
+
+    private boolean isIana(String registry) {
+        return "iana".equals(registry);
     }
 
     public Record(CSVRecord line, String defaultDate) {

@@ -29,19 +29,21 @@
  */
 package net.nro.stats.services;
 
+import net.nro.stats.components.PreProcessor;
 import net.nro.stats.components.URIContentRetriever;
 import net.nro.stats.components.RecordsMerger;
 import net.nro.stats.components.StatsWriter;
-import net.nro.stats.components.Validator;
 import net.nro.stats.components.parser.Parser;
 import net.nro.stats.config.RIRDelegatedExtended;
 import net.nro.stats.resources.ParsedRIRStats;
+import net.nro.stats.resources.StatsSource;
 import net.nro.stats.resources.URIContent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -60,7 +62,7 @@ public class NroStatsService {
     RecordsMerger recordsMerger;
 
     @Autowired
-    Validator validator;
+    PreProcessor preProcessor;
 
     @Autowired
     StatsWriter writer;
@@ -73,12 +75,19 @@ public class NroStatsService {
         logger.info("Generating Extended NRO Stats");
         try {
             List<URIContent> rirStats = uriContentRetriever.fetchAll(rirDelegatedExtended.getRir());
+            URIContent ianaStats = uriContentRetriever.fetch("iana", rirDelegatedExtended.getIana());
 
-            List<ParsedRIRStats> parsedRIRStats = rirStats.stream().map(parser::parseRirStats).collect(Collectors.toList());
+            List<ParsedRIRStats> parsedRIRStats = rirStats.stream().map(p -> parser.parseRirStats(StatsSource.ESTATS, p)).collect(Collectors.toList());
+            ParsedRIRStats parsedIANAStats = parser.parseRirStats(StatsSource.IANA_REGISTRY, ianaStats);
 
-            validator.validate(parsedRIRStats);
+            preProcessor.processRirStats(parsedRIRStats);
+            preProcessor.processIanaStats(parsedIANAStats);
 
-            ParsedRIRStats nroStats = recordsMerger.merge(parsedRIRStats);
+            List<ParsedRIRStats> combinedStats = new ArrayList<>();
+            combinedStats.addAll(parsedRIRStats);
+            combinedStats.add(parsedIANAStats);
+
+            ParsedRIRStats nroStats = recordsMerger.merge(combinedStats);
 
             writer.write(nroStats);
 
