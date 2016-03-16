@@ -34,7 +34,7 @@ import net.nro.stats.components.URIContentRetriever;
 import net.nro.stats.components.RecordsMerger;
 import net.nro.stats.components.StatsWriter;
 import net.nro.stats.components.parser.Parser;
-import net.nro.stats.config.RIRDelegatedExtended;
+import net.nro.stats.config.ExtendedInputConfig;
 import net.nro.stats.resources.ParsedRIRStats;
 import net.nro.stats.resources.StatsSource;
 import net.nro.stats.resources.URIContent;
@@ -53,7 +53,7 @@ public class NroStatsService {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
-    RIRDelegatedExtended rirDelegatedExtended;
+    ExtendedInputConfig extendedInputConfig;
 
     @Autowired
     Parser parser;
@@ -74,8 +74,8 @@ public class NroStatsService {
     public void generate() {
         logger.info("Generating Extended NRO Stats");
         try {
-            List<URIContent> rirStats = uriContentRetriever.fetchAll(rirDelegatedExtended.getRir());
-            URIContent ianaStats = uriContentRetriever.fetch("iana", rirDelegatedExtended.getIana());
+            List<URIContent> rirStats = uriContentRetriever.fetchAll(extendedInputConfig.getRir());
+            URIContent ianaStats = uriContentRetriever.fetch("iana", extendedInputConfig.getIana());
 
             List<ParsedRIRStats> parsedRIRStats = rirStats.stream().map(p -> parser.parseRirStats(StatsSource.ESTATS, p)).collect(Collectors.toList());
             ParsedRIRStats parsedIANAStats = parser.parseRirStats(StatsSource.IANA_REGISTRY, ianaStats);

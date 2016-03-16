@@ -37,7 +37,7 @@ import net.nro.stats.components.URIContentRetriever;
 import net.nro.stats.components.RecordsMerger;
 import net.nro.stats.components.StatsWriter;
 import net.nro.stats.components.parser.Parser;
-import net.nro.stats.config.RIRDelegatedExtended;
+import net.nro.stats.config.ExtendedInputConfig;
 import net.nro.stats.resources.ParsedRIRStats;
 import org.junit.Before;
 import org.junit.Test;
@@ -59,7 +59,7 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class NroStatsServiceTest {
     @Spy
-    RIRDelegatedExtended rirDelegatedExtended = new RIRDelegatedExtended();
+    ExtendedInputConfig extendedInputConfig = new ExtendedInputConfig();
 
     @Spy
     Parser parser = new Parser(Charset.forName("US-ASCII"), new DummyDateTimeProvider());
@@ -84,8 +84,8 @@ public class NroStatsServiceTest {
         Map<String, String> urls = new HashMap<>();
         urls.put("ripencc", "src/test/resources/ripencc.test.delegated.stats.txt");
         urls.put("apnic", "src/test/resources/apnic.test.delegated.stats.txt");
-        rirDelegatedExtended.setRir(urls);
-        rirDelegatedExtended.setIana("src/test/resources/iana.test.delegated-extended.stats.txt");
+        extendedInputConfig.setRir(urls);
+        extendedInputConfig.setIana("src/test/resources/iana.test.delegated-extended.stats.txt");
         ParsedRIRStats nroStats = new ParsedRIRStats("nro");
         when(recordsMerger.merge(anyListOf(ParsedRIRStats.class))).thenReturn(nroStats);
     }

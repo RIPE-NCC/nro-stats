@@ -36,7 +36,7 @@ import java.util.Map;
 
 @Configuration
 @ConfigurationProperties(prefix = "nro.stats.extended.input")
-public class RIRDelegatedExtended {
+public class ExtendedInputConfig {
 
     private Map<String, String> rir;
 
