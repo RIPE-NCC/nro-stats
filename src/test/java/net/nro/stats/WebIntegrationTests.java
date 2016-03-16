@@ -30,7 +30,7 @@
 package net.nro.stats;
 
 
-import net.nro.stats.config.DelegatedExtended;
+import net.nro.stats.config.ExtendedOutputConfig;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -62,7 +62,7 @@ public class WebIntegrationTests {
     int port;
 
     @Autowired
-    DelegatedExtended delegatedExtended;
+    ExtendedOutputConfig extendedOutputConfig;
 
     private RestTemplate restTemplate = new TestRestTemplate();
 
@@ -88,8 +88,8 @@ public class WebIntegrationTests {
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
 
-        assertTrue(Files.deleteIfExists(Paths.get(delegatedExtended.getFolder(), delegatedExtended.getFile())));
-        assertTrue(Files.notExists(Paths.get(delegatedExtended.getFolder(), delegatedExtended.getTmpFile())));
-        assertTrue(Files.notExists(Paths.get(delegatedExtended.getFolder(), delegatedExtended.getFile()+"."+delegatedExtended.getBackupFormat())));
+        assertTrue(Files.deleteIfExists(Paths.get(extendedOutputConfig.getFolder(), extendedOutputConfig.getFile())));
+        assertTrue(Files.notExists(Paths.get(extendedOutputConfig.getFolder(), extendedOutputConfig.getTmpFile())));
+        assertTrue(Files.notExists(Paths.get(extendedOutputConfig.getFolder(), extendedOutputConfig.getFile()+"."+ extendedOutputConfig.getBackupFormat())));
     }
 }

@@ -30,11 +30,12 @@
 package net.nro.stats.components;
 
 import net.nro.stats.components.merger.ASNMerger;
+import net.nro.stats.components.merger.HeaderMerger;
 import net.nro.stats.components.merger.IPv4Merger;
 import net.nro.stats.components.merger.IPv6Merger;
 import net.nro.stats.components.parser.Parser;
 import net.nro.stats.components.resolver.OrderedResolver;
-import net.nro.stats.config.DelegatedExtended;
+import net.nro.stats.config.ExtendedOutputConfig;
 import net.nro.stats.resources.ParsedRIRStats;
 import net.nro.stats.resources.StatsSource;
 import net.nro.stats.resources.URIContent;
@@ -59,24 +60,26 @@ public class RecordsMergerTest {
     private OrderedResolver resolver = new OrderedResolver("apnic,afrinic,arin,ripencc,lacnic".split(","));
 
     @Spy
+    DateTimeProvider dateTimeProvider = new DummyDateTimeProvider();
+    @Spy
+    ExtendedOutputConfig extendedOutputConfig = new ExtendedOutputConfig();
+
+    @Spy
     IPv4Merger iPv4Merger = new IPv4Merger(resolver);
     @Spy
     IPv6Merger iPv6Merger = new IPv6Merger(resolver);
     @Spy
     ASNMerger asnMerger = new ASNMerger(resolver);
-
     @Spy
-    DateTimeProvider dateTimeProvider = new DummyDateTimeProvider();
-    @Spy
-    DelegatedExtended delegatedExtended = new DelegatedExtended();
+    HeaderMerger headerMerger = new HeaderMerger(extendedOutputConfig, dateTimeProvider);
 
     @InjectMocks
     RecordsMerger recordsMerger;
 
     @Before
     public void setUp() throws Exception {
-        delegatedExtended.setIdentifier("nro");
-        delegatedExtended.setVersion("2.3");
+        extendedOutputConfig.setIdentifier("nro");
+        extendedOutputConfig.setVersion("2.3");
     }
 
     @Test
@@ -84,8 +87,8 @@ public class RecordsMergerTest {
 
         ParsedRIRStats nroStats = recordsMerger.merge(fetchTestRIRStats());
 
-        assertEquals(1, nroStats.getHeaders().count());
-        assertEquals(3, nroStats.getSummary().count());
+        assertEquals(1, nroStats.getHeaders().size());
+        assertEquals(3, nroStats.getSummary().size());
         assertEquals(1, nroStats.getAsnRecords().size());
         assertEquals(3, nroStats.getIpv4Records().size());
         assertEquals(1, nroStats.getIpv6Records().size());

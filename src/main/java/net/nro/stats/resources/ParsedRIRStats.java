@@ -29,6 +29,7 @@
  */
 package net.nro.stats.resources;
 
+import com.google.common.collect.Lists;
 import net.nro.stats.components.DateTimeProvider;
 import net.nro.stats.components.parser.ASNRecord;
 import net.nro.stats.components.parser.Header;
@@ -36,14 +37,14 @@ import net.nro.stats.components.parser.IPv4Record;
 import net.nro.stats.components.parser.IPv6Record;
 import net.nro.stats.components.parser.Line;
 import net.nro.stats.components.parser.Summary;
-import net.nro.stats.config.DelegatedExtended;
+import net.nro.stats.config.ExtendedOutputConfig;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
 public class ParsedRIRStats {
-    private List<Header> headers;
+    private Header header;
     private List<Summary> summary;
     private List<IPv4Record> ipv4Records;
     private List<IPv6Record> ipv6Records;
@@ -53,7 +54,7 @@ public class ParsedRIRStats {
 
     public ParsedRIRStats(String rir) {
         this.rir = rir;
-        this.headers = new ArrayList<>();
+        this.header = null;
         this.summary = new ArrayList<>();
         this.ipv4Records = new ArrayList<>();
         this.ipv6Records = new ArrayList<>();
@@ -61,22 +62,17 @@ public class ParsedRIRStats {
     }
 
     public Stream<Line> getLines() {
-        return Stream.of(headers, summary, asnRecords, ipv4Records, ipv6Records).flatMap(List::stream);
+        return Stream.of(getHeaders(), summary, asnRecords, ipv4Records, ipv6Records).flatMap(List::stream);
     }
 
-    public void generateHeaderAndSummary(DelegatedExtended delegatedExtended, DateTimeProvider dateTimeProvider) {
-        addSummary(new Summary(delegatedExtended.getIdentifier(), "asn", String.valueOf(asnRecords.size())));
-        addSummary(new Summary(delegatedExtended.getIdentifier(), "ipv4", String.valueOf(ipv4Records.size())));
-        addSummary(new Summary(delegatedExtended.getIdentifier(), "ipv6", String.valueOf(ipv6Records.size())));
-        String today = dateTimeProvider.today();
-
-        addHeader(new Header(delegatedExtended.getVersion(), delegatedExtended.getIdentifier(), today,
-                String.valueOf(asnRecords.size() + ipv4Records.size()+ ipv6Records.size()),
-                today, today, dateTimeProvider.localZone()));
+    public void generateSummary(ExtendedOutputConfig extendedOutputConfig) {
+        addSummary(new Summary(extendedOutputConfig.getIdentifier(), "asn", String.valueOf(asnRecords.size())));
+        addSummary(new Summary(extendedOutputConfig.getIdentifier(), "ipv4", String.valueOf(ipv4Records.size())));
+        addSummary(new Summary(extendedOutputConfig.getIdentifier(), "ipv6", String.valueOf(ipv6Records.size())));
     }
 
     public void addHeader(Header header) {
-        headers.add(header);
+        this.header = header;
     }
 
     public void addSummary(Summary summary) {
@@ -111,12 +107,12 @@ public class ParsedRIRStats {
         return rir;
     }
 
-    public Stream<Header> getHeaders() {
-        return headers.stream();
+    public List<Header> getHeaders() {
+        return Lists.newArrayList(header);
     }
 
-    public Stream<Summary> getSummary() {
-        return summary.stream();
+    public List<Summary> getSummary() {
+        return summary;
     }
 
     public List<IPv4Record> getIpv4Records() {

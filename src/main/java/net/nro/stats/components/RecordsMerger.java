@@ -30,20 +30,19 @@
 package net.nro.stats.components;
 
 import net.nro.stats.components.merger.ASNMerger;
+import net.nro.stats.components.merger.HeaderMerger;
 import net.nro.stats.components.merger.IPv4Merger;
 import net.nro.stats.components.merger.IPv6Merger;
-import net.nro.stats.config.DelegatedExtended;
+import net.nro.stats.config.ExtendedOutputConfig;
 import net.nro.stats.resources.ParsedRIRStats;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Component
 public class RecordsMerger {
@@ -59,14 +58,14 @@ public class RecordsMerger {
     private ASNMerger asnMerger;
 
     @Autowired
-    private DateTimeProvider dateTimeProvider;
+    private HeaderMerger headerMerger;
 
     @Autowired
-    private DelegatedExtended delegatedExtended;
+    private ExtendedOutputConfig extendedOutputConfig;
 
     public ParsedRIRStats merge(List<ParsedRIRStats> parsedRIRStats) {
 
-        ParsedRIRStats nroStats = new ParsedRIRStats(delegatedExtended.getIdentifier());
+        ParsedRIRStats nroStats = new ParsedRIRStats(extendedOutputConfig.getIdentifier());
 
         nroStats.addAllAsnRecord(
                 asnMerger.merge(
@@ -95,7 +94,17 @@ public class RecordsMerger {
                 )
         );
 
-        nroStats.generateHeaderAndSummary(delegatedExtended, dateTimeProvider);
+        nroStats.generateSummary(extendedOutputConfig);
+
+        nroStats.addHeader(
+                headerMerger.merge(
+                        parsedRIRStats.stream()
+                                .map(ParsedRIRStats::getHeaders)
+                                .flatMap(Collection::stream)
+                                .collect(Collectors.toList()),
+                        nroStats
+                )
+        );
 
         logger.info("Number of Lines after merged {}", nroStats.getLines().count());
 

@@ -29,8 +29,9 @@
  */
 package net.nro.stats.components;
 
+import net.nro.stats.components.parser.Header;
 import net.nro.stats.components.parser.Summary;
-import net.nro.stats.config.DelegatedExtended;
+import net.nro.stats.config.ExtendedOutputConfig;
 import net.nro.stats.resources.ParsedRIRStats;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,7 +48,7 @@ public class StatsWriterTest {
 
     StatsWriter statsWriter;
 
-    DelegatedExtended out = new DelegatedExtended();
+    ExtendedOutputConfig out = new ExtendedOutputConfig();
 
     @Before
     public void setUp() throws Exception {
@@ -60,6 +61,7 @@ public class StatsWriterTest {
     @Test
     public void testWrite() throws Exception {
         ParsedRIRStats nroStats = new ParsedRIRStats("nro");
+        nroStats.addHeader(new Header("2.3", "nro", "20160301", "0", "20160301", "20160301", "+0100"));
         nroStats.addSummary(new Summary("nro", "asn", "0"));
         statsWriter.write(nroStats);
         assertFalse(Files.exists(Paths.get(out.getFolder(), out.getTmpFile())));

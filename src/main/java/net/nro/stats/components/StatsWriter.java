@@ -30,7 +30,7 @@
 package net.nro.stats.components;
 
 import net.nro.stats.components.parser.Line;
-import net.nro.stats.config.DelegatedExtended;
+import net.nro.stats.config.ExtendedOutputConfig;
 import net.nro.stats.resources.ParsedRIRStats;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,23 +56,23 @@ public class StatsWriter {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private DelegatedExtended delegatedExtended;
+    private ExtendedOutputConfig extendedOutputConfig;
 
     private Charset charset;
 
     @Autowired
     public StatsWriter(
-            DelegatedExtended delegatedExtended,
+            ExtendedOutputConfig extendedOutputConfig,
             Charset charset) {
-        this.delegatedExtended = delegatedExtended;
+        this.extendedOutputConfig = extendedOutputConfig;
         this.charset = charset;
     }
 
     public void write(ParsedRIRStats nroStats) {
         validateOutFolder();
 
-        Path outFile = Paths.get(delegatedExtended.getFolder(), delegatedExtended.getFile());
-        Path outFileTmp = Paths.get(delegatedExtended.getFolder(), delegatedExtended.getTmpFile());
+        Path outFile = Paths.get(extendedOutputConfig.getFolder(), extendedOutputConfig.getFile());
+        Path outFileTmp = Paths.get(extendedOutputConfig.getFolder(), extendedOutputConfig.getTmpFile());
 
         if (Files.exists(outFile)) {
             backupPreviousFile(outFile);
@@ -126,9 +126,9 @@ public class StatsWriter {
     private void backupPreviousFile(Path outFile) {
         logger.info("File {} already present, backing it up", outFile);
         try {
-            SimpleDateFormat df = new SimpleDateFormat(delegatedExtended.getBackupFormat());
-            Path outFileOld = Paths.get(delegatedExtended.getFolder(),
-                    delegatedExtended.getFile() + "." + df.format(Files.getLastModifiedTime(outFile).toMillis()));
+            SimpleDateFormat df = new SimpleDateFormat(extendedOutputConfig.getBackupFormat());
+            Path outFileOld = Paths.get(extendedOutputConfig.getFolder(),
+                    extendedOutputConfig.getFile() + "." + df.format(Files.getLastModifiedTime(outFile).toMillis()));
             Files.copy(outFile, outFileOld, COPY_ATTRIBUTES);
         } catch (Exception e) {
             logger.error("Unable to move to backup old file", e);
@@ -137,7 +137,7 @@ public class StatsWriter {
     }
 
     private void validateOutFolder() {
-        Path outFolder = Paths.get(delegatedExtended.getFolder());
+        Path outFolder = Paths.get(extendedOutputConfig.getFolder());
         if (Files.notExists(outFolder)) {
             logger.info("outFolder {} missing. Creating it", outFolder);
             try {

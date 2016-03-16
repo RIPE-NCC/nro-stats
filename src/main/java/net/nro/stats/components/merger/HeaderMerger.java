@@ -27,61 +27,37 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package net.nro.stats.config;
+package net.nro.stats.components.merger;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
+import com.google.common.base.Strings;
+import net.nro.stats.components.DateTimeProvider;
+import net.nro.stats.components.parser.Header;
+import net.nro.stats.config.ExtendedOutputConfig;
+import net.nro.stats.resources.ParsedRIRStats;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
-@ConfigurationProperties(prefix = "nro.stats.extended.output")
-public class DelegatedExtended {
-    private String identifier;
-    private String version;
-    private String folder;
-    private String file;
-    private String backupFormat;
+public class HeaderMerger {
 
-    public String getIdentifier() {
-        return identifier;
+    private ExtendedOutputConfig extendedOutputConfig;
+    private DateTimeProvider dateTimeProvider;
+
+    @Autowired
+    public HeaderMerger(ExtendedOutputConfig extendedOutputConfig, DateTimeProvider dateTimeProvider) {
+        this.extendedOutputConfig = extendedOutputConfig;
+        this.dateTimeProvider = dateTimeProvider;
     }
 
-    public void setIdentifier(String identifier) {
-        this.identifier = identifier;
-    }
+    public Header merge(List<Header> recordsList, ParsedRIRStats nroStats) {
+        String today = dateTimeProvider.today();
 
-    public String getVersion() {
-        return version;
-    }
+        String startDate = recordsList.stream().map(Header::getStartDate).filter(s -> !Strings.isNullOrEmpty(s)).map(Long::parseLong).min(Long::compare).map(String::valueOf).get();
 
-    public void setVersion(String version) {
-        this.version = version;
-    }
-
-    public String getFolder() {
-        return folder;
-    }
-
-    public void setFolder(String folder) {
-        this.folder = folder;
-    }
-
-    public String getFile() {
-        return file;
-    }
-
-    public String getTmpFile() {
-        return file+".tmp";
-    }
-
-    public void setFile(String file) {
-        this.file = file;
-    }
-
-    public String getBackupFormat() {
-        return backupFormat;
-    }
-
-    public void setBackupFormat(String backupFormat) {
-        this.backupFormat = backupFormat;
+        return new Header(extendedOutputConfig.getVersion(), extendedOutputConfig.getIdentifier(), today,
+                String.valueOf(nroStats.getAsnRecords().size() + nroStats.getIpv4Records().size()+ nroStats.getIpv6Records().size()),
+                startDate, today, dateTimeProvider.localZone());
     }
 }
