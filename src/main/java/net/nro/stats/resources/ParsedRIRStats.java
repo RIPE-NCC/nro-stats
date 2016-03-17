@@ -29,8 +29,6 @@
  */
 package net.nro.stats.resources;
 
-import com.google.common.collect.Lists;
-import net.nro.stats.components.DateTimeProvider;
 import net.nro.stats.components.parser.ASNRecord;
 import net.nro.stats.components.parser.Header;
 import net.nro.stats.components.parser.IPv4Record;
@@ -108,7 +106,11 @@ public class ParsedRIRStats {
     }
 
     public List<Header> getHeaders() {
-        return Lists.newArrayList(header);
+        List<Header> headers = new ArrayList<>();
+        if (header != null) {
+            headers.add(header);
+        }
+        return headers;
     }
 
     public List<Summary> getSummary() {

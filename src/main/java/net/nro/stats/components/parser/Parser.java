@@ -125,40 +125,4 @@ public class Parser {
         }
         return asnTransfer;
     }
-
-    public List<Line> parse(byte[] content) {
-        List<Line> fileContent = new ArrayList<>();
-        String today = dateTimeProvider.today();
-        try {
-            Reader in = new InputStreamReader(new ByteArrayInputStream(content), charset);
-            Iterable<CSVRecord> lines = CSVFormat
-                    .DEFAULT
-                    .withDelimiter('|')
-                    .withCommentMarker('#') // only recognized at start of line!
-                    .withRecordSeparator('\n')
-                    .withIgnoreEmptyLines()
-                    .withIgnoreSurroundingSpaces()
-                    .parse(in);
-            for (CSVRecord line : lines) {
-                if (Header.fits(line)) {
-                    fileContent.add(new Header(line));
-                } else if (Summary.fits(line)) {
-                    fileContent.add(new Summary(line));
-                } else if (IPv4Record.fits(line)) {
-                    fileContent.add(new IPv4Record(line, today));
-                } else if (IPv6Record.fits(line)) {
-                    fileContent.add(new IPv6Record(line, today));
-                } else if (ASNRecord.fits(line)) {
-                    fileContent.add(new ASNRecord(line, today));
-                } else {
-                    logger.warn("Malformed line number " + line.getRecordNumber() + "\n" + line.toString());
-                }
-             }
-        } catch (IOException e) {
-            logger.error(e.getMessage(), e);
-        }
-        logger.debug("Found records: " + fileContent.size());
-        return fileContent;
-    }
-
 }

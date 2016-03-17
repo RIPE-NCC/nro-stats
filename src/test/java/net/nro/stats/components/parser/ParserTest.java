@@ -31,6 +31,9 @@ package net.nro.stats.components.parser;
 
 import net.nro.stats.components.DateTimeProvider;
 import net.nro.stats.components.FileRetriever;
+import net.nro.stats.resources.ParsedRIRStats;
+import net.nro.stats.resources.StatsSource;
+import net.nro.stats.resources.URIContent;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -76,35 +79,7 @@ public class ParserTest {
         URL testFile = this.getClass().getClassLoader().getResource(filePath);
         assert testFile != null;
         byte[] bytes = bytesRetriever.retrieveBytes(testFile.getPath());
-        List<Line> lines = sut.parse(bytes);
-        assertTrue(message, lines.size() == expectedRows);
-    }
-
-    public byte[] bytesFromFile(String filePath) throws IOException {
-        File file = new File(filePath);
-        ByteArrayOutputStream ous = null;
-        InputStream ios = null;
-        try {
-            byte[] buffer = new byte[4096];
-            ous = new ByteArrayOutputStream();
-            ios = new FileInputStream(file);
-            int read = 0;
-            while ((read = ios.read(buffer)) != -1) {
-                ous.write(buffer, 0, read);
-            }
-        }finally {
-            try {
-                if (ous != null)
-                    ous.close();
-            } catch (IOException e) {
-            }
-
-            try {
-                if (ios != null)
-                    ios.close();
-            } catch (IOException e) {
-            }
-        }
-        return ous.toByteArray();
+        ParsedRIRStats rirStats = sut.parseRirStats(StatsSource.ESTATS, new URIContent("rir", bytes));
+        assertTrue(message, rirStats.getLines().count() == expectedRows);
     }
 }

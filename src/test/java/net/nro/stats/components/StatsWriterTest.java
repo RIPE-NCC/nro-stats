@@ -46,30 +46,55 @@ import static org.junit.Assert.assertTrue;
 
 public class StatsWriterTest {
 
-    StatsWriter statsWriter;
-
     ExtendedOutputConfig out = new ExtendedOutputConfig();
+
+    StatsWriter statsWriter = new StatsWriter(out, Charset.forName("US-ASCII"));
 
     @Before
     public void setUp() throws Exception {
         out.setFolder("tmp");
         out.setFile("file");
         out.setBackupFormat("$");
-        statsWriter = new StatsWriter(out, Charset.forName("US-ASCII"));
+        Files.deleteIfExists(Paths.get(out.getFolder(), out.getFile()));
+        Files.deleteIfExists(Paths.get(out.getFolder(), out.getTmpFile()));
+        Files.deleteIfExists(Paths.get(out.getFolder(), out.getFile() + "." + out.getBackupFormat()));
     }
 
     @Test
-    public void testWrite() throws Exception {
+    public void testWriteClean() throws Exception {
+        out.setBackup(true);
+        // -- //
         ParsedRIRStats nroStats = new ParsedRIRStats("nro");
         nroStats.addHeader(new Header("2.3", "nro", "20160301", "0", "20160301", "20160301", "+0100"));
         nroStats.addSummary(new Summary("nro", "asn", "0"));
+
         statsWriter.write(nroStats);
         assertFalse(Files.exists(Paths.get(out.getFolder(), out.getTmpFile())));
         assertTrue(Files.exists(Paths.get(out.getFolder(), out.getFile())));
+
         statsWriter.write(nroStats);
         assertFalse(Files.exists(Paths.get(out.getFolder(), out.getTmpFile())));
         assertTrue(Files.deleteIfExists(Paths.get(out.getFolder(), out.getFile())));
         assertTrue(Files.deleteIfExists(Paths.get(out.getFolder(), out.getFile() + "." + out.getBackupFormat())));
+        assertTrue(Files.deleteIfExists(Paths.get(out.getFolder())));
+    }
+
+    @Test
+    public void testWithoutBackup() throws Exception {
+        out.setBackup(false);
+        // -- //
+        ParsedRIRStats nroStats = new ParsedRIRStats("nro");
+        nroStats.addHeader(new Header("2.3", "nro", "20160301", "0", "20160301", "20160301", "+0100"));
+        nroStats.addSummary(new Summary("nro", "asn", "0"));
+
+        statsWriter.write(nroStats);
+        assertFalse(Files.exists(Paths.get(out.getFolder(), out.getTmpFile())));
+        assertTrue(Files.exists(Paths.get(out.getFolder(), out.getFile())));
+
+        statsWriter.write(nroStats);
+        assertFalse(Files.exists(Paths.get(out.getFolder(), out.getTmpFile())));
+        assertFalse(Files.deleteIfExists(Paths.get(out.getFolder(), out.getFile() + "." + out.getBackupFormat())));
+        assertTrue(Files.deleteIfExists(Paths.get(out.getFolder(), out.getFile())));
         assertTrue(Files.deleteIfExists(Paths.get(out.getFolder())));
     }
 }

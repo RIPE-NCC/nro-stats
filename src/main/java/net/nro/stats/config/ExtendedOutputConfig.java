@@ -39,6 +39,7 @@ public class ExtendedOutputConfig {
     private String version;
     private String folder;
     private String file;
+    private Boolean backup;
     private String backupFormat;
 
     public String getIdentifier() {
@@ -75,6 +76,14 @@ public class ExtendedOutputConfig {
 
     public void setFile(String file) {
         this.file = file;
+    }
+
+    public Boolean getBackup() {
+        return backup;
+    }
+
+    public void setBackup(Boolean backup) {
+        this.backup = backup;
     }
 
     public String getBackupFormat() {

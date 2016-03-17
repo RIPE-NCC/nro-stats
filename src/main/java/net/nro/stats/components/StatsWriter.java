@@ -74,7 +74,7 @@ public class StatsWriter {
         Path outFile = Paths.get(extendedOutputConfig.getFolder(), extendedOutputConfig.getFile());
         Path outFileTmp = Paths.get(extendedOutputConfig.getFolder(), extendedOutputConfig.getTmpFile());
 
-        if (Files.exists(outFile)) {
+        if (Files.exists(outFile) && extendedOutputConfig.getBackup()) {
             backupPreviousFile(outFile);
         }
 
