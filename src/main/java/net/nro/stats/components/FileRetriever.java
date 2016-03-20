@@ -29,11 +29,14 @@
  */
 package net.nro.stats.components;
 
+import com.google.common.io.ByteStreams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 @Component
@@ -49,7 +52,13 @@ public class FileRetriever implements URIBytesRetriever {
         byte[] output;
 
         try {
-            output = Files.readAllBytes(Paths.get(uri));
+            Path path = Paths.get(uri);
+            if (Files.isReadable(path)) {
+                output = Files.readAllBytes(path);
+            } else {
+                ClassPathResource resource = new ClassPathResource(uri);
+                output = ByteStreams.toByteArray(resource.getInputStream());
+            }
         } catch (Exception e) {
             logger.error("Unable to fetch the specified file", e);
             throw new RuntimeException(e);
