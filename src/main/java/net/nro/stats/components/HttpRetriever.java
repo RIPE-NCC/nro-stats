@@ -29,13 +29,14 @@
  */
 package net.nro.stats.components;
 
+import net.nro.stats.components.merger.cache.FallBackCachingHttpClient;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -45,17 +46,20 @@ import java.io.InputStream;
 public class HttpRetriever implements URIBytesRetriever {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    @Autowired
+    private FallBackCachingHttpClient httpClientBuilder;
+
     @Override
     public byte[] retrieveBytes(String uri) {
         logger.debug("retrieveBytes " + uri);
-        try (CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+        try (CloseableHttpClient httpClient = httpClientBuilder.build();
              CloseableHttpResponse response = httpClient.execute(new HttpGet(uri))) {
 
             if (response.getStatusLine().getStatusCode() == 200) {
                 try (InputStream inputStream = response.getEntity().getContent()) {
                     return IOUtils.toByteArray(inputStream);
                 } catch (Exception e) {
-                    logger.error("Failed to get the content of the file. ", e);
+                    logger.error("Failed to get the content of the file: " + e);
                     throw new RuntimeException("Failed to get the content of the file.");
                 }
             } else {
