@@ -7,7 +7,6 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpExecutionAware;
 import org.apache.http.client.methods.HttpRequestWrapper;
 import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.conn.HttpHostConnectException;
 import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.FileEntity;
@@ -29,11 +28,13 @@ class FallBackCachingExec implements ClientExecChain {
     private final ClientExecChain backend;
     private final File rootDir;
     private final Map<String, CachedHttpResponse> cache;
+    private final boolean rejectEmptyResponse;
 
-    public FallBackCachingExec(final ClientExecChain mainExec, File rootDir, Map<String, CachedHttpResponse> cache) {
+    public FallBackCachingExec(final ClientExecChain mainExec, File rootDir, Map<String, CachedHttpResponse> cache, boolean rejectEmptyResponse) {
         this.backend = mainExec;
         this.rootDir = rootDir;
         this.cache = cache;
+        this.rejectEmptyResponse = rejectEmptyResponse;
     }
 
     @Override
@@ -47,14 +48,16 @@ class FallBackCachingExec implements ClientExecChain {
         try {
             logger.trace("Making real request");
             CloseableHttpResponse response = backend.execute(route, request, clientContext, execAware);
+            if (rejectEmptyResponse && response.getEntity().getContentLength() == 0)
+                throw new EmptyContentException();
             cachedHttpResponse = createCachedResponse(request, response);
             return cachedHttpResponse;
         }
-        catch (HttpHostConnectException hhce) {
+        catch (HttpException exp) {
             logger.trace("Using cached data");
             cachedHttpResponse = getCachedResponse(request);
             if (cachedHttpResponse == null)
-                throw hhce;
+                throw exp;
         }
         return cachedHttpResponse;
     }
@@ -111,4 +114,7 @@ class FallBackCachingExec implements ClientExecChain {
             throw new RuntimeException("Missing support for MD5 encoding.");
         }
     }
+
+    // simple marker class
+    class EmptyContentException extends HttpException {}
 }

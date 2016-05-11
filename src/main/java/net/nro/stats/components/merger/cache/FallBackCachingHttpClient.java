@@ -18,6 +18,7 @@ public class FallBackCachingHttpClient extends HttpClientBuilder {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
     private final Map<String, CachedHttpResponse> cache;
     private File rootDir;
+    private Boolean rejectEmptyResponse;
 
     private CacheConfig config;
 
@@ -26,11 +27,12 @@ public class FallBackCachingHttpClient extends HttpClientBuilder {
         cache = new HashMap<>();
         this.config = config;
         this.rootDir = new File(config.getRoot());
+        this.rejectEmptyResponse = config.getRejectEmpty();
     }
 
     @Override
     protected ClientExecChain decorateMainExec(final ClientExecChain mainExec) {
-        return new FallBackCachingExec(mainExec, rootDir, cache);
+        return new FallBackCachingExec(mainExec, rootDir, cache, rejectEmptyResponse);
     }
 
 
