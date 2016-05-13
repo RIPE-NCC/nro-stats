@@ -30,9 +30,9 @@
 package net.nro.stats.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Configuration;
 
-@Component
+@Configuration
 @ConfigurationProperties(prefix = "nro.stats.extended.output")
 public class ExtendedOutputConfig {
     private String identifier;
