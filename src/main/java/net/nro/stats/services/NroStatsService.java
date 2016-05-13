@@ -77,7 +77,7 @@ public class NroStatsService {
         try {
             List<ParsedRIRStats> parsedRIRStats = fetchAndParseAllRirStats(extendedInputConfig.getRir());
             ParsedRIRStats parsedIANAStats = fetchAndParseIanaStats("iana", extendedInputConfig.getIana());
-            ParsedRIRStats parsedRIRSwaps = fetchAndParseRirSwapStats(StatsSource.RIRSWAP.name(), extendedInputConfig.getSwaps());
+            ParsedRIRStats parsedRIRSwaps = fetchAndParseRirSwapStats(StatsSource.RIRSWAP.getValue(), extendedInputConfig.getSwaps());
 
             // some data sets need extra preprocessing
             preProcessor.processRirStats(parsedRIRStats);

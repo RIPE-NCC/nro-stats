@@ -86,6 +86,7 @@ public class NroStatsServiceTest {
         urls.put("apnic", "src/test/resources/apnic.test.delegated.stats.txt");
         extendedInputConfig.setRir(urls);
         extendedInputConfig.setIana("src/test/resources/iana.test.delegated-extended.stats.txt");
+        extendedInputConfig.setSwaps("src/test/resources/rirswap.txt");
         ParsedRIRStats nroStats = new ParsedRIRStats("nro");
         when(recordsMerger.merge(anyListOf(ParsedRIRStats.class))).thenReturn(nroStats);
     }
