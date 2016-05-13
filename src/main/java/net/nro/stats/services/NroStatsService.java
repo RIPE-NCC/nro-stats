@@ -30,9 +30,9 @@
 package net.nro.stats.services;
 
 import net.nro.stats.components.PreProcessor;
-import net.nro.stats.components.URIContentRetriever;
 import net.nro.stats.components.RecordsMerger;
 import net.nro.stats.components.StatsWriter;
+import net.nro.stats.components.URIContentRetriever;
 import net.nro.stats.components.parser.Parser;
 import net.nro.stats.config.ExtendedInputConfig;
 import net.nro.stats.resources.ParsedRIRStats;
@@ -45,6 +45,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -74,18 +75,18 @@ public class NroStatsService {
     public void generate() {
         logger.info("Generating Extended NRO Stats");
         try {
-            List<URIContent> rirStats = uriContentRetriever.fetchAll(extendedInputConfig.getRir());
-            URIContent ianaStats = uriContentRetriever.fetch("iana", extendedInputConfig.getIana());
+            List<ParsedRIRStats> parsedRIRStats = fetchAndParseAllRirStats(extendedInputConfig.getRir());
+            ParsedRIRStats parsedIANAStats = fetchAndParseIanaStats("iana", extendedInputConfig.getIana());
+            ParsedRIRStats parsedRIRSwaps = fetchAndParseRirSwapStats(StatsSource.RIRSWAP.name(), extendedInputConfig.getSwaps());
 
-            List<ParsedRIRStats> parsedRIRStats = rirStats.stream().map(p -> parser.parseRirStats(StatsSource.ESTATS, p)).collect(Collectors.toList());
-            ParsedRIRStats parsedIANAStats = parser.parseRirStats(StatsSource.IANA_REGISTRY, ianaStats);
-
+            // some data sets need extra preprocessing
             preProcessor.processRirStats(parsedRIRStats);
             preProcessor.processIanaStats(parsedIANAStats);
 
             List<ParsedRIRStats> combinedStats = new ArrayList<>();
             combinedStats.addAll(parsedRIRStats);
             combinedStats.add(parsedIANAStats);
+            combinedStats.add(parsedRIRSwaps);
 
             ParsedRIRStats nroStats = recordsMerger.merge(combinedStats);
 
@@ -97,4 +98,24 @@ public class NroStatsService {
         }
     }
 
+    ParsedRIRStats fetchAndParseRirSwapStats(String dataSetName, String url) {
+        URIContent uriContent = uriContentRetriever.fetch(dataSetName, url);
+        return parser.parseRIRSwaps(StatsSource.RIRSWAP, uriContent);
+    }
+
+    ParsedRIRStats fetchAndParseIanaStats(String dataSetName, String url) {
+        return fetchAndParseRecords(StatsSource.IANA_REGISTRY, dataSetName, url);
+    }
+
+    List<ParsedRIRStats> fetchAndParseAllRirStats(Map<String, String> urls) {
+        return urls.keySet()
+                .parallelStream()
+                .map(rir -> fetchAndParseRecords(StatsSource.ESTATS, rir, urls.get(rir)))
+                .collect(Collectors.toList());
+    }
+
+    private ParsedRIRStats fetchAndParseRecords(StatsSource source, String dataSetName, String url) {
+        URIContent uriContent = uriContentRetriever.fetch(dataSetName, url);
+        return parser.parseRirStats(source, uriContent);
+    }
 }

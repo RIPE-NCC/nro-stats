@@ -37,6 +37,17 @@ import org.apache.commons.csv.CSVRecord;
 import java.util.Comparator;
 
 public abstract class Record<R extends AbstractRange> implements Line {
+
+    public final static  String DEFAULT_COUNTRY_CODE = "ZZ";
+    // record statuses
+    public final static String AVAILABLE = "available";
+    public final static String RESERVED = "reserved";
+    public final static String IANAPOOL = "ianapool";
+    public final static String ASSIGNED = "assigned";
+    public final static String UNKNOWN = "unknown";
+    public final static String IETF = "ietf";
+
+
     private final StatsSource source;
     private final String registry;
     private final String countryCode;
@@ -70,7 +81,7 @@ public abstract class Record<R extends AbstractRange> implements Line {
 
         this.source = source;
         this.registry = line.get(0);
-        this.countryCode = Strings.isNullOrEmpty(line.get(1)) ? "ZZ" : line.get(1);
+        this.countryCode = Strings.isNullOrEmpty(line.get(1)) ? DEFAULT_COUNTRY_CODE : line.get(1);
         this.type = line.get(2);
         this.start = line.get(3);
         this.value = line.get(4);
@@ -79,13 +90,13 @@ public abstract class Record<R extends AbstractRange> implements Line {
             case "allocated": case "Allocated":
             case "assigned": case "Assigned":
             case "legacy":
-                this.status = "assigned";
+                this.status = ASSIGNED;
                 break;
             case "available": case "Available":
-                this.status = (isIana(registry))?"ianapool":"available";
+                this.status = (isIana(registry)) ? IANAPOOL : AVAILABLE;
                 break;
             case "reserved":case "Reserved":
-                this.status = (isIana(registry))?"ietf":"reserved";
+                this.status = (isIana(registry)) ? IETF : RESERVED;
                 break;
             default:
                 this.status = line.get(6);

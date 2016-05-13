@@ -42,6 +42,8 @@ public class ExtendedInputConfig {
 
     private String iana;
 
+    private String swaps;
+
     public Map<String, String> getRir() {
         return rir;
     }
@@ -56,5 +58,13 @@ public class ExtendedInputConfig {
 
     public void setIana(String iana) {
         this.iana = iana;
+    }
+
+    public String getSwaps() {
+        return swaps;
+    }
+
+    public void setSwaps(String swaps) {
+        this.swaps = swaps;
     }
 }

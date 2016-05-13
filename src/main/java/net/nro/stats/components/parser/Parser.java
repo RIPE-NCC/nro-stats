@@ -68,15 +68,7 @@ public class Parser {
         String today = dateTimeProvider.today();
         ParsedRIRStats parsedRIRStats = new ParsedRIRStats(uriContent.getIdentifier());
         try {
-            Reader in = new InputStreamReader(new ByteArrayInputStream(uriContent.getContent()), charset);
-            Iterable<CSVRecord> lines = CSVFormat
-                    .DEFAULT
-                    .withDelimiter('|')
-                    .withCommentMarker('#') // only recognized at start of line!
-                    .withRecordSeparator('\n')
-                    .withIgnoreEmptyLines()
-                    .withIgnoreSurroundingSpaces()
-                    .parse(in);
+            Iterable<CSVRecord> lines = readCSV(uriContent.getContent(), '|');
             for (CSVRecord line : lines) {
                 if (Header.fits(line)) {
                     parsedRIRStats.addHeader(new Header(source, line));
@@ -99,6 +91,42 @@ public class Parser {
         return parsedRIRStats;
 
     }
+
+    private Iterable<CSVRecord> readCSV(byte[] bytes, char fieldSeparator) throws IOException {
+        Reader reader = new InputStreamReader(new ByteArrayInputStream(bytes), charset);
+        return CSVFormat
+                .DEFAULT
+                .withDelimiter(fieldSeparator)
+                .withCommentMarker('#') // only recognized at start of line!
+                .withRecordSeparator('\n')
+                .withIgnoreEmptyLines()
+                .withIgnoreSurroundingSpaces()
+                .parse(reader);
+
+    }
+
+    public ParsedRIRStats parseRIRSwaps(StatsSource source, URIContent uriContent) {
+        String today = dateTimeProvider.today();
+        ParsedRIRStats parsedRIRStats = new ParsedRIRStats(uriContent.getIdentifier());
+        try {
+            Iterable<CSVRecord> lines = readCSV(uriContent.getContent(), ' ');
+            for (CSVRecord line : lines) {
+                parsedRIRStats.addIPv4Record(createSwapRecord(source, line, today));
+            }
+        } catch (IOException e) {
+            logger.error(e.getMessage(), e);
+        }
+        logger.debug("Found records: " + parsedRIRStats.getLines().count());
+        return parsedRIRStats;
+    }
+
+    private IPv4Record createSwapRecord(StatsSource source, CSVRecord line, String date) {
+        String registry = line.get(4);
+        String startIp = line.get(0);
+        String rangeSize = line.get(2);
+        return new IPv4Record(source, registry, Record.DEFAULT_COUNTRY_CODE, startIp, rangeSize, date, "available", null);
+    }
+
 
     public ASNTransfer parseAsnTransfers(URIContent uriContent) {
         ASNTransfer asnTransfer = null;
