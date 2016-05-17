@@ -56,7 +56,7 @@ public class StatsWriter {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private ExtendedOutputConfig extendedOutputConfig;
+    private ExtendedOutputConfig out;
 
     private Charset charset;
 
@@ -64,18 +64,19 @@ public class StatsWriter {
     public StatsWriter(
             ExtendedOutputConfig extendedOutputConfig,
             Charset charset) {
-        this.extendedOutputConfig = extendedOutputConfig;
+        this.out = extendedOutputConfig;
         this.charset = charset;
     }
 
     public void write(ParsedRIRStats nroStats) {
         validateOutFolder();
 
-        Path outFile = Paths.get(extendedOutputConfig.getFolder(), extendedOutputConfig.getFile());
-        Path outFileTmp = Paths.get(extendedOutputConfig.getFolder(), extendedOutputConfig.getTmpFile());
+        Path outFile = Paths.get(out.getFolder(), out.getFile());
+        Path outFilePrevious = Paths.get(out.getFolder(), out.getPreviousFileLink());
+        Path outFileTmp = Paths.get(out.getFolder(), out.getTmpFile());
 
-        if (Files.exists(outFile) && extendedOutputConfig.getBackup()) {
-            backupPreviousFile(outFile);
+        if (Files.exists(outFile)) {
+            backupCurrentFile(outFile, outFilePrevious);
         }
 
         if (Files.exists(outFileTmp)) {
@@ -84,11 +85,11 @@ public class StatsWriter {
 
         write(nroStats.getLines(), outFileTmp);
 
-        move(outFileTmp, outFile);
+        moveFile(outFileTmp, outFile);
 
     }
 
-    private void move(Path outFileTmp, Path outFile) {
+    private void moveFile(Path outFileTmp, Path outFile) {
         try {
             Files.move(outFileTmp, outFile, ATOMIC_MOVE, REPLACE_EXISTING);
         } catch (IOException e) {
@@ -123,13 +124,21 @@ public class StatsWriter {
         }
     }
 
-    private void backupPreviousFile(Path outFile) {
+    private void backupCurrentFile(Path outFile, Path outFilePrevious) {
         logger.info("File {} already present, backing it up", outFile);
         try {
-            SimpleDateFormat df = new SimpleDateFormat(extendedOutputConfig.getBackupFormat());
-            Path outFileOld = Paths.get(extendedOutputConfig.getFolder(),
-                    extendedOutputConfig.getFile() + "." + df.format(Files.getLastModifiedTime(outFile).toMillis()));
+            SimpleDateFormat df = new SimpleDateFormat(out.getBackupFormat());
+            String backupFileName = out.getFile() + "." + df.format(Files.getLastModifiedTime(outFile).toMillis());
+            Path outFileOld = Paths.get(out.getFolder(), backupFileName);
             Files.copy(outFile, outFileOld, COPY_ATTRIBUTES);
+            if (!out.shouldBackup()) {
+                if (Files.exists(outFilePrevious) && Files.isSymbolicLink(outFilePrevious)) {
+                    Path oldFile = Paths.get(out.getFolder(), Files.readSymbolicLink(outFilePrevious).getFileName().toString());
+                    logger.info("Deleting {} => result {}", oldFile.getFileName(), Files.deleteIfExists(oldFile));
+                }
+            }
+            Files.deleteIfExists(outFilePrevious);
+            Files.createSymbolicLink(outFilePrevious, Paths.get(backupFileName));
         } catch (Exception e) {
             logger.error("Unable to move to backup old file", e);
             throw new RuntimeException(e);
@@ -137,7 +146,7 @@ public class StatsWriter {
     }
 
     private void validateOutFolder() {
-        Path outFolder = Paths.get(extendedOutputConfig.getFolder());
+        Path outFolder = Paths.get(out.getFolder());
         if (Files.notExists(outFolder)) {
             logger.info("outFolder {} missing. Creating it", outFolder);
             try {

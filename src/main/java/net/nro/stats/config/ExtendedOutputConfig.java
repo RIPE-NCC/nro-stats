@@ -74,11 +74,15 @@ public class ExtendedOutputConfig {
         return file+".tmp";
     }
 
+    public String getPreviousFileLink() {
+        return file+".previous";
+    }
+
     public void setFile(String file) {
         this.file = file;
     }
 
-    public Boolean getBackup() {
+    public Boolean shouldBackup() {
         return backup;
     }
 
