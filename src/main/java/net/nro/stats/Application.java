@@ -30,28 +30,38 @@
 package net.nro.stats;
 
 import net.nro.stats.services.NroStatsService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
 
 @SpringBootApplication
 public class Application {
+
+    private static final Logger logger = LoggerFactory.getLogger(Application.class);
 
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
     }
 
     /**
-     * For easy testing locally. If the application is running with local profile, generate the nro stats automatically.
-     *
-     * @param nroStatsService - service to trigger
-     * @return boolean
+     * When running locally, this generate the nro delegated stats.
      */
-    @Bean
+    @Service
     @Profile("local")
-    public Boolean generateOnStart(NroStatsService nroStatsService) {
-        nroStatsService.generate();
-        return Boolean.TRUE;
+    static class Startup implements CommandLineRunner {
+
+        @Autowired
+        private NroStatsService nroStatsService;
+
+        @Override
+        public void run(String... args) throws Exception {
+            logger.info("Starting the generation of stats on \"local\" profile.");
+            nroStatsService.generate();
+        }
     }
 }
