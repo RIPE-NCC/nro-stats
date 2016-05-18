@@ -32,11 +32,15 @@ package net.nro.stats.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.Map;
+
 @Configuration
 @ConfigurationProperties(prefix = "nro.stats.extended.cache")
 public class CacheConfig {
     private String root;
     private Boolean rejectEmpty = false;
+
+    private Map<String, String> file;
 
     public String getRoot() {
         return root;
@@ -52,5 +56,13 @@ public class CacheConfig {
 
     public void setRejectEmpty(Boolean rejectEmpty) {
         this.rejectEmpty = rejectEmpty;
+    }
+
+    public Map<String, String> getFile() {
+        return file;
+    }
+
+    public void setFile(Map<String, String> file) {
+        this.file = file;
     }
 }
