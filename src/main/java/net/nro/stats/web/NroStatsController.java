@@ -40,10 +40,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class NroStatsController {
 
-    Logger logger = LoggerFactory.getLogger(this.getClass());
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
-    NroStatsService nroStatsService;
+    private NroStatsService nroStatsService;
 
     @RequestMapping(path = "process", method = RequestMethod.POST)
     public void process() {

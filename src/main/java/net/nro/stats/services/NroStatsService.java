@@ -71,8 +71,7 @@ public class NroStatsService {
     @Autowired
     URIContentRetriever uriContentRetriever;
 
-
-    public void generate() {
+    public synchronized void generate() {
         logger.info("Generating Extended NRO Stats");
         try {
             List<ParsedRIRStats> parsedRIRStats = fetchAndParseAllRirStats(extendedInputConfig.getRir());
