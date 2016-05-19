@@ -436,7 +436,14 @@ public class ASNIntervalTree {
     }
 
     public boolean contains(AsnRange range) {
-        return (get(range) != null);
+        return contains(root, range);
+    }
+
+    private boolean contains(ASNNode node, AsnRange range) {
+        if (node == null) return false;
+        for (AsnRange range1: node.getRange().exclude(range))
+            if(!contains(node, range1)) return false;
+        return true;
     }
 
     public ASNNode get(AsnRange range) {

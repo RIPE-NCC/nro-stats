@@ -69,6 +69,31 @@ public class ASNIntervalTreeTest {
     }
 
     @Test
+    public void containsRangesEnteredLiterally() {
+        Assert.assertTrue("Interval tree contains accurate", tree.contains(range0));
+        Assert.assertTrue("Interval tree contains accurate", tree.contains(range1));
+        Assert.assertTrue("Interval tree contains accurate", tree.contains(range2));
+        Assert.assertTrue("Interval tree contains accurate", tree.contains(range3));
+        Assert.assertTrue("Interval tree contains accurate", tree.contains(range4));
+        Assert.assertTrue("Interval tree contains accurate", tree.contains(range5));
+        Assert.assertTrue("Interval tree contains accurate", tree.contains(range0));
+
+    }
+
+    @Test
+    public void containsRangeCombinations() {
+        AsnRange range_200_300 = AsnRange.from(200L).to(300L);
+        AsnRange range_200_240 = AsnRange.from(200L).to(240L);
+        AsnRange range_241_300 = AsnRange.from(241L).to(300L);
+        AsnRange range_301_400 = AsnRange.from(301L).to(400L);
+        tree.add(range_200_240);
+        tree.add(range_241_300);
+        Assert.assertTrue("Interval tree contains range spanning two sequential ranges", tree.contains(range_200_300));
+        Assert.assertTrue("Interval tree contains range spanning several ranges", tree.contains(AsnRange.from(200L).to(400L)));
+
+    }
+
+    @Test
     public void itemsOrderedCorrectly() {
 
         List<AsnRange> result = tree.getOrderedRanges();
