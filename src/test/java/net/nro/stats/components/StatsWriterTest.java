@@ -37,7 +37,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -67,7 +66,7 @@ public class StatsWriterTest {
         out.setBackupFormat("$");
         // -- //
         ParsedRIRStats nroStats = new ParsedRIRStats("nro");
-        nroStats.addHeader(new Header("2.3", "nro", "20160301", "0", "20160301", "20160301", "+0100"));
+        nroStats.setHeader(new Header("2.3", "nro", "20160301", "0", "20160301", "20160301", "+0100"));
         nroStats.addSummary(new Summary("nro", "asn", "0"));
 
         statsWriter.write(nroStats);
@@ -98,7 +97,7 @@ public class StatsWriterTest {
         out.setBackupFormat("$");
 
         ParsedRIRStats nroStats = new ParsedRIRStats("nro");
-        nroStats.addHeader(new Header("2.3", "nro", "20160301", "0", "20160301", "20160301", "+0100"));
+        nroStats.setHeader(new Header("2.3", "nro", "20160301", "0", "20160301", "20160301", "+0100"));
         nroStats.addSummary(new Summary("nro", "asn", "0"));
 
         statsWriter.write(nroStats);

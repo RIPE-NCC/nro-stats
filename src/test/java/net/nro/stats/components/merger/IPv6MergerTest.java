@@ -31,9 +31,7 @@ package net.nro.stats.components.merger;
 
 import net.nro.stats.components.resolver.OrderedResolver;
 import net.nro.stats.components.parser.IPv6Record;
-import org.apache.commons.csv.CSVRecord;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -50,7 +48,7 @@ public class IPv6MergerTest {
         inputRecords.add(createRecord("arin", "2620:101:9800::", "37"));
         inputRecords.add(createRecord("arin", "2620:101:a000::", "47"));
 
-        List<IPv6Record> mergedRecords = merger.treeMerge(inputRecords).getRecords();
+        List<IPv6Record> mergedRecords = merger.mergeToTree(inputRecords).getRecords();
         Assert.assertEquals(2, mergedRecords.size());
     }
 
@@ -60,7 +58,7 @@ public class IPv6MergerTest {
         inputRecords.add(createRecord("arin", "2620:101:9800::", "37"));
         inputRecords.add(createRecord("ripencc", "2620:101:9800::", "37"));
 
-        List<IPv6Record> mergedRecords = merger.treeMerge(inputRecords).getRecords();
+        List<IPv6Record> mergedRecords = merger.mergeToTree(inputRecords).getRecords();
         // only one accepted
         Assert.assertEquals(1, mergedRecords.size());
         // the newer claim is accepted
@@ -73,7 +71,7 @@ public class IPv6MergerTest {
         inputRecords.add(createRecord("ripencc", "2620:101:9800::", "37"));
         inputRecords.add(createRecord("arin", "2620:101:9800::", "37"));
 
-        List<IPv6Record> mergedRecords = merger.treeMerge(inputRecords).getRecords();
+        List<IPv6Record> mergedRecords = merger.mergeToTree(inputRecords).getRecords();
         // only one accepted
         Assert.assertEquals(1, mergedRecords.size());
         // the newer claim is accepted
@@ -85,7 +83,7 @@ public class IPv6MergerTest {
         List<IPv6Record> inputRecords = new ArrayList<>();
         inputRecords.add(createRecord("afrinic",    "2001:db8::", "64"));
         inputRecords.add(createRecord("apnic",      "2001:db8::", "68"));
-        List<IPv6Record> mergedRecords = merger.treeMerge(inputRecords).getRecords();
+        List<IPv6Record> mergedRecords = merger.mergeToTree(inputRecords).getRecords();
         Assert.assertEquals("newer claim on subrange leads to two range allocations", 5, mergedRecords.size());
         // apnic claim is for a subrange of afrinic claim
         Assert.assertTrue("Merger allocates newer claim on subrange of older claim",
@@ -114,7 +112,7 @@ public class IPv6MergerTest {
         List<IPv6Record> inputRecords = new ArrayList<>();
         inputRecords.add(createRecord("afrinic",    "2001:db8::", "64"));
         inputRecords.add(createRecord("apnic",      "2001:db8::", String.valueOf(64 + depth)));
-        List<IPv6Record> mergedRecords = merger.treeMerge(inputRecords).getRecords();
+        List<IPv6Record> mergedRecords = merger.mergeToTree(inputRecords).getRecords();
         Assert.assertEquals("newer claim on subrange leads to two range allocations", depth + 1, mergedRecords.size());
         Assert.assertEquals("exactly one subrange for newer claim", 1, mergedRecords.stream().filter(r -> "apnic".equals(r.getRegistry())).count());
         Assert.assertEquals("remaining  subranges allocated to older claim", depth, mergedRecords.stream().filter(r -> "afrinic".equals(r.getRegistry())).count());

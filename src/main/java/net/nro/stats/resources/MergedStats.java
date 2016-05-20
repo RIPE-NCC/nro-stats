@@ -27,24 +27,48 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package net.nro.stats.components.merger;
+package net.nro.stats.resources;
 
-import com.google.common.base.Strings;
-import net.nro.stats.components.parser.Header;
-import org.springframework.stereotype.Component;
+import net.nro.stats.components.merger.ASNIntervalTree;
+import net.nro.stats.components.merger.IPNode;
+import net.nro.stats.components.parser.IPv4Record;
+import net.nro.stats.components.parser.IPv6Record;
 
-import java.util.List;
+public class MergedStats {
+    private ASNIntervalTree asns;
+    private IPNode<IPv4Record> ipv4s;
+    private IPNode<IPv6Record> ipv6s;
+    private String headerStartDate;
 
-@Component
-public class HeaderMerger {
+    public ASNIntervalTree getAsns() {
+        return asns;
+    }
 
-    private static final String EMPTY = "";
+    public void setAsns(ASNIntervalTree asns) {
+        this.asns = asns;
+    }
 
-    public String getStartDate(List<Header> recordsList) {
-        return recordsList.stream()
-                .map(Header::getStartDate)
-                .filter(s -> !Strings.isNullOrEmpty(s))
-                .map(Long::parseLong)
-                .min(Long::compare).map(String::valueOf).orElse(EMPTY);
+    public IPNode<IPv4Record> getIpv4s() {
+        return ipv4s;
+    }
+
+    public void setIpv4s(IPNode<IPv4Record> ipv4s) {
+        this.ipv4s = ipv4s;
+    }
+
+    public IPNode<IPv6Record> getIpv6s() {
+        return ipv6s;
+    }
+
+    public void setIpv6s(IPNode<IPv6Record> ipv6s) {
+        this.ipv6s = ipv6s;
+    }
+
+    public void setHeaderStartDate(String headerStartDate) {
+        this.headerStartDate = headerStartDate;
+    }
+
+    public String getHeaderStartDate() {
+        return headerStartDate;
     }
 }

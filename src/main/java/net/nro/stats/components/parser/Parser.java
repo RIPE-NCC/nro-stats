@@ -71,7 +71,7 @@ public class Parser {
             Iterable<CSVRecord> lines = readCSV(uriContent.getContent(), '|');
             for (CSVRecord line : lines) {
                 if (Header.fits(line)) {
-                    parsedRIRStats.addHeader(new Header(source, line));
+                    parsedRIRStats.setHeader(new Header(source, line));
                 } else if (Summary.fits(line)) {
                     parsedRIRStats.addSummary(new Summary(source, line));
                 } else if (IPv4Record.fits(line)) {

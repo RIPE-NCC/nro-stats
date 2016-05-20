@@ -39,10 +39,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 public class ASNMerger {
@@ -55,7 +53,7 @@ public class ASNMerger {
         this.resolver = resolver;
     }
 
-    public List<ASNRecord> merge(List<ASNRecord> recordList) {
+    public ASNIntervalTree mergeToTree(List<ASNRecord> recordList) {
         logger.debug("Starting merging of ASN Records");
 
         ASNIntervalTree resolvedRecords = new ASNIntervalTree();
@@ -67,7 +65,7 @@ public class ASNMerger {
             processNextRecord(stack, resolvedRecords);
         }
 
-        return resolvedRecords.getOrderedRecords();
+        return resolvedRecords;
     }
 
 

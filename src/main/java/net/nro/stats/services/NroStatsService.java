@@ -29,12 +29,11 @@
  */
 package net.nro.stats.services;
 
-import net.nro.stats.components.PreProcessor;
-import net.nro.stats.components.RecordsMerger;
-import net.nro.stats.components.StatsWriter;
-import net.nro.stats.components.URIContentRetriever;
+import net.nro.stats.components.*;
 import net.nro.stats.components.parser.Parser;
 import net.nro.stats.config.ExtendedInputConfig;
+import net.nro.stats.config.ExtendedOutputConfig;
+import net.nro.stats.resources.MergedStats;
 import net.nro.stats.resources.ParsedRIRStats;
 import net.nro.stats.resources.StatsSource;
 import net.nro.stats.resources.URIContent;
@@ -55,6 +54,12 @@ public class NroStatsService {
 
     @Autowired
     ExtendedInputConfig extendedInputConfig;
+
+    @Autowired
+    ExtendedOutputConfig extendedOutputConfig;
+
+    @Autowired
+    DateTimeProvider dateTimeProvider;
 
     @Autowired
     Parser parser;
@@ -87,7 +92,7 @@ public class NroStatsService {
             combinedStats.add(parsedIANAStats);
             combinedStats.add(parsedRIRSwaps);
 
-            ParsedRIRStats nroStats = recordsMerger.merge(combinedStats);
+            ParsedRIRStats nroStats = convert(recordsMerger.merge(combinedStats));
 
             writer.write(nroStats);
 
@@ -111,6 +116,15 @@ public class NroStatsService {
                 .parallelStream()
                 .map(rir -> fetchAndParseRecords(StatsSource.ESTATS, rir, urls.get(rir)))
                 .collect(Collectors.toList());
+    }
+
+    private ParsedRIRStats convert(MergedStats mergedStats) {
+        ParsedRIRStats stats = new ParsedRIRStats(extendedOutputConfig.getIdentifier());
+        stats.addAllAsnRecord(mergedStats.getAsns().getOrderedRecords());
+        stats.addAllIPv4Record(mergedStats.getIpv4s().getRecords());
+        stats.addAllIPv6Record(mergedStats.getIpv6s().getRecords());
+        stats.generateSummaryAndHeader(extendedOutputConfig, dateTimeProvider, mergedStats.getHeaderStartDate());
+        return stats;
     }
 
     private ParsedRIRStats fetchAndParseRecords(StatsSource source, String dataSetName, String url) {

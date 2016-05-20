@@ -52,7 +52,7 @@ public abstract class IPMerger<T extends Record<R>, R extends AbstractIpRange> {
         this.maxSize = maxSize;
     }
 
-    public IPNode<T> treeMerge(List<T> recordsList) {
+    public IPNode<T> mergeToTree(List<T> recordsList) {
         logger.debug("Starting with the Ipv4 merged tree generation");
 
         IPNode<T> node, root = new IPNode<>(null);

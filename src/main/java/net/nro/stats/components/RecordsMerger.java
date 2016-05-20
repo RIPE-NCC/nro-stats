@@ -34,6 +34,7 @@ import net.nro.stats.components.merger.HeaderMerger;
 import net.nro.stats.components.merger.IPv4Merger;
 import net.nro.stats.components.merger.IPv6Merger;
 import net.nro.stats.config.ExtendedOutputConfig;
+import net.nro.stats.resources.MergedStats;
 import net.nro.stats.resources.ParsedRIRStats;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,54 +61,37 @@ public class RecordsMerger {
     @Autowired
     private HeaderMerger headerMerger;
 
-    @Autowired
-    private ExtendedOutputConfig extendedOutputConfig;
 
-    public ParsedRIRStats merge(List<ParsedRIRStats> parsedRIRStats) {
+    public MergedStats merge(List<ParsedRIRStats> parsedRIRStats) {
+        logger.debug("Starting with the merger of RIR stats");
 
-        ParsedRIRStats nroStats = new ParsedRIRStats(extendedOutputConfig.getIdentifier());
+        MergedStats stats = new MergedStats();
+        stats.setAsns(asnMerger.mergeToTree(
+                parsedRIRStats.stream()
+                        .map(ParsedRIRStats::getAsnRecords)
+                        .flatMap(Collection::stream)
+                        .collect(Collectors.toList())
+        ));
+        stats.setIpv4s(iPv4Merger.mergeToTree(
+                parsedRIRStats.stream()
+                        .map(ParsedRIRStats::getIpv4Records)
+                        .flatMap(Collection::stream)
+                        .collect(Collectors.toList())
+        ));
+        stats.setIpv6s(iPv6Merger.mergeToTree(
+                parsedRIRStats.stream()
+                        .map(ParsedRIRStats::getIpv6Records)
+                        .flatMap(Collection::stream)
+                        .collect(Collectors.toList())
+        ));
 
-        nroStats.addAllAsnRecord(
-                asnMerger.merge(
-                        parsedRIRStats.stream()
-                                .map(ParsedRIRStats::getAsnRecords)
-                                .flatMap(Collection::stream)
-                                .collect(Collectors.toList())
-                )
-        );
+        stats.setHeaderStartDate(headerMerger.getStartDate(
+                parsedRIRStats.stream()
+                        .map(ParsedRIRStats::getHeaders)
+                        .flatMap(Collection::stream)
+                        .collect(Collectors.toList())
+        ));
 
-        nroStats.addAllIPv4Record(
-                iPv4Merger.treeMerge(
-                        parsedRIRStats.stream()
-                                .map(ParsedRIRStats::getIpv4Records)
-                                .flatMap(Collection::stream)
-                                .collect(Collectors.toList())
-                ).getRecords()
-        );
-
-        nroStats.addAllIPv6Record(
-                iPv6Merger.treeMerge(
-                        parsedRIRStats.stream()
-                                .map(ParsedRIRStats::getIpv6Records)
-                                .flatMap(Collection::stream)
-                                .collect(Collectors.toList())
-                ).getRecords()
-        );
-
-        nroStats.generateSummary(extendedOutputConfig);
-
-        nroStats.addHeader(
-                headerMerger.merge(
-                        parsedRIRStats.stream()
-                                .map(ParsedRIRStats::getHeaders)
-                                .flatMap(Collection::stream)
-                                .collect(Collectors.toList()),
-                        nroStats
-                )
-        );
-
-        logger.info("Number of Lines after merged {}", nroStats.getLines().count());
-
-        return nroStats;
+        return stats;
     }
 }

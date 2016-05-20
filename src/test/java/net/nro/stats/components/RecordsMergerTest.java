@@ -36,6 +36,7 @@ import net.nro.stats.components.merger.IPv6Merger;
 import net.nro.stats.components.parser.Parser;
 import net.nro.stats.components.resolver.OrderedResolver;
 import net.nro.stats.config.ExtendedOutputConfig;
+import net.nro.stats.resources.MergedStats;
 import net.nro.stats.resources.ParsedRIRStats;
 import net.nro.stats.resources.StatsSource;
 import net.nro.stats.resources.URIContent;
@@ -71,7 +72,7 @@ public class RecordsMergerTest {
     @Spy
     ASNMerger asnMerger = new ASNMerger(resolver);
     @Spy
-    HeaderMerger headerMerger = new HeaderMerger(extendedOutputConfig, dateTimeProvider);
+    HeaderMerger headerMerger = new HeaderMerger();
 
     @InjectMocks
     RecordsMerger recordsMerger;
@@ -85,14 +86,11 @@ public class RecordsMergerTest {
     @Test
     public void testMerge() throws Exception {
 
-        ParsedRIRStats nroStats = recordsMerger.merge(fetchTestRIRStats());
+        MergedStats nroStats = recordsMerger.merge(fetchTestRIRStats());
 
-        assertEquals(1, nroStats.getHeaders().size());
-        assertEquals(3, nroStats.getSummary().size());
-        assertEquals(1, nroStats.getAsnRecords().size());
-        assertEquals(3, nroStats.getIpv4Records().size());
-        assertEquals(1, nroStats.getIpv6Records().size());
-        assertEquals(9, nroStats.getLines().count());
+        assertEquals(1, nroStats.getAsns().getOrderedRecords().size());
+        assertEquals(3, nroStats.getIpv4s().getRecords().size());
+        assertEquals(1, nroStats.getIpv6s().getRecords().size());
     }
 
     private List<ParsedRIRStats> fetchTestRIRStats() {

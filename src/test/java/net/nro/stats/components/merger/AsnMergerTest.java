@@ -51,7 +51,7 @@ public class AsnMergerTest {
         records.add(createRecord("ripencc", "5", "2"));
         records.add(createRecord("apnic", "8", "1"));
         records.add(createRecord("apnic", "10", "1"));
-        List<ASNRecord> mergedRecords = asnMerger.merge(records);
+        List<ASNRecord> mergedRecords = asnMerger.mergeToTree(records).getOrderedRecords();
         assertEquals(4, mergedRecords.size());
         verifyRecord(mergedRecords, "lacnic", "4", "1");
         verifyRecord(mergedRecords, "ripencc", "5", "2");
@@ -64,7 +64,7 @@ public class AsnMergerTest {
         List<ASNRecord> records = new ArrayList<>();
         records.add(createRecord("ripencc", "11", "1"));
         records.add(createRecord("apnic", "11", "1"));
-        List<ASNRecord> mergedRecords = asnMerger.merge(records);
+        List<ASNRecord> mergedRecords = asnMerger.mergeToTree(records).getOrderedRecords();
         assertEquals(1, mergedRecords.size());
         verifyRecord(mergedRecords, "apnic", "11", "1");
     }
@@ -91,7 +91,7 @@ public class AsnMergerTest {
         records.add(createRecord("ripencc", "61", "5"));
         records.add(createRecord("apnic", "64", "7"));
 
-        List<ASNRecord> mergedRecords = asnMerger.merge(records);
+        List<ASNRecord> mergedRecords = asnMerger.mergeToTree(records).getOrderedRecords();
         assertEquals(11, mergedRecords.size());
         verifyRecord(mergedRecords, "apnic", "11", "5");
         verifyRecord(mergedRecords, "apnic", "21", "3");
@@ -119,7 +119,7 @@ public class AsnMergerTest {
         records.add(createRecord("apnic", "31", "7"));
         records.add(createRecord("ripencc", "31", "5"));
 
-        List<ASNRecord> mergedRecords = asnMerger.merge(records);
+        List<ASNRecord> mergedRecords = asnMerger.mergeToTree(records).getOrderedRecords();
         assertEquals(4, mergedRecords.size());
         verifyRecord(mergedRecords, "apnic", "11", "5");
         verifyRecord(mergedRecords, "apnic", "21", "3");

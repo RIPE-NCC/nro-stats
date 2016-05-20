@@ -29,15 +29,13 @@
  */
 package net.nro.stats.services;
 
-import net.nro.stats.components.DummyDateTimeProvider;
-import net.nro.stats.components.FileRetriever;
-import net.nro.stats.components.HttpRetriever;
-import net.nro.stats.components.PreProcessor;
-import net.nro.stats.components.URIContentRetriever;
-import net.nro.stats.components.RecordsMerger;
-import net.nro.stats.components.StatsWriter;
+import net.nro.stats.components.*;
+import net.nro.stats.components.merger.ASNIntervalTree;
+import net.nro.stats.components.merger.IPNode;
 import net.nro.stats.components.parser.Parser;
 import net.nro.stats.config.ExtendedInputConfig;
+import net.nro.stats.config.ExtendedOutputConfig;
+import net.nro.stats.resources.MergedStats;
 import net.nro.stats.resources.ParsedRIRStats;
 import org.junit.Before;
 import org.junit.Test;
@@ -60,6 +58,12 @@ import static org.mockito.Mockito.when;
 public class NroStatsServiceTest {
     @Spy
     ExtendedInputConfig extendedInputConfig = new ExtendedInputConfig();
+
+    @Spy
+    ExtendedOutputConfig extendedOutputConfig = new ExtendedOutputConfig();
+
+    @Spy
+    DateTimeProvider dateTimeProvider = new DummyDateTimeProvider();
 
     @Spy
     Parser parser = new Parser(Charset.forName("US-ASCII"), new DummyDateTimeProvider());
@@ -87,7 +91,10 @@ public class NroStatsServiceTest {
         extendedInputConfig.setRir(urls);
         extendedInputConfig.setIana("src/test/resources/iana.test.delegated-extended.stats.txt");
         extendedInputConfig.setSwaps("src/test/resources/rirswap.txt");
-        ParsedRIRStats nroStats = new ParsedRIRStats("nro");
+        MergedStats nroStats = new MergedStats();
+        nroStats.setAsns(new ASNIntervalTree());
+        nroStats.setIpv4s(new IPNode<>(null));
+        nroStats.setIpv6s(new IPNode<>(null));
         when(recordsMerger.merge(anyListOf(ParsedRIRStats.class))).thenReturn(nroStats);
     }
 

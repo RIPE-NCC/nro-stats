@@ -175,6 +175,7 @@
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
                 <version>2.11</version>
+                <!-- run `mvn license:format` to add the licenses to all the files -->
                 <configuration>
                     <strictCheck>true</strictCheck>
                     <header>LICENSE.txt</header>

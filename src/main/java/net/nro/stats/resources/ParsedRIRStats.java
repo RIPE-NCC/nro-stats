@@ -29,6 +29,7 @@
  */
 package net.nro.stats.resources;
 
+import net.nro.stats.components.DateTimeProvider;
 import net.nro.stats.components.parser.ASNRecord;
 import net.nro.stats.components.parser.Header;
 import net.nro.stats.components.parser.IPv4Record;
@@ -63,13 +64,17 @@ public class ParsedRIRStats {
         return Stream.of(getHeaders(), summary, asnRecords, ipv4Records, ipv6Records).flatMap(List::stream);
     }
 
-    public void generateSummary(ExtendedOutputConfig extendedOutputConfig) {
+    public void generateSummaryAndHeader(ExtendedOutputConfig extendedOutputConfig, DateTimeProvider dateTimeProvider, String headerStartDate) {
+        summary = new ArrayList<>();
         addSummary(new Summary(extendedOutputConfig.getIdentifier(), "asn", String.valueOf(asnRecords.size())));
         addSummary(new Summary(extendedOutputConfig.getIdentifier(), "ipv4", String.valueOf(ipv4Records.size())));
         addSummary(new Summary(extendedOutputConfig.getIdentifier(), "ipv6", String.valueOf(ipv6Records.size())));
+        setHeader(new Header(extendedOutputConfig.getVersion(), extendedOutputConfig.getIdentifier(), dateTimeProvider.today(),
+                String.valueOf(asnRecords.size() + ipv4Records.size()+ ipv6Records.size()),
+                headerStartDate, dateTimeProvider.today(), dateTimeProvider.localZone()));
     }
 
-    public void addHeader(Header header) {
+    public void setHeader(Header header) {
         this.header = header;
     }
 
