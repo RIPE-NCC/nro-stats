@@ -30,6 +30,9 @@
 package net.nro.stats.components.resolver;
 
 import net.nro.stats.components.parser.Record;
+import net.nro.stats.resources.StatsSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -39,6 +42,8 @@ import java.util.List;
 
 @Component
 public class OrderedResolver implements Resolver {
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
+
     private List<String> registryPriorityOrder;
 
     @Autowired
@@ -49,5 +54,19 @@ public class OrderedResolver implements Resolver {
     @Override
     public <T extends Record> T resolve(T record1, T record2) {
         return (registryPriorityOrder.indexOf(record1.getRegistry()) > registryPriorityOrder.indexOf(record2.getRegistry())) ? record2 : record1;
+    }
+
+    @Override
+    public <T extends Record> void recordConflict(T record1, List<T> record2list) {
+        if (record1.getSource() == StatsSource.RIRSWAP) {
+            //This is fallback scenario and should not be logged as conflict.
+            return;
+        }
+        for (T record2: record2list) {
+            if (record2.getSource() == StatsSource.RIRSWAP) {
+                continue;
+            }
+            logger.warn("Conflict found for {} b/w {} and {}", record1.getRange().intersection(record2.getRange()), record1.getRegistry(), record2.getRegistry());
+        }
     }
 }

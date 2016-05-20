@@ -31,13 +31,16 @@ package net.nro.stats.components;
 
 import net.nro.stats.components.parser.IPv4Record;
 import net.nro.stats.components.resolver.OrderedResolver;
+import net.nro.stats.resources.StatsSource;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
-import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.io.StringReader;
 import java.util.Iterator;
+
+import static org.junit.Assert.assertTrue;
 
 public class OrderedResolverTest {
 
@@ -45,19 +48,35 @@ public class OrderedResolverTest {
 
     @Test
     public void testBasic() throws Exception {
-        Iterable<CSVRecord> lines = CSVFormat
-                .DEFAULT
-                .withDelimiter('|')
-                .withCommentMarker('#') // only recognized at start of line!
-                .withRecordSeparator('\n')
-                .withIgnoreEmptyLines()
-                .withIgnoreSurroundingSpaces()
-                .parse(new StringReader("apnic|AU|ipv4|1.0.0.0|256|20110811|assigned|A91872ED\n" +
-                        "ripencc|CN|ipv4|1.0.1.0|256|20110414|allocated|A92E1062|ext4|ext5|ext6\n"));
-
-
+        Iterable<CSVRecord> lines = getCsvRecords(
+                "apnic|AU|ipv4|1.0.0.0|256|20110811|assigned|A91872ED\n" +
+                "ripencc|CN|ipv4|1.0.1.0|256|20110414|allocated|A92E1062|ext4|ext5|ext6\n");
         Iterator<CSVRecord> iterator = lines.iterator();
         IPv4Record rec = resolver.resolve(new IPv4Record(iterator.next(), "someDate"), new IPv4Record(iterator.next(), "someDate"));
-        Assert.assertTrue(rec.getRegistry().equals("apnic"));
+        assertTrue(rec.getRegistry().equals("apnic"));
+    }
+
+    @Test
+    public void testRirSwaps() throws Exception {
+        Iterable<CSVRecord> lines = getCsvRecords(
+                "apnic|AU|ipv4|1.0.0.0|256|20110811|assigned|A91872ED\n");
+        Iterator<CSVRecord> iterator = lines.iterator();
+
+        CSVRecord csvRecord = iterator.next();
+        IPv4Record rec = resolver.resolve(new IPv4Record(StatsSource.ESTATS, csvRecord, "someDate"),
+                new IPv4Record(StatsSource.RIRSWAP, csvRecord, "someDate"));
+
+        assertTrue(rec.getSource() == StatsSource.ESTATS);
+    }
+
+    private Iterable<CSVRecord> getCsvRecords(String records) throws IOException {
+        return CSVFormat
+                    .DEFAULT
+                    .withDelimiter('|')
+                    .withCommentMarker('#') // only recognized at start of line!
+                    .withRecordSeparator('\n')
+                    .withIgnoreEmptyLines()
+                    .withIgnoreSurroundingSpaces()
+                    .parse(new StringReader(records));
     }
 }

@@ -31,6 +31,10 @@ package net.nro.stats.components.resolver;
 
 import net.nro.stats.components.parser.Record;
 
+import java.util.List;
+
 public interface Resolver {
     <T extends Record> T resolve(T record1, T record2);
+
+    <T extends Record> void recordConflict(T record1, List<T> record2);
 }
