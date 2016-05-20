@@ -29,6 +29,7 @@
  */
 package net.nro.stats.components.merger;
 
+import com.google.common.collect.Lists;
 import net.nro.stats.components.parser.ASNRecord;
 import net.nro.stats.components.resolver.Resolver;
 import net.ripe.commons.ip.AsnRange;
@@ -55,6 +56,7 @@ public class ASNMerger {
     }
 
     public List<ASNRecord> merge(List<ASNRecord> recordList) {
+        logger.debug("Starting merging of ASN Records");
 
         ASNIntervalTree resolvedRecords = new ASNIntervalTree();
         Deque<ASNRecord> stack = new ArrayDeque<>();
@@ -88,6 +90,7 @@ public class ASNMerger {
         else {
             // we have overlapping ranges; let conflict resolver determine which record has precedence
             ASNRecord previouslyClaimedRecord = overlap.getRecord();
+            resolver.recordConflict(overlap.getRecord(), Lists.newArrayList(newRecord));
             if (resolver.resolve(newRecord, previouslyClaimedRecord) == previouslyClaimedRecord) {
                 excludeRangeAndScheduleRemainingForClaiming(newRecord, previouslyClaimedRecord, stack);
             }
