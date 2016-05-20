@@ -77,21 +77,21 @@ public class RecordsMerger {
         );
 
         nroStats.addAllIPv4Record(
-                iPv4Merger.merge(
+                iPv4Merger.treeMerge(
                         parsedRIRStats.stream()
                                 .map(ParsedRIRStats::getIpv4Records)
                                 .flatMap(Collection::stream)
                                 .collect(Collectors.toList())
-                )
+                ).getRecords()
         );
 
         nroStats.addAllIPv6Record(
-                iPv6Merger.merge(
+                iPv6Merger.treeMerge(
                         parsedRIRStats.stream()
                                 .map(ParsedRIRStats::getIpv6Records)
                                 .flatMap(Collection::stream)
                                 .collect(Collectors.toList())
-                )
+                ).getRecords()
         );
 
         nroStats.generateSummary(extendedOutputConfig);

@@ -50,7 +50,7 @@ public class IPv6MergerTest {
         inputRecords.add(createRecord("arin", "2620:101:9800::", "37"));
         inputRecords.add(createRecord("arin", "2620:101:a000::", "47"));
 
-        List<IPv6Record> mergedRecords = merger.merge(inputRecords);
+        List<IPv6Record> mergedRecords = merger.treeMerge(inputRecords).getRecords();
         Assert.assertEquals(2, mergedRecords.size());
     }
 
@@ -60,7 +60,7 @@ public class IPv6MergerTest {
         inputRecords.add(createRecord("arin", "2620:101:9800::", "37"));
         inputRecords.add(createRecord("ripencc", "2620:101:9800::", "37"));
 
-        List<IPv6Record> mergedRecords = merger.merge(inputRecords);
+        List<IPv6Record> mergedRecords = merger.treeMerge(inputRecords).getRecords();
         // only one accepted
         Assert.assertEquals(1, mergedRecords.size());
         // the newer claim is accepted
@@ -73,7 +73,7 @@ public class IPv6MergerTest {
         inputRecords.add(createRecord("ripencc", "2620:101:9800::", "37"));
         inputRecords.add(createRecord("arin", "2620:101:9800::", "37"));
 
-        List<IPv6Record> mergedRecords = merger.merge(inputRecords);
+        List<IPv6Record> mergedRecords = merger.treeMerge(inputRecords).getRecords();
         // only one accepted
         Assert.assertEquals(1, mergedRecords.size());
         // the newer claim is accepted
@@ -81,23 +81,27 @@ public class IPv6MergerTest {
     }
 
     @Test
-    @Ignore
-    //TODO to be revisited
     public void mergerSplitsOnNewerSubRange1() {
         List<IPv6Record> inputRecords = new ArrayList<>();
         inputRecords.add(createRecord("afrinic",    "2001:db8::", "64"));
         inputRecords.add(createRecord("apnic",      "2001:db8::", "68"));
-        List<IPv6Record> mergedRecords = merger.merge(inputRecords);
+        List<IPv6Record> mergedRecords = merger.treeMerge(inputRecords).getRecords();
         Assert.assertEquals("newer claim on subrange leads to two range allocations", 5, mergedRecords.size());
         // apnic claim is for a subrange of afrinic claim
-        Assert.assertTrue("Merger demotes older claim to subrange when newer claim on subrange",
-                allocationExists(mergedRecords, "afrinic", "2001:db8:0000:0000:0000:0000:0000:0000/124") );
         Assert.assertTrue("Merger allocates newer claim on subrange of older claim",
-                allocationExists(mergedRecords, "apnic", "2001:db8:0000:0000:0000:0000:0000:00f0/124") );
+                allocationExists(mergedRecords, "apnic", "2001:db8::/68") );
+        Assert.assertTrue("Merger demotes older claim to subrange when newer claim on subrange",
+                allocationExists(mergedRecords, "afrinic", "2001:db8:0:0:8000::/65") );
+        Assert.assertTrue("Merger demotes older claim to subrange when newer claim on subrange",
+                allocationExists(mergedRecords, "afrinic", "2001:db8:0:0:4000::/66") );
+        Assert.assertTrue("Merger demotes older claim to subrange when newer claim on subrange",
+                allocationExists(mergedRecords, "afrinic", "2001:db8:0:0:2000::/67") );
+        Assert.assertTrue("Merger demotes older claim to subrange when newer claim on subrange",
+                allocationExists(mergedRecords, "afrinic", "2001:db8:0:0:1000::/68") );
     }
 
     @Test
-    public void mergetSplitsOnNewerSubrange2() {
+    public void mergeSplitsOnNewerSubrange2() {
         // if a newer (= higher prio) claim is done on a subrange of a older range at depth x deeper
         // then the old range should be split into x+1 subranges of which one is for the newer claimer
         // and the remaining x are for the old claimer. Here we test this for several relative depths
@@ -110,7 +114,7 @@ public class IPv6MergerTest {
         List<IPv6Record> inputRecords = new ArrayList<>();
         inputRecords.add(createRecord("afrinic",    "2001:db8::", "64"));
         inputRecords.add(createRecord("apnic",      "2001:db8::", String.valueOf(64 + depth)));
-        List<IPv6Record> mergedRecords = merger.merge(inputRecords);
+        List<IPv6Record> mergedRecords = merger.treeMerge(inputRecords).getRecords();
         Assert.assertEquals("newer claim on subrange leads to two range allocations", depth + 1, mergedRecords.size());
         Assert.assertEquals("exactly one subrange for newer claim", 1, mergedRecords.stream().filter(r -> "apnic".equals(r.getRegistry())).count());
         Assert.assertEquals("remaining  subranges allocated to older claim", depth, mergedRecords.stream().filter(r -> "afrinic".equals(r.getRegistry())).count());
@@ -123,15 +127,6 @@ public class IPv6MergerTest {
 
     private boolean recordHasRegistryAndCidr(IPv6Record record, String registry, String cidr) {
         return registry.equals(record.getRegistry()) && cidr.equals(record.getRange().toStringInCidrNotation());
-    }
-
-
-    private List<IPv6Record> getiPv6Records(Iterable<CSVRecord> lines) {
-        List<IPv6Record> ipv6Records = new ArrayList<>();
-        for (CSVRecord line : lines) {
-            ipv6Records.add(new IPv6Record(line, "somedate"));
-        }
-        return ipv6Records;
     }
 
     private IPv6Record createRecord(String registry, String startIp, String addressCount) {

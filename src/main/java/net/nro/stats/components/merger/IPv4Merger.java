@@ -31,15 +31,15 @@ package net.nro.stats.components.merger;
 
 import net.nro.stats.components.parser.IPv4Record;
 import net.nro.stats.components.resolver.Resolver;
+import net.ripe.commons.ip.Ipv4;
 import net.ripe.commons.ip.Ipv4Range;
+import net.ripe.commons.ip.PrefixUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.google.common.base.Strings.padEnd;
 import static com.google.common.base.Strings.padStart;
 
 @Component
@@ -47,12 +47,12 @@ public class IPv4Merger extends IPMerger<IPv4Record, Ipv4Range> {
 
     @Autowired
     public IPv4Merger(Resolver resolver) {
-        super(resolver);
+        super(resolver, Ipv4.NUMBER_OF_BITS);
     }
 
     @Override
     public String getSignificantBinaryValues(Ipv4Range range) {
-        return padStart(range.start().asBigInteger().toString(2), 32, '0').substring(0, 33 - Long.toBinaryString(range.size()).length());
+        return padStart(range.start().asBigInteger().toString(2), maxSize, '0').substring(0, PrefixUtils.getPrefixLength(range));
     }
 
     @Override
@@ -62,14 +62,12 @@ public class IPv4Merger extends IPMerger<IPv4Record, Ipv4Range> {
 
     @Override
     public List<Ipv4Range> splitRanges(Ipv4Range range) {
-        List<Ipv4Range> rangeList = new ArrayList<>();
-        if (range.size() > 1) {
-            String binaryRange = getSignificantBinaryValues(range);
-            String zeroRange = binaryRange + "0";
-            rangeList.add(Ipv4Range.from(new BigInteger(padEnd(zeroRange, 32, '0'), 2)).andPrefixLength(zeroRange.length()));
-            String oneRange = binaryRange + "1";
-            rangeList.add(Ipv4Range.from(new BigInteger(padEnd(oneRange, 32, '0'), 2)).andPrefixLength(oneRange.length()));
+        List<Ipv4Range> ranges = new ArrayList<>();
+        int length = range.start().getCommonPrefixLength(range.end());
+        if (length < maxSize) {
+            ranges.add(Ipv4Range.from(range.start()).to(range.start().upperBoundForPrefix(length + 1)));
+            ranges.add(Ipv4Range.from(range.start().upperBoundForPrefix(length + 1).next()).to(range.end()));
         }
-        return rangeList;
+        return ranges;
     }
 }

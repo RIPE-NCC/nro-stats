@@ -31,16 +31,15 @@ package net.nro.stats.components.merger;
 
 import net.nro.stats.components.parser.IPv6Record;
 import net.nro.stats.components.resolver.Resolver;
+import net.ripe.commons.ip.Ipv6;
 import net.ripe.commons.ip.Ipv6Range;
 import net.ripe.commons.ip.PrefixUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.google.common.base.Strings.padEnd;
 import static com.google.common.base.Strings.padStart;
 
 @Component
@@ -48,7 +47,7 @@ public class IPv6Merger extends IPMerger<IPv6Record, Ipv6Range> {
 
     @Autowired
     public IPv6Merger(Resolver resolver) {
-        super(resolver);
+        super(resolver, Ipv6.NUMBER_OF_BITS);
     }
 
 
@@ -59,18 +58,16 @@ public class IPv6Merger extends IPMerger<IPv6Record, Ipv6Range> {
 
     @Override
     public String getSignificantBinaryValues(Ipv6Range range) {
-        return padStart(range.start().asBigInteger().toString(2), 128, '0').substring(0, PrefixUtils.getPrefixLength(range));
+        return padStart(range.start().asBigInteger().toString(2), maxSize, '0').substring(0, PrefixUtils.getPrefixLength(range));
     }
 
     @Override
     public List<Ipv6Range> splitRanges(Ipv6Range range) {
         List<Ipv6Range> ranges = new ArrayList<>();
-        if (range.size().compareTo(BigInteger.ZERO) > 0) {
-            String binaryRange = getSignificantBinaryValues(range);
-            String zeroRange = binaryRange + "0";
-            ranges.add(Ipv6Range.from(new BigInteger(padEnd(zeroRange, 128, '0'), 2)).andPrefixLength(zeroRange.length()));
-            String oneRange = binaryRange + "1";
-            ranges.add(Ipv6Range.from(new BigInteger(padEnd(oneRange, 128, '0'), 2)).andPrefixLength(oneRange.length()));
+        int length = range.start().getCommonPrefixLength(range.end());
+        if (length < maxSize) {
+            ranges.add(Ipv6Range.from(range.start()).to(range.start().upperBoundForPrefix(length + 1)));
+            ranges.add(Ipv6Range.from(range.start().upperBoundForPrefix(length + 1).next()).to(range.end()));
         }
         return ranges;
     }
