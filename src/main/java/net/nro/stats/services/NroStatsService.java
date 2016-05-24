@@ -30,6 +30,7 @@
 package net.nro.stats.services;
 
 import net.nro.stats.components.*;
+import net.nro.stats.components.merger.Delta;
 import net.nro.stats.components.parser.Parser;
 import net.nro.stats.config.ExtendedInputConfig;
 import net.nro.stats.config.ExtendedOutputConfig;
@@ -51,6 +52,9 @@ import java.util.stream.Collectors;
 public class NroStatsService {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    private static final String CURRENT = "current";
+    private static final String PREVIOUS = "previous";
 
     @Autowired
     ExtendedInputConfig extendedInputConfig;
@@ -75,6 +79,9 @@ public class NroStatsService {
 
     @Autowired
     URIContentRetriever uriContentRetriever;
+
+    @Autowired
+    CachedService cachedService;
 
     public synchronized void generate() {
         logger.info("Generating Extended NRO Stats");
@@ -102,16 +109,27 @@ public class NroStatsService {
         }
     }
 
-    ParsedRIRStats fetchAndParseRirSwapStats(String dataSetName, String url) {
+    public List<Delta<?>> getDifferences() {
+        MergedStats current = getStats(CURRENT);
+        MergedStats previous = getStats(PREVIOUS);
+        return recordsMerger.findDifferences(current, previous);
+    }
+
+
+    public MergedStats getStats(String key) {
+        return cachedService.fetch(key);
+    }
+
+    private ParsedRIRStats fetchAndParseRirSwapStats(String dataSetName, String url) {
         URIContent uriContent = uriContentRetriever.fetch(dataSetName, url);
         return parser.parseRIRSwaps(StatsSource.RIRSWAP, uriContent);
     }
 
-    ParsedRIRStats fetchAndParseIanaStats(String dataSetName, String url) {
+    private ParsedRIRStats fetchAndParseIanaStats(String dataSetName, String url) {
         return fetchAndParseRecords(StatsSource.IANA_REGISTRY, dataSetName, url);
     }
 
-    List<ParsedRIRStats> fetchAndParseAllRirStats(Map<String, String> urls) {
+    private List<ParsedRIRStats> fetchAndParseAllRirStats(Map<String, String> urls) {
         return urls.keySet()
                 .parallelStream()
                 .map(rir -> fetchAndParseRecords(StatsSource.ESTATS, rir, urls.get(rir)))

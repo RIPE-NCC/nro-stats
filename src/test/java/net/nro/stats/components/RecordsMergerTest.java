@@ -58,7 +58,8 @@ import static org.junit.Assert.*;
 @RunWith(MockitoJUnitRunner.class)
 public class RecordsMergerTest {
 
-    private OrderedResolver resolver = new OrderedResolver("apnic,afrinic,arin,ripencc,lacnic".split(","));
+    private OrderedResolver resolver = new OrderedResolver("iana,e-stats,rir-swap".split(","),
+            "apnic,afrinic,arin,ripencc,lacnic".split(","));
 
     @Spy
     DateTimeProvider dateTimeProvider = new DummyDateTimeProvider();

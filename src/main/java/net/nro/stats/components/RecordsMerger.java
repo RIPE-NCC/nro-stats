@@ -29,10 +29,7 @@
  */
 package net.nro.stats.components;
 
-import net.nro.stats.components.merger.ASNMerger;
-import net.nro.stats.components.merger.HeaderMerger;
-import net.nro.stats.components.merger.IPv4Merger;
-import net.nro.stats.components.merger.IPv6Merger;
+import net.nro.stats.components.merger.*;
 import net.nro.stats.config.ExtendedOutputConfig;
 import net.nro.stats.resources.MergedStats;
 import net.nro.stats.resources.ParsedRIRStats;
@@ -41,6 +38,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -93,5 +91,14 @@ public class RecordsMerger {
         ));
 
         return stats;
+    }
+
+    public List<Delta<?>> findDifferences(MergedStats current ,MergedStats previous) {
+        List<Delta<?>> diff = new ArrayList<>();
+        diff.addAll(iPv4Merger.treeDiff(current.getIpv4s(), previous.getIpv4s()));
+        diff.addAll(iPv6Merger.treeDiff(current.getIpv6s(), previous.getIpv6s()));
+        diff.addAll(asnMerger.treeDiff(current.getAsns(), previous.getAsns()));
+
+        return diff;
     }
 }

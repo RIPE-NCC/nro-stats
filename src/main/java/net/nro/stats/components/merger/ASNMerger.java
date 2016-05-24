@@ -39,6 +39,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 
@@ -68,6 +69,30 @@ public class ASNMerger {
         return resolvedRecords;
     }
 
+    public List<Delta<AsnRange>> treeDiff(ASNIntervalTree current, ASNIntervalTree previous) {
+        List<Delta<AsnRange>> differences = new ArrayList<>();
+        for (ASNRecord record : current.getOrderedRecords()) {
+            ASNNode previousNode = previous.get(record.getRange());
+            if (previousNode != null) {
+                if (!previousNode.getRecord().toString().equals(record.toString())) {
+                    differences.add(new Delta<>(record, previousNode.getRecord()));
+                }
+            } else {
+                differences.add(new Delta<>(record, null));
+            }
+        }
+        for (ASNRecord record : previous.getOrderedRecords()) {
+            ASNNode currentNode = current.get(record.getRange());
+            if (currentNode != null) {
+                if (!currentNode.getRecord().toString().equals(record.toString())) {
+                    differences.add(new Delta<>(currentNode.getRecord(), record));
+                }
+            } else {
+                differences.add(new Delta<>(null, record));
+            }
+        }
+        return differences;
+    }
 
     private void excludeRangeAndScheduleRemainingForClaiming(ASNRecord source, ASNRecord overlap, Deque<ASNRecord> stack) {
         List<AsnRange> remainingRanges = source.getRange().exclude(overlap.getRange());

@@ -31,16 +31,18 @@ package net.nro.stats.components.merger;
 
 import net.nro.stats.components.resolver.OrderedResolver;
 import net.nro.stats.components.parser.IPv4Record;
-import org.junit.Assert;
+import net.ripe.commons.ip.Ipv4Range;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.Assert.*;
+
 public class IPv4MergerTest {
 
 
-    private OrderedResolver resolver = new OrderedResolver("apnic,afrinic,arin,ripencc,lacnic".split(","));
+    private OrderedResolver resolver = new OrderedResolver("iana,e-stats,rir-swap".split(","), "apnic,afrinic,arin,ripencc,lacnic".split(","));
     IPv4Merger iPv4Merger = new IPv4Merger(resolver);
 
     @Test
@@ -48,8 +50,8 @@ public class IPv4MergerTest {
         List<IPv4Record> inputRecords = new ArrayList<>();
         inputRecords.add(createRecord("apnic", "1.1.1.0", "256"));
         List<IPv4Record> mergedRecords = iPv4Merger.mergeToTree(inputRecords).getRecords();
-        Assert.assertEquals("Merger preserves one CIDR block", 1, mergedRecords.size());
-        Assert.assertEquals("Merger preserved exactly the specified CIDR block", "1.1.1.0/24", mergedRecords.get(0).getRange().toStringInCidrNotation());
+        assertEquals("Merger preserves one CIDR block", 1, mergedRecords.size());
+        assertEquals("Merger preserved exactly the specified CIDR block", "1.1.1.0/24", mergedRecords.get(0).getRange().toStringInCidrNotation());
     }
 
     @Test
@@ -57,9 +59,9 @@ public class IPv4MergerTest {
         List<IPv4Record> inputRecords = new ArrayList<>();
         inputRecords.add(createRecord("apnic", "1.1.1.128", "256"));
         List<IPv4Record> mergedRecords = iPv4Merger.mergeToTree(inputRecords).getRecords();
-        Assert.assertEquals("Merger splits block in correct nr of pieces", 2, mergedRecords.size());
-        Assert.assertEquals("Merger preserved exactly the specified CIDR block", "1.1.1.128/25", mergedRecords.get(0).getRange().toStringInCidrNotation());
-        Assert.assertEquals("Merger preserved exactly the specified CIDR block", "1.1.2.0/25", mergedRecords.get(1).getRange().toStringInCidrNotation());
+        assertEquals("Merger splits block in correct nr of pieces", 2, mergedRecords.size());
+        assertEquals("Merger preserved exactly the specified CIDR block", "1.1.1.128/25", mergedRecords.get(0).getRange().toStringInCidrNotation());
+        assertEquals("Merger preserved exactly the specified CIDR block", "1.1.2.0/25", mergedRecords.get(1).getRange().toStringInCidrNotation());
     }
 
     @Test
@@ -67,8 +69,8 @@ public class IPv4MergerTest {
         List<IPv4Record> inputRecords = new ArrayList<>();
         inputRecords.add(createRecord("apnic", "1.1.1.0", "257"));
         List<IPv4Record> mergedRecords = iPv4Merger.mergeToTree(inputRecords).getRecords();
-        Assert.assertEquals("Merger preserved exactly the specified CIDR block", "1.1.1.0/24", mergedRecords.get(0).getRange().toStringInCidrNotation());
-        Assert.assertEquals("Merger preserved exactly the specified CIDR block", "1.1.2.0/32", mergedRecords.get(1).getRange().toStringInCidrNotation());
+        assertEquals("Merger preserved exactly the specified CIDR block", "1.1.1.0/24", mergedRecords.get(0).getRange().toStringInCidrNotation());
+        assertEquals("Merger preserved exactly the specified CIDR block", "1.1.2.0/32", mergedRecords.get(1).getRange().toStringInCidrNotation());
     }
 
     @Test
@@ -77,8 +79,8 @@ public class IPv4MergerTest {
         inputRecords.add(createRecord("apnic", "1.1.1.0", "256"));
         inputRecords.add(createRecord("afrinic", "1.1.1.128", "4"));
         List<IPv4Record> mergedRecords = iPv4Merger.mergeToTree(inputRecords).getRecords();
-        Assert.assertEquals("Merger discards conflicting older block", 1, mergedRecords.size());
-        Assert.assertEquals("Merger preserved exactly the specified CIDR block", "1.1.1.0/24", mergedRecords.get(0).getRange().toStringInCidrNotation());
+        assertEquals("Merger discards conflicting older block", 1, mergedRecords.size());
+        assertEquals("Merger preserved exactly the specified CIDR block", "1.1.1.0/24", mergedRecords.get(0).getRange().toStringInCidrNotation());
     }
 
     @Test
@@ -87,10 +89,10 @@ public class IPv4MergerTest {
         inputRecords.add(createRecord("afrinic", "1.1.1.0", "256"));
         inputRecords.add(createRecord("apnic", "1.1.1.128", "128"));
         List<IPv4Record> mergedRecords = iPv4Merger.mergeToTree(inputRecords).getRecords();
-        Assert.assertEquals("newer claim on subrange leads to two range allocations", 2, mergedRecords.size());
+        assertEquals("newer claim on subrange leads to two range allocations", 2, mergedRecords.size());
         // result must contain a '1.1.1.0/25' for afrinic and a '1.1.1.128/25' for apnic
-        Assert.assertTrue("Merger demotes older claim to subrange when newer claim on subrange", allocationExists(mergedRecords, "afrinic", "1.1.1.0/25") );
-        Assert.assertTrue("Merger allocates newer claim on subrange of older claim", allocationExists(mergedRecords, "apnic", "1.1.1.128/25") );
+        assertTrue("Merger demotes older claim to subrange when newer claim on subrange", allocationExists(mergedRecords, "afrinic", "1.1.1.0/25") );
+        assertTrue("Merger allocates newer claim on subrange of older claim", allocationExists(mergedRecords, "apnic", "1.1.1.128/25") );
     }
 
     @Test
@@ -101,10 +103,10 @@ public class IPv4MergerTest {
         inputRecords.add(createRecord("apnic", "1.1.1.128", "128"));
         inputRecords.add(createRecord("afrinic", "1.1.1.0", "256"));
         List<IPv4Record> mergedRecords = iPv4Merger.mergeToTree(inputRecords).getRecords();
-        Assert.assertEquals("newer claim on subrange leads to two range allocations", 2, mergedRecords.size());
+        assertEquals("newer claim on subrange leads to two range allocations", 2, mergedRecords.size());
         // result must contain a '1.1.1.0/25' for afrinic and a '1.1.1.128/25' for apnic
-        Assert.assertTrue("Merger demotes older claim to subrange when newer claim on subrange", allocationExists(mergedRecords, "afrinic", "1.1.1.0/25"));
-        Assert.assertTrue("Merger allocates newer claim on subrange of older claim", allocationExists(mergedRecords, "apnic", "1.1.1.128/25"));
+        assertTrue("Merger demotes older claim to subrange when newer claim on subrange", allocationExists(mergedRecords, "afrinic", "1.1.1.0/25"));
+        assertTrue("Merger allocates newer claim on subrange of older claim", allocationExists(mergedRecords, "apnic", "1.1.1.128/25"));
     }
 
 
@@ -114,10 +116,10 @@ public class IPv4MergerTest {
         inputRecords.add(createRecord("afrinic", "1.1.1.0", "256"));
         inputRecords.add(createRecord("apnic", "1.1.1.0", "64"));
         List<IPv4Record> mergedRecords = iPv4Merger.mergeToTree(inputRecords).getRecords();
-        Assert.assertEquals("Merger discards conflicting older block", 3, mergedRecords.size());
-        Assert.assertTrue("Merger allocates newer claim on subrange of older claim", allocationExists(mergedRecords, "apnic", "1.1.1.0/26") );
-        Assert.assertTrue("Merger demotes older claim to subrange when newer claim on subrange", allocationExists(mergedRecords, "afrinic", "1.1.1.64/26") );
-        Assert.assertTrue("Merger demotes older claim to subrange when newer claim on subrange", allocationExists(mergedRecords, "afrinic", "1.1.1.128/25") );
+        assertEquals("Merger discards conflicting older block", 3, mergedRecords.size());
+        assertTrue("Merger allocates newer claim on subrange of older claim", allocationExists(mergedRecords, "apnic", "1.1.1.0/26") );
+        assertTrue("Merger demotes older claim to subrange when newer claim on subrange", allocationExists(mergedRecords, "afrinic", "1.1.1.64/26") );
+        assertTrue("Merger demotes older claim to subrange when newer claim on subrange", allocationExists(mergedRecords, "afrinic", "1.1.1.128/25") );
     }
 
     @Test
@@ -126,10 +128,10 @@ public class IPv4MergerTest {
         inputRecords.add(createRecord("afrinic", "1.1.1.0", "64"));
         inputRecords.add(createRecord("apnic", "1.1.1.32", "64"));
         List<IPv4Record> mergedRecords = iPv4Merger.mergeToTree(inputRecords).getRecords();
-        Assert.assertEquals("Merger discards conflicting older block", 3, mergedRecords.size());
-        Assert.assertTrue("Merger allocates newer claim on subrange of older claim", allocationExists(mergedRecords, "afrinic", "1.1.1.0/27") );
-        Assert.assertTrue("Merger demotes older claim to subrange when newer claim on subrange", allocationExists(mergedRecords, "apnic", "1.1.1.32/27") );
-        Assert.assertTrue("Merger demotes older claim to subrange when newer claim on subrange", allocationExists(mergedRecords, "apnic", "1.1.1.64/27") );
+        assertEquals("Merger discards conflicting older block", 3, mergedRecords.size());
+        assertTrue("Merger allocates newer claim on subrange of older claim", allocationExists(mergedRecords, "afrinic", "1.1.1.0/27") );
+        assertTrue("Merger demotes older claim to subrange when newer claim on subrange", allocationExists(mergedRecords, "apnic", "1.1.1.32/27") );
+        assertTrue("Merger demotes older claim to subrange when newer claim on subrange", allocationExists(mergedRecords, "apnic", "1.1.1.64/27") );
     }
 
     @Test
@@ -142,9 +144,26 @@ public class IPv4MergerTest {
         inputRecords.add(createRecord("lacnic", "1.1.1.1", "1"));
         inputRecords.add(createRecord("lacnic", "1.1.1.0", "1"));
         List<IPv4Record> mergedRecords = iPv4Merger.mergeToTree(inputRecords).getRecords();
-        Assert.assertEquals("Merger discards conflicting older block", 2, mergedRecords.size());
-        Assert.assertTrue("Merger demotes older claim to subrange when newer claim on subrange", allocationExists(mergedRecords, "apnic", "1.1.1.0/32") );
-        Assert.assertTrue("Merger demotes older claim to subrange when newer claim on subrange", allocationExists(mergedRecords, "apnic", "1.1.1.1/32") );
+        assertEquals("Merger discards conflicting older block", 2, mergedRecords.size());
+        assertTrue("Merger demotes older claim to subrange when newer claim on subrange", allocationExists(mergedRecords, "apnic", "1.1.1.0/32") );
+        assertTrue("Merger demotes older claim to subrange when newer claim on subrange", allocationExists(mergedRecords, "apnic", "1.1.1.1/32") );
+    }
+
+    @Test
+    public void testDiff() {
+        assertNull(iPv4Merger.treeDiff(null, null));
+        List<IPv4Record> inputRecords = new ArrayList<>();
+        inputRecords.add(createRecord("ripencc", "1.1.1.1", "1"));
+        inputRecords.add(createRecord("ripencc", "1.1.1.0", "1"));
+        List<Delta<Ipv4Range>> deltas = iPv4Merger.treeDiff(iPv4Merger.mergeToTree(inputRecords), null);
+        assertTrue(deltas.size() == 2);
+        assertNotNull(deltas.get(0).getCurrent());
+        assertNull(deltas.get(0).getPrevious());
+        assertNotNull(deltas.get(1).getCurrent());
+        assertNull(deltas.get(1).getPrevious());
+
+        List<Delta<Ipv4Range>> deltasSame = iPv4Merger.treeDiff(iPv4Merger.mergeToTree(inputRecords), iPv4Merger.mergeToTree(inputRecords));
+        assertTrue(deltasSame.size() == 0);
     }
 
 

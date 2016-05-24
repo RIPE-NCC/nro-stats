@@ -48,7 +48,7 @@ public class Scheduler {
     /**
      * The default job to trigger the scheduler
      */
-    @Scheduled(cron = "${nro.stats.extended.scheduler.cron}")
+    @Scheduled(cron = "${nro.stats.extended.scheduler.cron}", zone = "UTC")
     public void generateDelegateStats() {
         nroStatsService.generate();
     }

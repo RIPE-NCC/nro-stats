@@ -187,7 +187,10 @@ public abstract class Record<R extends AbstractRange> implements Line {
         for (String ext : getExtensions()) {
             strValue = strValue.concat("|").concat(ext);
         }
-        return String.format("%s|%s", strValue, source.getValue());
+        if (source != StatsSource.NRO) {
+            return String.format("%s|%s", strValue, source.getValue());
+        }
+        return strValue;
     }
 }
 

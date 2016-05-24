@@ -36,9 +36,12 @@ import net.ripe.commons.ip.AbstractIpRange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.stream.Collectors;
 
 public abstract class IPMerger<T extends Record<R>, R extends AbstractIpRange> {
 
@@ -93,6 +96,39 @@ public abstract class IPMerger<T extends Record<R>, R extends AbstractIpRange> {
         }
 
         return root;
+    }
+
+    public List<Delta<R>> treeDiff(IPNode<T> current, IPNode<T> previous) {
+        if (previous == null && current == null) {
+            return null;
+        }
+        if (previous == null) {//current is not null
+            return current.getRecords().stream().map(rec -> new Delta<>(rec, null)).collect(Collectors.toList());
+        }
+        if (current == null) {
+            return previous.getRecords().stream().map(rec -> new Delta<>(null, rec)).collect(Collectors.toList());
+        }
+
+        List<Delta<R>> deltas = new ArrayList<>();
+        Optional.ofNullable(compare(current.getRecord(), previous.getRecord())).ifPresent(deltas::add);
+        Optional.ofNullable(treeDiff(current.left, previous.left)).ifPresent(deltas::addAll);
+        Optional.ofNullable(treeDiff(current.right, previous.right)).ifPresent(deltas::addAll);
+
+        return deltas;
+    }
+
+    private Delta<R> compare(Record<R> left, Record<R> right) {
+        if (left != null && right != null) {
+            if (!left.toString().equals(right.toString())) {
+                return new Delta<>(left, right);
+            } else {
+                return null;
+            }
+        }
+        if (left == null && right == null) {
+            return null;
+        }
+        return new Delta<>(left, right);
     }
 
     private boolean isNodeOwnerOfLessPriority(IPNode<T> node, T record) {

@@ -89,7 +89,26 @@ public class Parser {
         }
         logger.debug("Found records: " + parsedRIRStats.getLines().count());
         return parsedRIRStats;
+    }
 
+    public ParsedRIRStats parseNroStats(URIContent uriContent) {
+        ParsedRIRStats parsedRIRStats = new ParsedRIRStats(uriContent.getIdentifier());
+        try {
+            Iterable<CSVRecord> lines = readCSV(uriContent.getContent(), '|');
+            for (CSVRecord line : lines) {
+                if (IPv4Record.fits(line)) {
+                    parsedRIRStats.addIPv4Record(new IPv4Record(StatsSource.NRO, line, null));
+                } else if (IPv6Record.fits(line)) {
+                    parsedRIRStats.addIPv6Record(new IPv6Record(StatsSource.NRO, line, null));
+                } else if (ASNRecord.fits(line)) {
+                    parsedRIRStats.addAsnRecord(new ASNRecord(StatsSource.NRO, line, null));
+                }
+            }
+        } catch (IOException e) {
+            logger.error(e.getMessage(), e);
+        }
+        logger.debug("Found records in NRO read: " + parsedRIRStats.getLines().count());
+        return parsedRIRStats;
     }
 
     private Iterable<CSVRecord> readCSV(byte[] bytes, char fieldSeparator) throws IOException {

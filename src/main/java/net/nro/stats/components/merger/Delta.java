@@ -27,39 +27,34 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package net.nro.stats.resources;
+package net.nro.stats.components.merger;
 
-/**
- * Referenced from original implementation
- *
- * Will have to revisit to adjust the implementation.
- */
-public enum StatsSource {
-    STATS("stats"),
-    ESTATS("e-stats"),
-    IANA_REGISTRY("iana"),
-    IANAHOLD("iana-hold"),
-    IANARTN("iana-returns"),
-    RIRSWAP("rir-swap"),
-    ASN_TRANSFER("asn-transfer"),
-    NRO("nro");
+import net.nro.stats.components.parser.Record;
+import net.ripe.commons.ip.AbstractRange;
 
-    private String value;
+public class Delta<R extends AbstractRange> {
+    private Record<R> current, previous;
 
-    StatsSource(String value) {
-        this.value = value;
+    public Delta(Record<R> current, Record<R> previous) {
+        this.current = current;
+        this.previous = previous;
     }
 
-    public String getValue() {
-        return value;
+    public String getCurrent() {
+        return (current != null) ? current.toString() : null;
     }
 
-    public static StatsSource fromRecordLine(String identifier) {
-        for (StatsSource ss : StatsSource.values()) {
-            if (ss.getValue().equalsIgnoreCase(identifier)) {
-                return ss;
-            }
-        }
-        return null;
+    public String getPrevious() {
+        return (previous != null) ? previous.toString() : null;
+    }
+
+    @Override
+    public String toString() {
+        return (new StringBuilder())
+                .append("-------").append(System.lineSeparator())
+                .append("> ").append(current).append(System.lineSeparator())
+                .append("--").append(System.lineSeparator())
+                .append("< ").append(previous).append(System.lineSeparator())
+                .append("-------").append(System.lineSeparator()).toString();
     }
 }

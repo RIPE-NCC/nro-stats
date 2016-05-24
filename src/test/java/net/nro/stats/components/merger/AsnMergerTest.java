@@ -41,7 +41,7 @@ import static org.junit.Assert.assertTrue;
 
 public class AsnMergerTest {
 
-    private OrderedResolver resolver = new OrderedResolver("apnic,afrinic,arin,ripencc,lacnic".split(","));
+    private OrderedResolver resolver = new OrderedResolver("iana,e-stats,rir-swap".split(","),"apnic,afrinic,arin,ripencc,lacnic".split(","));
     ASNMerger asnMerger = new ASNMerger(resolver);
 
     @Test

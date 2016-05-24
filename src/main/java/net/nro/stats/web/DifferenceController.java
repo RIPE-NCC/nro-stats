@@ -27,39 +27,32 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package net.nro.stats.resources;
+package net.nro.stats.web;
+
+import net.nro.stats.services.NroStatsService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import static org.springframework.web.bind.annotation.RequestMethod.GET;
 
 /**
- * Referenced from original implementation
- *
- * Will have to revisit to adjust the implementation.
+ * Controller to retrieve the differences with the previous version
  */
-public enum StatsSource {
-    STATS("stats"),
-    ESTATS("e-stats"),
-    IANA_REGISTRY("iana"),
-    IANAHOLD("iana-hold"),
-    IANARTN("iana-returns"),
-    RIRSWAP("rir-swap"),
-    ASN_TRANSFER("asn-transfer"),
-    NRO("nro");
+@RestController
+@RequestMapping("differences")
+public class DifferenceController {
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private String value;
+    @Autowired
+    NroStatsService statsService;
 
-    StatsSource(String value) {
-        this.value = value;
-    }
-
-    public String getValue() {
-        return value;
-    }
-
-    public static StatsSource fromRecordLine(String identifier) {
-        for (StatsSource ss : StatsSource.values()) {
-            if (ss.getValue().equalsIgnoreCase(identifier)) {
-                return ss;
-            }
-        }
-        return null;
+    @RequestMapping(method = GET)
+    public ResponseEntity<?> getDifferences() {
+        logger.debug("Requesting differences");
+        return ResponseEntity.ok(statsService.getDifferences());
     }
 }

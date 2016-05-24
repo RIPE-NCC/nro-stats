@@ -44,7 +44,7 @@ import static org.junit.Assert.assertTrue;
 
 public class OrderedResolverTest {
 
-    private OrderedResolver resolver = new OrderedResolver("apnic,afrinic,arin,ripencc,lacnic".split(","));
+    private OrderedResolver resolver = new OrderedResolver("iana,e-stats,rir-swap".split(","),"apnic,afrinic,arin,ripencc,lacnic".split(","));
 
     @Test
     public void testBasic() throws Exception {

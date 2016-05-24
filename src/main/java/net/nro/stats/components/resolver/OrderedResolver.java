@@ -44,16 +44,28 @@ import java.util.List;
 public class OrderedResolver implements Resolver {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    private List<String> sourcePriorityOrder;
     private List<String> registryPriorityOrder;
 
     @Autowired
-    public OrderedResolver(@Value("${nro.stats.extended.order}") String[] registryPriorityOrder) {
+    public OrderedResolver(@Value("${nro.stats.extended.source.order}") String[] sourcePriorityOrder,
+                           @Value("${nro.stats.extended.registry.order}") String[] registryPriorityOrder) {
+        this.sourcePriorityOrder = Arrays.asList(sourcePriorityOrder);
         this.registryPriorityOrder = Arrays.asList(registryPriorityOrder);
     }
 
     @Override
     public <T extends Record> T resolve(T record1, T record2) {
-        return (registryPriorityOrder.indexOf(record1.getRegistry()) > registryPriorityOrder.indexOf(record2.getRegistry())) ? record2 : record1;
+        int record1Source = sourcePriorityOrder.indexOf(record1.getSource().getValue());
+        int record2Source = sourcePriorityOrder.indexOf(record2.getSource().getValue());
+        if (record1Source == record2Source) {
+            return (registryPriorityOrder.indexOf(record1.getRegistry()) > registryPriorityOrder.indexOf(record2.getRegistry())) ? record2 : record1;
+        } else {
+            //iana reserved records get higher priority over other records.
+            if (Record.IETF.equals(record1.getStatus())) return record1;
+            if (Record.IETF.equals(record2.getStatus())) return record2;
+            return record1Source > record2Source ? record2 : record1;
+        }
     }
 
     @Override
