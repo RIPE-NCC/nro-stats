@@ -95,9 +95,9 @@ public class RecordsMerger {
 
     public List<Delta<?>> findDifferences(MergedStats current ,MergedStats previous) {
         List<Delta<?>> diff = new ArrayList<>();
+        diff.addAll(asnMerger.treeDiff(current.getAsns(), previous.getAsns()));
         diff.addAll(iPv4Merger.treeDiff(current.getIpv4s(), previous.getIpv4s()));
         diff.addAll(iPv6Merger.treeDiff(current.getIpv6s(), previous.getIpv6s()));
-        diff.addAll(asnMerger.treeDiff(current.getAsns(), previous.getAsns()));
 
         return diff;
     }

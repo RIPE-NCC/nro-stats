@@ -30,7 +30,6 @@
 package net.nro.stats.components;
 
 import net.nro.stats.components.parser.Parser;
-import net.nro.stats.config.AsnTranslate;
 import net.nro.stats.resources.ParsedRIRStats;
 import net.nro.stats.resources.StatsSource;
 import net.nro.stats.resources.URIContent;
@@ -49,8 +48,6 @@ public class PreProcessorTest {
 
     @Spy
     URIContentRetriever uriContentRetriever = new URIContentRetriever(new FileRetriever(), new HttpRetriever());
-    @Spy
-    AsnTranslate asnTranslate = new AsnTranslate();
     @Spy
     Parser parser = new Parser(Charset.forName("US-ASCII"), new DummyDateTimeProvider());
 
