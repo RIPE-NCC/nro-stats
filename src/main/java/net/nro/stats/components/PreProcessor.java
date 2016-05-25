@@ -32,39 +32,15 @@ package net.nro.stats.components;
 import net.nro.stats.components.parser.ASNRecord;
 import net.nro.stats.components.parser.IPv4Record;
 import net.nro.stats.components.parser.IPv6Record;
-import net.nro.stats.components.parser.Parser;
 import net.nro.stats.components.parser.Record;
-import net.nro.stats.config.AsnTranslate;
-import net.nro.stats.resources.ASNTransfer;
 import net.nro.stats.resources.ParsedRIRStats;
-import net.nro.stats.resources.URIContent;
-import net.ripe.commons.ip.AsnRange;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
 public class PreProcessor {
-
-    private URIContentRetriever contentRetriever;
-    private Parser parser;
-    private AsnTranslate asnTranslate;
-
-    @Autowired
-    public PreProcessor(AsnTranslate asnTranslate, URIContentRetriever contentRetriever, Parser parser) {
-        this.contentRetriever = contentRetriever;
-        this.parser = parser;
-        this.asnTranslate = asnTranslate;
-    }
-
-    public void processRirStats(List<ParsedRIRStats> rirStats) {
-        rirStats.stream()
-                .filter(p -> asnTranslate.getRir().keySet().contains(p.getRir()))
-                .forEach(this::translateAsn);
-    }
 
     public void processIanaStats(ParsedRIRStats ianaStats) {
         List<ASNRecord> asnRecords = ianaStats.getAsnRecords().parallelStream()
@@ -90,23 +66,5 @@ public class PreProcessor {
     private boolean filter(Record record) {
         return "iana".equals(record.getRegId()) || "ietf".equals(record.getRegId()) ||
                 "ianapool".equals(record.getStatus());
-    }
-
-    private void translateAsn(ParsedRIRStats rirStats) {
-        URIContent asnEuTranslate = contentRetriever.fetch(rirStats.getRir(), asnTranslate.getRir().get(rirStats.getRir()));
-        ASNTransfer asnTransfer = parser.parseAsnTransfers(asnEuTranslate);
-        asnTransfer.getRecords().stream()
-                .forEach(r -> {
-                    Optional<ASNRecord> optionalAsnRecord = rirStats.getAsnRecords().stream().filter(a -> a.getRange().contains(r.getAsn())).findFirst();
-                    if (optionalAsnRecord.isPresent()) {
-                        ASNRecord asnRecord = optionalAsnRecord.get();
-                        rirStats.getAsnRecords().remove(asnRecord);
-                        rirStats.addAsnRecord(asnRecord.clone(r.getAsnRange(), r.getCountryCode()));
-                        List<AsnRange> asnRanges = asnRecord.getRange().exclude(r.getAsnRange());
-                        for (AsnRange range: asnRanges) {
-                            rirStats.addAsnRecord(asnRecord.clone(range));
-                        }
-                    }
-                });
     }
 }

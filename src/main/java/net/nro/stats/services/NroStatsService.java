@@ -90,8 +90,7 @@ public class NroStatsService {
             ParsedRIRStats parsedIANAStats = fetchAndParseIanaStats("iana", extendedInputConfig.getIana());
             ParsedRIRStats parsedRIRSwaps = fetchAndParseRirSwapStats(StatsSource.RIRSWAP.getValue(), extendedInputConfig.getSwaps());
 
-            // some data sets need extra preprocessing
-            preProcessor.processRirStats(parsedRIRStats);
+            // some data sets need extra pre-processing
             preProcessor.processIanaStats(parsedIANAStats);
 
             List<ParsedRIRStats> combinedStats = new ArrayList<>();

@@ -54,11 +54,11 @@ public class CachedService {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private final LoadingCache<String, MergedStats> cache;
+    private final LoadingCache<String, MergedStats> cacheResources;
 
     @Autowired
     public CachedService(URIContentRetriever contentRetriever, Parser parser, RecordsMerger merger, CacheConfig cacheConfig) {
-        cache = CacheBuilder.newBuilder()
+        cacheResources = CacheBuilder.newBuilder()
                 .expireAfterWrite(1, TimeUnit.HOURS)
                 .build(new CacheLoader<String, MergedStats>() {
             @Override
@@ -75,9 +75,9 @@ public class CachedService {
     public MergedStats fetch(String key) {
         MergedStats retVal = null;
         try {
-            retVal = cache.get(key);
+            retVal = cacheResources.get(key);
         } catch (Exception e){
-            logger.warn("Error while fetching content from cache", e);
+            logger.warn("Error while fetching content from cacheResources", e);
         }
         return retVal;
     }
