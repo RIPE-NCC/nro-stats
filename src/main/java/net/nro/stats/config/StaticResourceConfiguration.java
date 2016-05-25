@@ -45,7 +45,15 @@ public class StaticResourceConfiguration extends WebMvcConfigurerAdapter {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/nro/**").addResourceLocations("file:" + outputConfig.getFolder())
+        registry.addResourceHandler("/nro/**").addResourceLocations(getOutLocation())
                 .setCacheControl(CacheControl.noCache().mustRevalidate());
+    }
+
+    private String getOutLocation() {
+        String location = "file:" + outputConfig.getFolder();
+        if (!location.endsWith("/")) {
+            location = location.concat("/");
+        }
+        return location;
     }
 }
