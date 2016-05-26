@@ -47,7 +47,7 @@ public class FileRetriever implements URIBytesRetriever {
     @Override
     public byte[] retrieveBytes(String uri) {
 
-        logger.info("Retrieving file {}", uri);
+        logger.info("Retrieving file: {}", uri);
 
         byte[] output;
 

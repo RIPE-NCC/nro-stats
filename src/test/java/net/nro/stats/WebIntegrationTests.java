@@ -30,7 +30,9 @@
 package net.nro.stats;
 
 
+import net.nro.stats.components.merger.Delta;
 import net.nro.stats.config.ExtendedOutputConfig;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -88,8 +90,19 @@ public class WebIntegrationTests {
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
 
+        ResponseEntity<Delta[]> responseDiff = restTemplate.getForEntity(appContext + "/differences", Delta[].class);
+
+        assertEquals(HttpStatus.OK, responseDiff.getStatusCode());
+        assertTrue(responseDiff.getBody().length == 0);
+
         assertTrue(Files.deleteIfExists(Paths.get(extendedOutputConfig.getFolder(), extendedOutputConfig.getFile())));
         assertTrue(Files.notExists(Paths.get(extendedOutputConfig.getFolder(), extendedOutputConfig.getTmpFile())));
         assertTrue(Files.notExists(Paths.get(extendedOutputConfig.getFolder(), extendedOutputConfig.getFile()+"."+ extendedOutputConfig.getBackupFormat())));
+    }
+
+    @After
+    public void cleanUp() throws Exception {
+        Files.deleteIfExists(Paths.get(extendedOutputConfig.getFolder(), extendedOutputConfig.getFile()));
+        Files.deleteIfExists(Paths.get(extendedOutputConfig.getFolder(), extendedOutputConfig.getPreviousFileLink()));
     }
 }

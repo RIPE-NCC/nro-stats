@@ -39,6 +39,7 @@ public class ExtendedOutputConfig {
     private String version;
     private String folder;
     private String file;
+    private String previous;
     private Boolean backup;
     private String backupFormat;
 
@@ -80,6 +81,14 @@ public class ExtendedOutputConfig {
 
     public void setFile(String file) {
         this.file = file;
+    }
+
+    public String getPrevious() {
+        return previous;
+    }
+
+    public void setPrevious(String previous) {
+        this.previous = previous;
     }
 
     public Boolean shouldBackup() {

@@ -51,7 +51,8 @@ public class HttpRetriever implements URIBytesRetriever {
 
     @Override
     public byte[] retrieveBytes(String uri) {
-        logger.debug("retrieveBytes " + uri);
+        logger.info("Retrieving URI: {}", uri);
+
         try (CloseableHttpClient httpClient = httpClientBuilder.build();
              CloseableHttpResponse response = httpClient.execute(new HttpGet(uri))) {
 

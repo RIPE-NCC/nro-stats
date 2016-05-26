@@ -29,6 +29,8 @@
  */
 package net.nro.stats.services;
 
+import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
 import net.nro.stats.components.*;
 import net.nro.stats.components.merger.Delta;
 import net.nro.stats.components.parser.Parser;
@@ -41,6 +43,8 @@ import net.nro.stats.resources.URIContent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -80,9 +84,7 @@ public class NroStatsService {
     @Autowired
     URIContentRetriever uriContentRetriever;
 
-    @Autowired
-    CachedService cachedService;
-
+    @CacheEvict(cacheNames = "deltas", allEntries = true)
     public synchronized void generate() {
         logger.info("Generating Extended NRO Stats");
         try {
@@ -108,15 +110,31 @@ public class NroStatsService {
         }
     }
 
+    /**
+     * This method is cacheable and is cleaned up by the {@link #generate()} method.
+     * @return
+     */
+    @Cacheable("deltas")
     public List<Delta<?>> getDifferences() {
-        MergedStats current = getStats(CURRENT);
-        MergedStats previous = getStats(PREVIOUS);
+        logger.info("Generating difference report");
+        MergedStats current = getStats(CURRENT, extendedOutputConfig.getFile());
+        MergedStats previous = getStats(PREVIOUS, extendedOutputConfig.getPrevious());
         return recordsMerger.findDifferences(current, previous);
     }
 
 
-    public MergedStats getStats(String key) {
-        return cachedService.fetch(key);
+    private MergedStats getStats(String identifier, String path) {
+        URIContent content;
+        if (uriContentRetriever.isExternal(path)) {
+            content = uriContentRetriever.fetch(identifier, path);
+        } else {
+            //add the output folder
+            content = uriContentRetriever.fetch(identifier,
+                    Joiner.on("/").join(extendedOutputConfig.getFolder(), path));
+        }
+        ParsedRIRStats stats = parser.parseNroStats(content);
+        MergedStats searchableStats =  recordsMerger.merge(Lists.newArrayList(stats));
+        return searchableStats;
     }
 
     private ParsedRIRStats fetchAndParseRirSwapStats(String dataSetName, String url) {

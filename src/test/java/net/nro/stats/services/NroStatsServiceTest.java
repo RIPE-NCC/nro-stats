@@ -31,12 +31,14 @@ package net.nro.stats.services;
 
 import net.nro.stats.components.*;
 import net.nro.stats.components.merger.ASNIntervalTree;
+import net.nro.stats.components.merger.Delta;
 import net.nro.stats.components.merger.IPNode;
 import net.nro.stats.components.parser.Parser;
 import net.nro.stats.config.ExtendedInputConfig;
 import net.nro.stats.config.ExtendedOutputConfig;
 import net.nro.stats.resources.MergedStats;
 import net.nro.stats.resources.ParsedRIRStats;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,12 +49,13 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import java.nio.charset.Charset;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyListOf;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class NroStatsServiceTest {
@@ -96,6 +99,9 @@ public class NroStatsServiceTest {
         nroStats.setIpv4s(new IPNode<>(null));
         nroStats.setIpv6s(new IPNode<>(null));
         when(recordsMerger.merge(anyListOf(ParsedRIRStats.class))).thenReturn(nroStats);
+        extendedOutputConfig.setFolder("src/test/resources");
+        extendedOutputConfig.setFile("it-delegated-extended");
+        extendedOutputConfig.setPrevious("it-delegated-extended");
     }
 
     @Test
@@ -104,5 +110,18 @@ public class NroStatsServiceTest {
 
         verify(recordsMerger).merge(anyListOf(ParsedRIRStats.class));
         verify(writer).write(any());
+    }
+
+    @Test
+    public void testDifferences() throws Exception {
+        when(recordsMerger.merge(anyListOf(ParsedRIRStats.class))).thenReturn(mock(MergedStats.class));
+        List<Delta<?>> differences = nroStatsService.getDifferences();
+        verify(recordsMerger, times(2)).merge(anyListOf(ParsedRIRStats.class));
+        assertTrue("differences should not come when it is same", differences.size() == 0);
+    }
+
+    @After
+    public void cleanup() {
+        reset(recordsMerger);
     }
 }

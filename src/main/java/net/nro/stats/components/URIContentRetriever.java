@@ -64,9 +64,13 @@ public class URIContentRetriever {
         logger.debug("fetching {} for {}", url, rir);
 
         URIBytesRetriever retriever = fileRetriever;
-        if (url.startsWith("http")) {
+        if (isExternal(url)) {
             retriever = httpRetriever;
         }
         return new URIContent(rir, retriever.retrieveBytes(url));
+    }
+
+    public boolean isExternal(String url) {
+        return url.startsWith("http");
     }
 }
