@@ -98,6 +98,9 @@ public abstract class Record<R extends AbstractRange> implements Line {
             case "reserved":case "Reserved":
                 this.status = (isIana(registry)) ? IETF : RESERVED;
                 break;
+            case "ietf":
+                this.status = (isIana(registry)) ? IETF : RESERVED;
+                break;
             default:
                 this.status = line.get(6);
         }
