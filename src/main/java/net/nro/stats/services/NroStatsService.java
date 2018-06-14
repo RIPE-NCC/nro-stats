@@ -33,6 +33,9 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import net.nro.stats.components.*;
 import net.nro.stats.components.merger.Delta;
+import net.nro.stats.components.parser.ASNRecord;
+import net.nro.stats.components.parser.IPv4Record;
+import net.nro.stats.components.parser.IPv6Record;
 import net.nro.stats.components.parser.Parser;
 import net.nro.stats.config.ExtendedInputConfig;
 import net.nro.stats.config.ExtendedOutputConfig;
@@ -40,6 +43,15 @@ import net.nro.stats.resources.MergedStats;
 import net.nro.stats.resources.ParsedRIRStats;
 import net.nro.stats.resources.StatsSource;
 import net.nro.stats.resources.URIContent;
+import net.ripe.commons.ip.AbstractRange;
+import net.ripe.commons.ip.Asn;
+import net.ripe.commons.ip.AsnRange;
+import net.ripe.commons.ip.Ipv4;
+import net.ripe.commons.ip.Ipv4Range;
+import net.ripe.commons.ip.Ipv6;
+import net.ripe.commons.ip.Ipv6Range;
+import net.ripe.commons.ip.Rangeable;
+import net.ripe.commons.ip.SortedRangeSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -104,10 +116,48 @@ public class NroStatsService {
 
             writer.write(nroStats);
 
+            checkHoles(nroStats);
+
             logger.info("Finished Generating Extended NRO stats");
         } catch (Exception e) {
             logger.error("Failed while generating NRO Extended stats", e);
         }
+    }
+
+    private void checkHoles(ParsedRIRStats nroStats) {
+        checkAsn(nroStats);
+        checkIpv4(nroStats);
+        checkIpv6(nroStats);
+    }
+
+    private void checkIpv4(ParsedRIRStats nroStats) {
+        Ipv4Range everything = Ipv4Range.parse("0.0.0.0/0");
+        SortedRangeSet<Ipv4, Ipv4Range> leftovers = new SortedRangeSet<>();
+        leftovers.add(everything);
+        leftovers.removeAll(nroStats.getIpv4Records().stream().map(IPv4Record::getRange).collect(Collectors.toSet()));
+        logger.info("Total IPv4 ranges: " + nroStats.getIpv4Records().size());
+        logger.info(String.format("Missing ranges: %d (%d%%) of the total", leftovers.size(), 100 * leftovers.size() / nroStats.getIpv4Records().size()));
+        leftovers.unmodifiableSet().forEach(range -> logger.info("Missing: " + range));
+    }
+
+    private void checkIpv6(ParsedRIRStats nroStats) {
+        Ipv6Range everything = Ipv6Range.parse("::/0");
+        SortedRangeSet<Ipv6, Ipv6Range> leftovers = new SortedRangeSet<>();
+        leftovers.add(everything);
+        leftovers.removeAll(nroStats.getIpv6Records().stream().map(IPv6Record::getRange).collect(Collectors.toSet()));
+        logger.info("Total IPv6 ranges: " + nroStats.getIpv6Records().size());
+        logger.info(String.format("Missing ranges: %d (%d%%) of the total", leftovers.size(), 100 * leftovers.size() / nroStats.getIpv6Records().size()));
+        leftovers.unmodifiableSet().forEach(range -> logger.info("Missing: " + range));
+    }
+
+    private void checkAsn(ParsedRIRStats nroStats) {
+        AsnRange everything = AsnRange.parse("AS0-AS4294967295");
+        SortedRangeSet<Asn, AsnRange> leftovers = new SortedRangeSet<>();
+        leftovers.add(everything);
+        leftovers.removeAll(nroStats.getAsnRecords().stream().map(ASNRecord::getRange).collect(Collectors.toSet()));
+        logger.info("Total ASN ranges: " + nroStats.getAsnRecords().size());
+        logger.info(String.format("Missing ranges: %d (%d%%) of the total", leftovers.size(), 100 * leftovers.size() / nroStats.getAsnRecords().size()));
+        leftovers.unmodifiableSet().forEach(range -> logger.info("Missing: " + range));
     }
 
     /**
